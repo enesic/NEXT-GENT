@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # DATABASE (PostgreSQL)
+  # ==========================================
+  db:
+    image: postgres:15-alpine
+    container_name: nextgent_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=nextgent
+    ports:
+      - "5432:5432"
+    networks:
+      - nextgent_network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================
+  # REDIS (Cache)
+  # ==========================================
+  redis:
+    image: redis:7-alpine
+    container_name: nextgent_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - nextgent_network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    command: redis-server --appendonly yes
+
+  # ==========================================
+  # BACKEND (FastAPI - Port 8000)
+  # ==========================================
+  backend:
+    build:
+      context: ./backend
+    container_name: nextgent_backend
+    volumes:
+      - ./backend:/app # Hot reload for demo adjustments
+    ports:
+      - "8000:8000"
+    environment:
+      - PROJECT_NAME=NextGent
+      - SECRET_KEY=your-secret-key-change-in-production
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/nextgent
+      - POSTGRES_SERVER=db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=nextgent
+      - POSTGRES_PORT=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - ENVIRONMENT=production
+      - API_V1_STR=/api/v1
+      - DEBUG=false
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - nextgent_network
+
+  # ==========================================
+  # FRONTEND (Vue/Nginx - Port 80)
+  # ==========================================
+  frontend:
+    build:
+      context: ./frontend
+    container_name: nextgent_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - nextgent_network
+
+networks:
+  nextgent_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

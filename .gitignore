@@ -1,0 +1,39 @@
+# General
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+
+# Python / Backend
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.env
+*.egg-info/
+backend/coverage/
+backend/htmlcov/
+backend/.pytest_cache/
+
+# Node / Frontend
+node_modules/
+frontend/dist/
+frontend/.output/
+frontend/.nuxt/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# IDEs
+.vscode/
+.idea/
+
+# Docker
+.docker/
+docker-volume-data/
+
+# OS specific files
+desktop.ini

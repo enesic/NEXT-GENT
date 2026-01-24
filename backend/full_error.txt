@@ -1,0 +1,582 @@
+﻿Initializing database...
+Database URL: postgresql+asyncpg://user:password@localhost:5432/nextgent_test
+2026-01-23 15:24:09,828 INFO sqlalchemy.engine.Engine select pg_catalog.version()
+2026-01-23 15:24:09,828 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-23 15:24:09,830 INFO sqlalchemy.engine.Engine select current_schema()
+2026-01-23 15:24:09,830 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-23 15:24:09,832 INFO sqlalchemy.engine.Engine show standard_conforming_strings
+2026-01-23 15:24:09,832 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-23 15:24:09,833 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+Dropping existing tables...
+2026-01-23 15:24:09,836 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-01-23 15:24:09,836 INFO sqlalchemy.engine.Engine [generated in 0.00015s] ('tenants', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-01-23 15:24:09,840 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-01-23 15:24:09,840 INFO sqlalchemy.engine.Engine [cached since 0.004513s ago] ('appointments', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-01-23 15:24:09,841 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-01-23 15:24:09,841 INFO sqlalchemy.engine.Engine [cached since 0.005362s ago] ('customers', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-01-23 15:24:09,843 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_type.typname 
+FROM pg_catalog.pg_type JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_type.typnamespace 
+WHERE pg_catalog.pg_type.typname = $1::VARCHAR AND pg_catalog.pg_type_is_visible(pg_catalog.pg_type.oid) AND pg_catalog.pg_namespace.nspname != $2::VARCHAR
+2026-01-23 15:24:09,843 INFO sqlalchemy.engine.Engine [generated in 0.00020s] ('appointment_status', 'pg_catalog')
+2026-01-23 15:24:09,844 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_type.typname 
+FROM pg_catalog.pg_type JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_type.typnamespace 
+WHERE pg_catalog.pg_type.typname = $1::VARCHAR AND pg_catalog.pg_type_is_visible(pg_catalog.pg_type.oid) AND pg_catalog.pg_namespace.nspname != $2::VARCHAR
+2026-01-23 15:24:09,844 INFO sqlalchemy.engine.Engine [cached since 0.002059s ago] ('customer_segment', 'pg_catalog')
+2026-01-23 15:24:09,845 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_type.typname 
+FROM pg_catalog.pg_type JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_type.typnamespace 
+WHERE pg_catalog.pg_type.typname = $1::VARCHAR AND pg_catalog.pg_type_is_visible(pg_catalog.pg_type.oid) AND pg_catalog.pg_namespace.nspname != $2::VARCHAR
+2026-01-23 15:24:09,845 INFO sqlalchemy.engine.Engine [cached since 0.00304s ago] ('customer_status', 'pg_catalog')
+Creating tables...
+2026-01-23 15:24:09,846 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-01-23 15:24:09,846 INFO sqlalchemy.engine.Engine [cached since 0.01095s ago] ('tenants', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-01-23 15:24:09,847 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-01-23 15:24:09,847 INFO sqlalchemy.engine.Engine [cached since 0.01178s ago] ('appointments', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-01-23 15:24:09,848 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2026-01-23 15:24:09,848 INFO sqlalchemy.engine.Engine [cached since 0.01251s ago] ('customers', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2026-01-23 15:24:09,849 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_type.typname 
+FROM pg_catalog.pg_type JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_type.typnamespace 
+WHERE pg_catalog.pg_type.typname = $1::VARCHAR AND pg_catalog.pg_type_is_visible(pg_catalog.pg_type.oid) AND pg_catalog.pg_namespace.nspname != $2::VARCHAR
+2026-01-23 15:24:09,849 INFO sqlalchemy.engine.Engine [cached since 0.00651s ago] ('appointment_status', 'pg_catalog')
+2026-01-23 15:24:09,850 INFO sqlalchemy.engine.Engine CREATE TYPE appointment_status AS ENUM ('PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED')
+2026-01-23 15:24:09,850 INFO sqlalchemy.engine.Engine [no key 0.00006s] ()
+2026-01-23 15:24:09,851 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_type.typname 
+FROM pg_catalog.pg_type JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_type.typnamespace 
+WHERE pg_catalog.pg_type.typname = $1::VARCHAR AND pg_catalog.pg_type_is_visible(pg_catalog.pg_type.oid) AND pg_catalog.pg_namespace.nspname != $2::VARCHAR
+2026-01-23 15:24:09,852 INFO sqlalchemy.engine.Engine [cached since 0.009128s ago] ('customer_segment', 'pg_catalog')
+2026-01-23 15:24:09,853 INFO sqlalchemy.engine.Engine CREATE TYPE customer_segment AS ENUM ('VIP', 'GOLD', 'SILVER', 'BRONZE', 'REGULAR')
+2026-01-23 15:24:09,853 INFO sqlalchemy.engine.Engine [no key 0.00007s] ()
+2026-01-23 15:24:09,855 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_type.typname 
+FROM pg_catalog.pg_type JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_type.typnamespace 
+WHERE pg_catalog.pg_type.typname = $1::VARCHAR AND pg_catalog.pg_type_is_visible(pg_catalog.pg_type.oid) AND pg_catalog.pg_namespace.nspname != $2::VARCHAR
+2026-01-23 15:24:09,855 INFO sqlalchemy.engine.Engine [cached since 0.01276s ago] ('customer_status', 'pg_catalog')
+2026-01-23 15:24:09,856 INFO sqlalchemy.engine.Engine CREATE TYPE customer_status AS ENUM ('ACTIVE', 'INACTIVE', 'BLOCKED', 'DEBT')
+2026-01-23 15:24:09,857 INFO sqlalchemy.engine.Engine [no key 0.00008s] ()
+2026-01-23 15:24:09,858 INFO sqlalchemy.engine.Engine 
+CREATE TABLE tenants (
+	name VARCHAR NOT NULL, 
+	slug VARCHAR NOT NULL, 
+	domain VARCHAR, 
+	is_active BOOLEAN NOT NULL, 
+	webhook_url VARCHAR, 
+	system_prompt VARCHAR, 
+	id UUID NOT NULL, 
+	created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
+	updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
+	CONSTRAINT tenants_pkey PRIMARY KEY (id)
+)
+
+
+2026-01-23 15:24:09,858 INFO sqlalchemy.engine.Engine [no key 0.00008s] ()
+2026-01-23 15:24:09,867 INFO sqlalchemy.engine.Engine CREATE UNIQUE INDEX tenants_slug_idx ON tenants (slug)
+2026-01-23 15:24:09,868 INFO sqlalchemy.engine.Engine [no key 0.00014s] ()
+2026-01-23 15:24:09,872 INFO sqlalchemy.engine.Engine CREATE INDEX tenants_name_idx ON tenants (name)
+2026-01-23 15:24:09,873 INFO sqlalchemy.engine.Engine [no key 0.00010s] ()
+2026-01-23 15:24:09,876 INFO sqlalchemy.engine.Engine CREATE UNIQUE INDEX tenants_domain_idx ON tenants (domain)
+2026-01-23 15:24:09,876 INFO sqlalchemy.engine.Engine [no key 0.00009s] ()
+2026-01-23 15:24:09,880 INFO sqlalchemy.engine.Engine CREATE INDEX tenants_id_idx ON tenants (id)
+2026-01-23 15:24:09,880 INFO sqlalchemy.engine.Engine [no key 0.00009s] ()
+2026-01-23 15:24:09,884 INFO sqlalchemy.engine.Engine 
+CREATE TABLE appointments (
+	title VARCHAR(255) NOT NULL, 
+	description TEXT, 
+	start_time TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
+	end_time TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
+	client_name VARCHAR(255) NOT NULL, 
+	client_email VARCHAR(255) NOT NULL, 
+	client_phone VARCHAR(50), 
+	status appointment_status NOT NULL, 
+	google_calendar_event_id VARCHAR(255), 
+	version INTEGER NOT NULL, 
+	id UUID NOT NULL, 
+	created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
+	updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
+	tenant_id UUID NOT NULL, 
+	CONSTRAINT appointments_pkey PRIMARY KEY (id)
+)
+
+
+2026-01-23 15:24:09,884 INFO sqlalchemy.engine.Engine [no key 0.00010s] ()
+2026-01-23 15:24:09,893 INFO sqlalchemy.engine.Engine CREATE INDEX appointments_id_idx ON appointments (id)
+2026-01-23 15:24:09,893 INFO sqlalchemy.engine.Engine [no key 0.00011s] ()
+2026-01-23 15:24:09,898 INFO sqlalchemy.engine.Engine CREATE INDEX appointments_start_time_idx ON appointments (start_time)
+2026-01-23 15:24:09,898 INFO sqlalchemy.engine.Engine [no key 0.00011s] ()
+2026-01-23 15:24:09,903 INFO sqlalchemy.engine.Engine CREATE INDEX appointments_tenant_id_idx ON appointments (tenant_id)
+2026-01-23 15:24:09,903 INFO sqlalchemy.engine.Engine [no key 0.00013s] ()
+2026-01-23 15:24:09,908 INFO sqlalchemy.engine.Engine CREATE UNIQUE INDEX idx_appointments_no_overlap ON appointments (tenant_id, start_time, end_time) WHERE status IN ('pending', 'confirmed')
+2026-01-23 15:24:09,908 INFO sqlalchemy.engine.Engine [no key 0.00012s] ()
+2026-01-23 15:24:09,910 INFO sqlalchemy.engine.Engine ROLLBACK
+python : Traceback (most recent 
+call last):
+At line:1 char:1
++ python init_db.py 2>&1 | Out-F
+ile -Encoding utf8 full_error.tx
+t
++ ~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : N 
+   otSpecified: (Traceback (mo  
+  st recent call last)::Strin   
+ g) [], RemoteException
+    + FullyQualifiedErrorId : N 
+   ativeCommandError
+ 
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\dial
+ects\postgresql\asyncpg.py", lin
+e 550, in _prepare_and_execute
+    self._rows = deque(await pre
+pared_stmt.fetch(*parameters))
+                       ^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\asyncpg\prepare
+d_stmt.py", line 176, in fetch
+    data = await self.__bind_exe
+cute(args, 0, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\asyncpg\prepare
+d_stmt.py", line 267, in __bind_
+execute
+    data, status, _ = await self
+.__do_execute(
+                      ^^^^^^^^^^
+^^^^^^^^^^^^^^
+        lambda protocol: protoco
+l.bind_execute(
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
+            self._state, args, '
+', limit, True, timeout))
+            ^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\asyncpg\prepare
+d_stmt.py", line 256, in __do_ex
+ecute
+    return await executor(protoc
+ol)
+           ^^^^^^^^^^^^^^^^^^^^^
+^^^
+  File "asyncpg\\protocol\\proto
+col.pyx", line 206, in bind_exec
+ute
+asyncpg.exceptions.InvalidTextRe
+presentationError: invalid input
+ value for enum appointment_stat
+us: "pending"
+
+The above exception was the dire
+ct cause of the following except
+ion:
+
+Traceback (most recent call last
+):
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\engi
+ne\base.py", line 1967, in _exec
+_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, e
+ffective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\engi
+ne\default.py", line 952, in do_
+execute
+    cursor.execute(statement, pa
+rameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+^^^^^^^^^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\dial
+ects\postgresql\asyncpg.py", lin
+e 585, in execute
+    self._adapt_connection.await
+_(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~^
+        self._prepare_and_execut
+e(operation, parameters)
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\util
+\_concurrency_py3k.py", line 132
+, in await_only
+    return current.parent.switch
+(awaitable)  # type: ignore[no-a
+ny-return,attr-defined] # noqa: 
+E501
+           ~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\util
+\_concurrency_py3k.py", line 196
+, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\dial
+ects\postgresql\asyncpg.py", lin
+e 563, in _prepare_and_execute
+    self._handle_exception(error
+)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\dial
+ects\postgresql\asyncpg.py", lin
+e 513, in _handle_exception
+    self._adapt_connection._hand
+le_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\dial
+ects\postgresql\asyncpg.py", lin
+e 797, in _handle_exception
+    raise translated_error from 
+error
+sqlalchemy.dialects.postgresql.a
+syncpg.AsyncAdapt_asyncpg_dbapi.
+Error: <class 'asyncpg.exception
+s.InvalidTextRepresentationError
+'>: invalid input value for enum
+ appointment_status: "pending"
+
+The above exception was the dire
+ct cause of the following except
+ion:
+
+Traceback (most recent call last
+):
+  File "C:\Users\icene\Desktop\N
+EXT-GENT\backend\init_db.py", li
+ne 41, in <module>
+    asyncio.run(init_db())
+    ~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\asyncio\runners.py", line 195
+, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\asyncio\runners.py", line 118
+, in run
+    return self._loop.run_until_
+complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~^^^^^^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\asyncio\base_events.py", line
+ 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\icene\Desktop\N
+EXT-GENT\backend\init_db.py", li
+ne 30, in init_db
+    await conn.run_sync(Base.met
+adata.create_all)
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\ext\
+asyncio\engine.py", line 888, in
+ run_sync
+    return await greenlet_spawn(
+           ^^^^^^^^^^^^^^^^^^^^^
+        fn, self._proxied, *arg,
+ _require_await=False, **kw
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\util
+\_concurrency_py3k.py", line 201
+, in greenlet_spawn
+    result = context.throw(*sys.
+exc_info())
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\sql\
+schema.py", line 5928, in create
+_all
+    bind._run_ddl_visitor(
+    ~~~~~~~~~~~~~~~~~~~~~^
+        ddl.SchemaGenerator, sel
+f, checkfirst=checkfirst, tables
+=tables
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^
+    )
+    ^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\engi
+ne\base.py", line 2467, in _run_
+ddl_visitor
+    ).traverse_single(element)
+      ~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\sql\
+visitors.py", line 661, in trave
+rse_single
+    return meth(obj, **kw)
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\sql\
+ddl.py", line 984, in visit_meta
+data
+    self.traverse_single(
+    ~~~~~~~~~~~~~~~~~~~~^
+        table,
+        ^^^^^^
+    ...<2 lines>...
+        _is_metadata_operation=T
+rue,
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^
+    )
+    ^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\sql\
+visitors.py", line 661, in trave
+rse_single
+    return meth(obj, **kw)
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\sql\
+ddl.py", line 1026, in visit_tab
+le
+    self.traverse_single(index, 
+create_ok=True)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+^^^^^^^^^^^^^^^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\sql\
+visitors.py", line 661, in trave
+rse_single
+    return meth(obj, **kw)
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\sql\
+ddl.py", line 1063, in visit_ind
+ex
+    CreateIndex(index)._invoke_w
+ith(self.connection)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\sql\
+ddl.py", line 321, in _invoke_wi
+th
+    return bind.execute(self)
+           ~~~~~~~~~~~~^^^^^^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\engi
+ne\base.py", line 1419, in execu
+te
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_
+OPTIONS,
+    )
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\sql\
+ddl.py", line 187, in _execute_o
+n_connection
+    return connection._execute_d
+dl(
+           ~~~~~~~~~~~~~~~~~~~~~
+~~^
+        self, distilled_params, 
+execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\engi
+ne\base.py", line 1530, in _exec
+ute_ddl
+    ret = self._execute_context(
+        dialect,
+    ...<4 lines>...
+        compiled,
+    )
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\engi
+ne\base.py", line 1846, in _exec
+ute_context
+    return self._exec_single_con
+text(
+           ~~~~~~~~~~~~~~~~~~~~~
+~~~~^
+        dialect, context, statem
+ent, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\engi
+ne\base.py", line 1986, in _exec
+_single_context
+    self._handle_dbapi_exception
+(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^
+        e, str_statement, effect
+ive_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\engi
+ne\base.py", line 2363, in _hand
+le_dbapi_exception
+    raise sqlalchemy_exception.w
+ith_traceback(exc_info[2]) from 
+e
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\engi
+ne\base.py", line 1967, in _exec
+_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, e
+ffective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\engi
+ne\default.py", line 952, in do_
+execute
+    cursor.execute(statement, pa
+rameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+^^^^^^^^^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\dial
+ects\postgresql\asyncpg.py", lin
+e 585, in execute
+    self._adapt_connection.await
+_(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~^
+        self._prepare_and_execut
+e(operation, parameters)
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\util
+\_concurrency_py3k.py", line 132
+, in await_only
+    return current.parent.switch
+(awaitable)  # type: ignore[no-a
+ny-return,attr-defined] # noqa: 
+E501
+           ~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\util
+\_concurrency_py3k.py", line 196
+, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\dial
+ects\postgresql\asyncpg.py", lin
+e 563, in _prepare_and_execute
+    self._handle_exception(error
+)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\dial
+ects\postgresql\asyncpg.py", lin
+e 513, in _handle_exception
+    self._adapt_connection._hand
+le_exception(error)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\icene\AppData\L
+ocal\Programs\Python\Python313\L
+ib\site-packages\sqlalchemy\dial
+ects\postgresql\asyncpg.py", lin
+e 797, in _handle_exception
+    raise translated_error from 
+error
+sqlalchemy.exc.DBAPIError: (sqla
+lchemy.dialects.postgresql.async
+pg.Error) <class 'asyncpg.except
+ions.InvalidTextRepresentationEr
+ror'>: invalid input value for e
+num appointment_status: "pending
+"
+[SQL: CREATE UNIQUE INDEX idx_ap
+pointments_no_overlap ON appoint
+ments (tenant_id, start_time, en
+d_time) WHERE status IN ('pendin
+g', 'confirmed')]
+(Background on this error at: ht
+tps://sqlalche.me/e/20/dbapi)
