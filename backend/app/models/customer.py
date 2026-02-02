@@ -32,6 +32,13 @@ class Customer(Base, UUIDMixin, TimestampMixin, TenantMixin):
     email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     phone: Mapped[str] = mapped_column(String(50), nullable=False, index=True, unique=True)
     
+    # ID-Based Authentication (NEW)
+    customer_id: Mapped[str] = mapped_column(String(20), nullable=True, unique=True, index=True)
+    # Format: SECTOR-NNNNNN (e.g., MED-001234, LEG-005678)
+    
+    pin_hash: Mapped[str] = mapped_column(String(255), nullable=True)
+    # Bcrypt hashed PIN for authentication
+    
     # Adres Bilgileri
     address: Mapped[str] = mapped_column(Text, nullable=True)
     city: Mapped[str] = mapped_column(String(100), nullable=True)

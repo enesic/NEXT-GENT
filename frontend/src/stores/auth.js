@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import axios from 'axios'
 
 /**
  * Authentication Store
@@ -7,9 +8,14 @@ import { ref, computed } from 'vue'
  */
 export const useAuthStore = defineStore('auth', () => {
     // State
-    const user = ref(null)
+    const user = ref(JSON.parse(localStorage.getItem('user')) || null)
     const tenant_id = ref(localStorage.getItem('tenant_id') || null)
     const token = ref(localStorage.getItem('auth_token') || null)
+
+    // Initialize Axios Header
+    if (token.value) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
+    }
 
     // Getters
     const isAuthenticated = computed(() => !!token.value && !!user.value)
@@ -18,14 +24,21 @@ export const useAuthStore = defineStore('auth', () => {
     // Actions
     const setUser = (userData) => {
         user.value = userData
+        if (userData) {
+            localStorage.setItem('user', JSON.stringify(userData))
+        } else {
+            localStorage.removeItem('user')
+        }
     }
 
     const setToken = (authToken) => {
         token.value = authToken
         if (authToken) {
             localStorage.setItem('auth_token', authToken)
+            axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`
         } else {
             localStorage.removeItem('auth_token')
+            delete axios.defaults.headers.common['Authorization']
         }
     }
 
@@ -33,45 +46,39 @@ export const useAuthStore = defineStore('auth', () => {
         tenant_id.value = tenantId
         if (tenantId) {
             localStorage.setItem('tenant_id', tenantId)
+            axios.defaults.headers.common['X-Tenant-ID'] = tenantId
         } else {
             localStorage.removeItem('tenant_id')
+            delete axios.defaults.headers.common['X-Tenant-ID']
         }
     }
 
+    // Initial Tenant Header
+    if (tenant_id.value) {
+        axios.defaults.headers.common['X-Tenant-ID'] = tenant_id.value
+    }
+
     const login = async (credentials) => {
-        // This will be implemented with actual API call
-        // For now, just a placeholder
-        try {
-            // const response = await api.post('/auth/login', credentials)
-            // setToken(response.data.token)
-            // setUser(response.data.user)
-            // setTenant(response.data.tenant_id)
-
-            // Temporary mock for development
-            setToken('mock-token-' + Date.now())
-            setUser({ id: 1, name: 'Demo User', email: 'demo@nextgent.com' })
-            setTenant(credentials.tenant_id || 'default-tenant')
-
-            return true
-        } catch (error) {
-            console.error('Login failed:', error)
-            return false
-        }
+        // This logic is primarily handled in Login.vue now
+        // but kept here for potential future use or testing
+        return true
     }
 
     const logout = () => {
         user.value = null
         token.value = null
-        // Note: We keep tenant_id for convenience
         localStorage.removeItem('auth_token')
+        localStorage.removeItem('user')
+        delete axios.defaults.headers.common['Authorization']
+
+        // Optional: Clear tenant on logout? Usually kept for convenience.
+        // setTenant(null) 
     }
 
     const clearAll = () => {
-        user.value = null
-        token.value = null
-        tenant_id.value = null
-        localStorage.removeItem('auth_token')
-        localStorage.removeItem('tenant_id')
+        setUser(null)
+        setToken(null)
+        setTenant(null)
     }
 
     return {

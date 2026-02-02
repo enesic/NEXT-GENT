@@ -64,19 +64,7 @@
         </div>
 
         <div class="topbar-right">
-          <!-- Sector Switcher (Demo Control) -->
-          <div class="sector-switcher">
-            <button 
-              v-for="sector in availableSectors" 
-              :key="sector.id"
-              :class="['sector-btn', { active: sectorStore.currentSector === sector.id }]"
-              @click="switchSector(sector.id)"
-            >
-              <component :is="sector.icon" :size="16" :stroke-width="2" />
-              <span>{{ sector.name }}</span>
-            </button>
-          </div>
-
+          <!-- Sector is now auto-detected from login, no manual switching -->
           <div class="topbar-actions">
             <button class="action-btn">
               <Bell :size="18" :stroke-width="2" />
@@ -128,14 +116,7 @@ const axios = inject('axios')
 // State
 const activeNav = ref('dashboard')
 
-// Available Sectors for Switcher
-const availableSectors = [
-  { id: 'medical', name: 'Medical', icon: Stethoscope },
-  { id: 'legal', name: 'Legal', icon: Scale },
-  { id: 'real_estate', name: 'Real Estate', icon: Building2 }
-]
-
-// Current sector icon
+// Current sector icon (based on auto-detected sector from login)
 const currentSectorIcon = computed(() => {
   const iconMap = {
     medical: Stethoscope,
@@ -217,34 +198,7 @@ const handleNavigate = (navId) => {
   activeNav.value = navId
 }
 
-const switchSector = async (sectorId) => {
-  if (sectorId === sectorStore.currentSector) return
-
-  // Animate transition
-  const timeline = gsap.timeline()
-
-  // Fade out and scale down key elements
-  timeline.to([logoIcon.value, userAvatar.value, sectorBadge.value], {
-    scale: 0.9,
-    opacity: 0.3,
-    duration: 0.3,
-    ease: 'power2.in'
-  })
-
-  // Change sector
-  await nextTick()
-  sectorStore.setSector(sectorId)
-  
-  // Refresh data handled by watch in DashboardContent.vue
-
-  // Fade in and scale up with new colors
-  timeline.to([logoIcon.value, userAvatar.value, sectorBadge.value], {
-    scale: 1,
-    opacity: 1,
-    duration: 0.4,
-    ease: 'power2.out'
-  })
-}
+// Sector is auto-set from login, no manual switching needed
 </script>
 
 <style scoped>

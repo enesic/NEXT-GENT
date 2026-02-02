@@ -15,46 +15,40 @@
       </div>
       
       <div class="card-content">
-        <h2 class="welcome-text">Welcome Back</h2>
-        <p class="subtitle">Sign in to your intelligent workspace</p>
+        <h2 class="welcome-text">Hoş Geldiniz</h2>
+        <p class="subtitle">Akıllı çalışma alanınıza giriş yapın</p>
         
         <form @submit.prevent="handleLogin" class="login-form">
-          <div class="form-group">
-            <label>Email Address</label>
-            <div class="input-wrapper">
-              <User :size="18" class="input-icon" />
-              <input
-                v-model="form.email"
-                type="email"
-                placeholder="name@company.com"
-                required
-              />
+          <div class="input-group">
+            <div class="input-icon">
+              <CreditCard :size="20" :stroke-width="2" />
             </div>
-            <p class="form-hint">Sektör otomatik olarak tespit edilecektir</p>
+            <input
+              type="text"
+              v-model="form.customer_id"
+              placeholder="Müşteri ID (Örn: MED-001234)"
+              class="input-field"
+              required
+              @input="form.customer_id = form.customer_id.toUpperCase()"
+            />
           </div>
           
-          <div class="form-group">
-            <label>Password</label>
-            <div class="input-wrapper">
-              <Lock :size="18" class="input-icon" />
-              <input
-                v-model="form.password"
-                type="password"
-                placeholder="••••••••"
-                required
-              />
+          <div class="input-group">
+            <div class="input-icon">
+              <Lock :size="20" :stroke-width="2" />
             </div>
+            <input
+              type="password"
+              v-model="form.pin"
+              placeholder="PIN (Varsayılan: 1234)"
+              class="input-field"
+              required
+              maxlength="6"
+            />
           </div>
           
-          <div class="form-group" v-if="detectedSector">
-            <div class="sector-preview">
-              <component :is="sectorIcon" :size="16" :stroke-width="2" />
-              <span>{{ detectedSectorName }} sektörü tespit edildi</span>
-            </div>
-          </div>
-          
-          <button type="submit" class="btn-login" :disabled="isLoading || isDetecting">
-            <span v-if="!isLoading && !isDetecting">Sign In</span>
+          <button type="submit" class="btn-login" :disabled="isLoading">
+            <span v-if="!isLoading">Giriş Yap</span>
             <div v-else class="spinner"></div>
           </button>
         </form>
@@ -68,20 +62,21 @@
           <Check :size="48" :stroke-width="3" />
         </div>
         <div class="loader-text">
-          <h3>Authentication Verified</h3>
-          <p>Preparing Interface...</p>
+          <h3>Kimlik Doğrulandı</h3>
+          <p>Arayüz Hazırlanıyor...</p>
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useSectorStore } from '../stores/sector'
-import { Activity, Building2, User, Lock, Check, Stethoscope, Scale, Home } from 'lucide-vue-next'
+import { Activity, CreditCard, Lock, Check } from 'lucide-vue-next'
 import gsap from 'gsap'
 import { inject } from 'vue'
 
@@ -90,108 +85,80 @@ const authStore = useAuthStore()
 const sectorStore = useSectorStore()
 const axios = inject('axios')
 
-const loginCard = ref(null)
 const resultLoader = ref(null)
+const loginCard = ref(null)
 
 const form = ref({
-  email: '',
-  password: ''
+  customer_id: '',
+  pin: ''
 })
 
 const isLoading = ref(false)
 const isInitializing = ref(false)
-const isDetecting = ref(false)
-const detectedSector = ref(null)
-const detectedSectorName = ref('')
-
-// Sector icon mapping
-const sectorIcons = {
-  medical: Stethoscope,
-  legal: Scale,
-  real_estate: Home
-}
-
-const sectorIcon = computed(() => {
-  return sectorIcons[detectedSector.value] || Activity
-})
-
-// Auto-detect sector when email changes
-watch(() => form.value.email, async (newEmail) => {
-  if (newEmail && newEmail.includes('@')) {
-    await detectSector()
-  } else {
-    detectedSector.value = null
-    detectedSectorName.value = ''
-  }
-})
-
-const detectSector = async () => {
-  if (!form.value.email || !form.value.email.includes('@')) return
-  
-  isDetecting.value = true
-  try {
-    const response = await axios.post('/auth/detect-sector', {
-      email: form.value.email
-    })
-    
-    detectedSector.value = response.data.sector
-    detectedSectorName.value = getSectorDisplayName(response.data.sector)
-    
-    // Update sector store
-    sectorStore.setSector(response.data.sector)
-    
-  } catch (error) {
-    console.error('Sector detection error:', error)
-    // Fallback to medical
-    detectedSector.value = 'medical'
-    detectedSectorName.value = 'Medical'
-  } finally {
-    isDetecting.value = false
-  }
-}
-
-const getSectorDisplayName = (sector) => {
-  const names = {
-    medical: 'Medical',
-    legal: 'Legal',
-    real_estate: 'Real Estate'
-  }
-  return names[sector] || 'Medical'
-}
 
 const handleLogin = async () => {
   isLoading.value = true
   
   try {
-    // Call backend login API with sector detection
+    // Call backend login API with customer ID + PIN
     const response = await axios.post('/auth/login', {
-      email: form.value.email,
-      password: form.value.password
+      customer_id: form.value.customer_id,
+      pin: form.value.pin
     })
     
     // Set auth data
     authStore.setToken(response.data.token)
     authStore.setUser(response.data.user)
-    authStore.setTenant(response.data.tenant_id)
     
-    // Set sector
+    // Set sector (auto-detected from customer's tenant)
     sectorStore.setSector(response.data.sector)
     
-  } catch (error) {
-    console.warn('🛡️ Backend unavailable, using demo mode:', error.message)
+    // Success - proceed to dashboard
+    proceedToDashboard()
     
-    // FALLBACK: Set demo data if backend is down
-    authStore.setToken('demo-token-' + Date.now())
-    authStore.setUser({
-      id: 1,
-      email: form.value.email,
-      name: form.value.email.split('@')[0]
-    })
-    authStore.setTenant('demo-tenant-id')
-    sectorStore.setSector(detectedSector.value || 'medical')
+  } catch (error) {
+    isLoading.value = false
+    
+    // Check if it's an authentication error (wrong ID or PIN)
+    if (error.response && error.response.status === 401) {
+      // SHAKE ANIMATION for wrong credentials
+      gsap.to(loginCard.value, {
+        x: -10,
+        duration: 0.1,
+        yoyo: true,
+        repeat: 5,
+        ease: 'power1.inOut',
+        onComplete: () => {
+          gsap.set(loginCard.value, { x: 0 })
+        }
+      })
+      // Show error message
+      alert('Geçersiz Müşteri ID veya PIN. Lütfen tekrar deneyin.')
+      return
+    }
+    
+    // For other errors (network, server down, etc), show error message
+    console.error('❌ Giriş başarısız:', error)
+    
+    let errorMessage = 'Giriş başarısız. '
+    
+    if (error.response) {
+      // Backend returned an error response
+      console.log('Error Data:', error.response.data)
+      errorMessage += `Sunucu Hatası (${error.response.status}): ${error.response.data.detail || JSON.stringify(error.response.data)}`
+    } else if (error.request) {
+      // Request made but no response
+      errorMessage += 'Sunucuya ulaşılamıyor. Lütfen internet bağlantınızı ve backend servisini kontrol edin.'
+    } else {
+      // Setup error
+      errorMessage += error.message
+    }
+    
+    alert(errorMessage)
   }
-  
-  // Always proceed to dashboard after login attempt
+}
+
+const proceedToDashboard = () => {
   isLoading.value = false
   
   // Start cinematic exit animation
@@ -203,36 +170,21 @@ const handleLogin = async () => {
     ease: 'power2.in',
     onComplete: () => {
       isInitializing.value = true
-      // Navigate to dashboard immediately
-      router.push('/dashboard')
-    }
-  })
-}
+      
+      // Animate loader entry
+      nextTick(() => {
+        gsap.from(resultLoader.value, {
+          opacity: 0,
+          scale: 0.9,
+          duration: 0.5
+        })
+      })
 
-const animateLoader = () => {
-  const tl = gsap.timeline({
-    onComplete: () => {
-       router.push('/dashboard')
+      // Wait a bit before navigating so user sees the success message
+      setTimeout(() => {
+        router.push('/dashboard')
+      }, 2000)
     }
-  })
-
-  tl.from('.check-icon-wrapper', {
-    scale: 0,
-    rotate: -180,
-    opacity: 0,
-    duration: 0.6,
-    ease: 'back.out(1.7)'
-  })
-  .from('.loader-text', {
-    y: 20,
-    opacity: 0,
-    duration: 0.4,
-    ease: 'power2.out'
-  }, '-=0.2')
-  .to('.cinematic-loader', {
-    delay: 1.5,
-    opacity: 0,
-    duration: 0.5
   })
 }
 
@@ -379,23 +331,11 @@ onMounted(() => {
   margin-top: 32px;
 }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.form-group label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #d4d4d8;
-  margin-left: 4px;
-}
-
-.input-wrapper {
+.input-group {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .input-icon {
@@ -403,9 +343,10 @@ onMounted(() => {
   left: 14px;
   color: #71717a;
   z-index: 2;
+  pointer-events: none;
 }
 
-.form-group input {
+.input-field {
   width: 100%;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -416,35 +357,15 @@ onMounted(() => {
   transition: all 0.2s ease;
 }
 
-.form-group input:focus {
+.input-field:focus {
   outline: none;
   border-color: #6366f1;
   background: rgba(255, 255, 255, 0.06);
   box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 }
 
-.form-group input::placeholder {
+.input-field::placeholder {
   color: #52525b;
-}
-
-.form-hint {
-  font-size: 11px;
-  color: #71717a;
-  margin-top: 4px;
-  margin-left: 4px;
-}
-
-.sector-preview {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.3);
-  border-radius: 12px;
-  color: #818cf8;
-  font-size: 13px;
-  font-weight: 500;
 }
 
 .btn-login {
@@ -461,6 +382,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+  margin-top: 8px; /* Added spacing */
 }
 
 .btn-login:hover {

@@ -17,8 +17,8 @@ logger = get_logger(__name__)
 
 
 class LoginRequest(BaseModel):
-    email: EmailStr
-    password: str
+    customer_id: str  # Format: SECTOR-NNNNNN (e.g., MED-001234)
+    pin: str          # 4-6 digit PIN or password
     tenant_id: Optional[str] = None  # Optional tenant slug or ID
 
 
@@ -28,6 +28,7 @@ class LoginResponse(BaseModel):
     tenant_id: str
     sector: str
     tenant_name: str
+    customer_id: str  # Return customer_id for frontend
 
 
 class SectorDetectionRequest(BaseModel):
@@ -172,45 +173,86 @@ async def login(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Login endpoint with automatic sector detection.
+    Login endpoint with customer ID + PIN authentication.
+    
+    Customer ID Format: SECTOR-NNNNNN
+    Examples: MED-001234, LEG-005678, MFG-009999
     """
-    # Step 1: Detect sector
-    sector_info = await detect_sector(
-        SectorDetectionRequest(
-            email=request.email,
-            tenant_id=request.tenant_id
-        ),
-        db=db
-    )
+    import bcrypt
     
-    # Step 2: Authenticate (simplified - in production, use proper auth)
-    # For now, accept any email/password combination
-    # In production, verify password hash
+    # Step 1: Find customer by customer_id
+    query = select(Customer).where(Customer.customer_id == request.customer_id.upper())
+    result = await db.execute(query)
+    customer = result.scalar_one_or_none()
     
-    # Step 3: Generate token (simplified)
+    if not customer:
+        # Customer ID not found
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid customer ID or PIN"
+        )
+    
+    # Step 2: Verify PIN
+    if customer.pin_hash:
+        # Verify bcrypt hash
+        pin_valid = bcrypt.checkpw(
+            request.pin.encode('utf-8'),
+            customer.pin_hash.encode('utf-8')
+        )
+        
+        if not pin_valid:
+            # Wrong PIN
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid customer ID or PIN"
+            )
+    else:
+        # No PIN set (should not happen in production)
+        raise HTTPException(
+            status_code=401,
+            detail="Account not configured. Please contact support."
+        )
+    
+    # Step 3: Get tenant and sector
+    tenant_query = select(Tenant).where(Tenant.id == customer.tenant_id)
+    tenant_result = await db.execute(tenant_query)
+    tenant = tenant_result.scalar_one_or_none()
+    
+    if not tenant:
+        raise HTTPException(
+            status_code=500,
+            detail="Tenant configuration error"
+        )
+    
+    sector = tenant.config.get('sector') if tenant.config else 'medical'
+    
+    # Step 4: Generate token
     import secrets
     token = f"token_{secrets.token_urlsafe(32)}"
     
-    # Step 4: Get or create user
+    # Step 5: Build user object
     user = {
-        "id": 1,
-        "email": request.email,
-        "name": request.email.split('@')[0].replace('.', ' ').title()
+        "id": str(customer.id),
+        "customer_id": customer.customer_id,
+        "name": f"{customer.first_name} {customer.last_name}",
+        "email": customer.email,
+        "phone": customer.phone,
+        "segment": customer.segment.value if customer.segment else "regular"
     }
     
     logger.info(
-        "user_login",
-        email=request.email,
-        sector=sector_info.sector,
-        tenant_id=sector_info.tenant_id,
-        confidence=sector_info.confidence
+        "customer_login",
+        customer_id=customer.customer_id,
+        sector=sector,
+        tenant_id=str(tenant.id)
     )
     
     return LoginResponse(
         token=token,
         user=user,
-        tenant_id=sector_info.tenant_id,
-        sector=sector_info.sector,
-        tenant_name=sector_info.tenant_name
+        tenant_id=str(tenant.id),
+        sector=sector,
+        tenant_name=tenant.name,
+        customer_id=customer.customer_id
     )
 

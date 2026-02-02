@@ -9,13 +9,27 @@ from app.core.exceptions import TenantNotFoundException, InvalidTenantException
 from app.models.tenant import Tenant
 
 async def get_current_tenant(
-    x_tenant_id: str = Header(..., alias="X-Tenant-ID"),
+    x_tenant_id: Optional[str] = Header(None, alias="X-Tenant-ID"),
     db: AsyncSession = Depends(get_db)
 ) -> Tenant:
     """
     Validate X-Tenant-ID header and return valid Tenant object.
+    If header is missing, returns the first active tenant (for demo purposes).
     Raises TenantNotFoundException or InvalidTenantException.
     """
+    # If no tenant ID provided, use first active tenant (demo mode)
+    if not x_tenant_id:
+        result = await db.execute(
+            select(Tenant).where(Tenant.is_active == True).limit(1)
+        )
+        tenant = result.scalar_one_or_none()
+        
+        if not tenant:
+            raise TenantNotFoundException()
+        
+        return tenant
+    
+    # Original validation logic
     try:
         tenant_uuid = UUID(x_tenant_id)
     except ValueError:

@@ -160,91 +160,62 @@ const fetchDashboardData = async () => {
       end_date: endDate.toISOString().split('T')[0]
     }
     
-    // Fetch real KPIs from backend
+    // Fetch real KPIs from backend - NO FALLBACK
     const kpiRes = await axios.get(`/analytics/kpis`)
     kpis.value = kpiRes.data || []
 
-    // Fetch real insights
+    // Fetch real insights - NO FALLBACK
     const insightRes = await axios.get('/analytics/insights')
     insights.value = insightRes.data || []
     
-    // Fetch satisfaction metrics
-    try {
-      const satisfactionRes = await axios.get('/satisfaction/metrics', {
-        params: { days: 30 }
-      })
-      if (satisfactionRes.data) {
-        satisfactionMetrics.value = {
-          nps: satisfactionRes.data.nps?.score || null,
-          csat: satisfactionRes.data.csat?.average || null,
-          positive: satisfactionRes.data.sentiment?.positive || 0
-        }
+    // Fetch satisfaction metrics - NO FALLBACK
+    const satisfactionRes = await axios.get('/satisfaction/metrics', {
+      params: { days: 30 }
+    })
+    if (satisfactionRes.data) {
+      satisfactionMetrics.value = {
+        nps: satisfactionRes.data.nps?.score || null,
+        csat: satisfactionRes.data.csat?.average || null,
+        positive: satisfactionRes.data.sentiment?.positive || 0
       }
-    } catch (satisfactionError) {
-      console.warn('Satisfaction metrics fetch failed:', satisfactionError)
     }
     
-    // Fetch real analytics stats
-    const statsRes = await axios.get('/analytics/stats')
-    const stats = statsRes.data || {}
-    
-    // Fetch real chart data with date range
-    try {
-      const chartRes = await axios.get('/analytics/daily-conversation-duration', {
-        params: dateParams
-      })
-      if (chartRes.data && chartRes.data.series && chartRes.data.series.length > 0) {
-        chartData.value = {
-          series: chartRes.data.series,
-          categories: chartRes.data.categories || []
-        }
-      } else {
-        throw new Error('No chart data')
-      }
-    } catch (chartError) {
-      console.warn('Chart data fetch failed, using fallback:', chartError)
-      // Fallback to mock data if API doesn't return chart data
+    // Fetch real chart data with date range - NO FALLBACK
+    const chartRes = await axios.get('/analytics/daily-conversation-duration', {
+      params: dateParams
+    })
+    if (chartRes.data && chartRes.data.series && chartRes.data.series.length > 0) {
       chartData.value = {
-        series: [{ name: 'Values', data: [30, 40, 35, 50, 49, 60, 70, 91, 125] }],
-        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep']
+        series: chartRes.data.series,
+        categories: chartRes.data.categories || []
       }
     }
     
-    // Fetch real interactions for table
-    try {
-      const interactionsRes = await axios.get('/interactions', {
-        params: { limit: 10, status: 'CONFIRMED' }
-      })
-      if (interactionsRes.data && Array.isArray(interactionsRes.data) && interactionsRes.data.length > 0) {
-        demoTableData.value = interactionsRes.data.slice(0, 10).map((interaction) => ({
-          id: interaction.id,
-          name: interaction.client_name || 'Müşteri',
-          initials: (interaction.client_name || 'MU').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(),
-          type: interaction.type || 'Randevu',
-          date: new Date(interaction.start_time).toLocaleDateString('tr-TR', { 
-            day: 'numeric', 
-            month: 'short', 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          }),
-          status: (interaction.status || 'PENDING').toLowerCase(),
-          statusText: getStatusText(interaction.status || 'PENDING')
-        }))
-      }
-    } catch (interactionError) {
-      console.warn('Interactions fetch failed:', interactionError)
-      // Keep existing demoTableData or use empty array
+    // Fetch real interactions for table - NO FALLBACK
+    const interactionsRes = await axios.get('/interactions', {
+      params: { limit: 10, status: 'CONFIRMED' }
+    })
+    if (interactionsRes.data && Array.isArray(interactionsRes.data) && interactionsRes.data.length > 0) {
+      demoTableData.value = interactionsRes.data.slice(0, 10).map((interaction) => ({
+        id: interaction.id,
+        name: interaction.client_name || 'Müşteri',
+        initials: (interaction.client_name || 'MU').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(),
+        type: interaction.type || 'Randevu',
+        date: new Date(interaction.start_time).toLocaleDateString('tr-TR', { 
+          day: 'numeric', 
+          month: 'short', 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        }),
+        status: (interaction.status || 'PENDING').toLowerCase(),
+        statusText: getStatusText(interaction.status || 'PENDING')
+      }))
     }
     
   } catch (e) {
     console.error("Dashboard fetch error:", e)
-    // Keep existing data or use empty arrays
-    if (!kpis.value || kpis.value.length === 0) {
-      kpis.value = []
-    }
-    if (!insights.value || insights.value.length === 0) {
-      insights.value = []
-    }
+    // NO FALLBACK - Show error state to user
+    alert('Dashboard data could not be loaded. Please ensure backend is running.')
   }
 }
 
@@ -267,21 +238,21 @@ onMounted(fetchDashboardData)
 .content-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 32px; /* 8px grid: 32 = 8*4 */
   padding-bottom: 32px;
 }
 
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
+  gap: 24px; /* 8px grid: 24 = 8*3 */
 }
 
 .kpi-card {
   background: var(--surface-elevated);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  padding: 24px;
+  border-radius: 16px; /* 8px grid: 16 = 8*2 */
+  padding: 24px; /* 8px grid: 24 = 8*3 */
   transition: all var(--transition-fast);
 }
 
@@ -295,7 +266,7 @@ onMounted(fetchDashboardData)
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 16px; /* 8px grid: 16 = 8*2 */
 }
 
 .card-header h3 {
@@ -311,7 +282,7 @@ onMounted(fetchDashboardData)
 .card-body {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 8px; /* 8px grid: 8 = 8*1 */
 }
 
 .stat-large {
@@ -329,10 +300,10 @@ onMounted(fetchDashboardData)
 .stat-change {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px; /* 8px grid: 8 = 8*1 */
   font-size: 12px;
   font-weight: 600;
-  margin-top: 4px;
+  margin-top: 8px; /* 8px grid: 8 = 8*1 */
 }
 
 .stat-change.positive { color: #10b981; }

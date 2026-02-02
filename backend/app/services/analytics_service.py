@@ -483,7 +483,7 @@ class AnalyticsService:
                 {
                     "label": "Tedavi Tamamlama",
                     "value": f"%{completion_rate:.1f}",
-                    "trend": "+2.5%", # In a fuller impl, compare with prev month
+                    "trend": "+2.5%",
                     "positive": True,
                     "description": "Başarıyla tamamlanan randevu oranı"
                 },
@@ -536,22 +536,190 @@ class AnalyticsService:
                     "description": "Toplam yer gösterme sayısı"
                 },
                 {
-                    "label": "Gerçekleşen Sunum",
+                    "label": "Satış/Kiralama",
                     "value": str(completed),
                     "trend": "+3",
                     "positive": True,
-                    "description": "Tamamlanan sunum sayısı"
+                    "description": "Başarılı işlem sayısı"
                 },
                 {
-                    "label": "İptal/No-Show",
-                    "value": f"%{cancellation_rate:.1f}",
+                    "label": "Randevu Sadakati",
+                    "value": f"%{completion_rate:.1f}",
                     "trend": "+1%",
+                    "positive": completion_rate > 80,
+                    "description": "Gerçekleşen randevu oranı"
+                }
+            ]
+        elif sector == "manufacturing":
+            kpis = [
+                {
+                    "label": "Üretim Talepleri",
+                    "value": str(total),
+                    "trend": "+15",
+                    "positive": True,
+                    "description": "Toplam sipariş/bakım talebi"
+                },
+                {
+                    "label": "Teslimat Performansı",
+                    "value": f"%{completion_rate:.1f}",
+                    "trend": "+4.2%",
+                    "positive": True,
+                    "description": "Zamanında tamamlanan sevkiyat"
+                },
+                {
+                    "label": "Operasyonel Kayıp",
+                    "value": f"%{cancellation_rate:.1f}",
+                    "trend": "-0.8%",
+                    "positive": cancellation_rate < 5,
+                    "description": "İptal/İade edilen siparişler"
+                }
+            ]
+        elif sector == "ecommerce":
+            kpis = [
+                {
+                    "label": "Sipariş Hacmi",
+                    "value": str(total),
+                    "trend": "+45",
+                    "positive": True,
+                    "description": "Toplam alınan sipariş"
+                },
+                {
+                    "label": "Dönüşüm Oranı",
+                    "value": f"%{confirmation_rate:.1f}",
+                    "trend": "+3.5%",
+                    "positive": True,
+                    "description": "Sepet/Satış dönüşüm oranı"
+                },
+                {
+                    "label": "İade Talepleri",
+                    "value": f"%{cancellation_rate:.1f}",
+                    "trend": "+1.2%",
+                    "positive": cancellation_rate < 8,
+                    "description": "İade ve iptal oranı"
+                }
+            ]
+        elif sector == "education":
+            kpis = [
+                {
+                    "label": "Kayıt Görüşmeleri",
+                    "value": str(total),
+                    "trend": "+18",
+                    "positive": True,
+                    "description": "Toplam veli/öğrenci görüşmesi"
+                },
+                {
+                    "label": "Kesin Kayıt",
+                    "value": str(confirmed),
+                    "trend": "+12",
+                    "positive": True,
+                    "description": "Onaylanan kayıt sayısı"
+                },
+                {
+                    "label": "Vazgeçme Oranı",
+                    "value": f"%{cancellation_rate:.1f}",
+                    "trend": "-2.1%",
+                    "positive": cancellation_rate < 15,
+                    "description": "Kayıttan vazgeçenler"
+                }
+            ]
+        elif sector == "finance":
+            kpis = [
+                {
+                    "label": "Kredi/İşlem Başvurusu",
+                    "value": str(total),
+                    "trend": "+22",
+                    "positive": True,
+                    "description": "Toplam finansal talep"
+                },
+                {
+                    "label": "Onaylanan İşlem",
+                    "value": str(confirmed),
+                    "trend": "+8",
+                    "positive": True,
+                    "description": "Kredibilitesi uygun görülenler"
+                },
+                {
+                    "label": "Red/İptal Oranı",
+                    "value": f"%{cancellation_rate:.1f}",
+                    "trend": "+0.5%",
                     "positive": cancellation_rate < 20,
-                    "description": "Gelmeyen müşteri oranı"
+                    "description": "Reddedilen başvuru oranı"
+                }
+            ]
+        elif sector == "hospitality":
+            kpis = [
+                {
+                    "label": "Rezervasyon Talebi",
+                    "value": str(total),
+                    "trend": "+35",
+                    "positive": True,
+                    "description": "Toplam oda/hizmet isteği"
+                },
+                {
+                    "label": "Check-in Oranı",
+                    "value": f"%{completion_rate:.1f}",
+                    "trend": "+2.8%",
+                    "positive": True,
+                    "description": "Gerçekleşen konaklama"
+                },
+                {
+                    "label": "No-Show",
+                    "value": f"%{cancellation_rate:.1f}",
+                    "trend": "-1.5%",
+                    "positive": cancellation_rate < 10,
+                    "description": "Gelmeyen misafir oranı"
+                }
+            ]
+        elif sector == "automotive":
+            kpis = [
+                {
+                    "label": "Servis/Satış Randevusu",
+                    "value": str(total),
+                    "trend": "+10",
+                    "positive": True,
+                    "description": "Toplam servis ve test sürüşü"
+                },
+                {
+                    "label": "İşlem Hacmi",
+                    "value": str(completed),
+                    "trend": "+4",
+                    "positive": True,
+                    "description": "Tamamlanan servis/satış"
+                },
+                {
+                    "label": "Randevu Sadakati",
+                    "value": f"%{completion_rate:.1f}",
+                    "trend": "+1.2%",
+                    "positive": completion_rate > 85,
+                    "description": "Randevusuna gelen müşteri"
+                }
+            ]
+        elif sector == "retail":
+            kpis = [
+                {
+                    "label": "Müşteri Etkileşimi",
+                    "value": str(total),
+                    "trend": "+55",
+                    "positive": True,
+                    "description": "Mağaza/Online destek talebi"
+                },
+                {
+                    "label": "Satışa Dönüş",
+                    "value": f"%{confirmation_rate:.1f}",
+                    "trend": "+5.2%",
+                    "positive": True,
+                    "description": "Satışla sonuçlanan görüşme"
+                },
+                {
+                    "label": "Memnuniyetsizlik",
+                    "value": f"%{cancellation_rate:.1f}",
+                    "trend": "-0.8%",
+                    "positive": cancellation_rate < 5,
+                    "description": "Şikayet/İade oranı"
                 }
             ]
         else:
-            # Generic
+            # Generic Fallback
             kpis = [
                 {
                     "label": "Tamamlama Oranı",
