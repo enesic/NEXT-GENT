@@ -53,7 +53,7 @@ class Settings(BaseSettings):
     REDIS_URL: Union[RedisDsn, str, None] = None
     
     # AI Configuration
-    OPENAI_API_KEY: [str] = "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"
+    OPENAI_API_KEY: str = "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"
     AI_MODEL: str = "gpt-4o-mini"  # Cost-effective default
     AI_ENABLED: bool = True
     

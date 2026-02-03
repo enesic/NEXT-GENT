@@ -8,7 +8,71 @@ from app.core.dependencies import get_current_tenant
 from app.models.tenant import Tenant
 from app.services.analytics_service import AnalyticsService
 
+from sqlalchemy import func, select, and_, or_
+from app.models.vapi_call import VAPICall, CallStatus
+from app.models.customer import Customer
+from app.models.interaction import Interaction
+
 router = APIRouter()
+
+
+@router.get("/pulse", response_model=Dict[str, Any])
+async def get_live_pulse(
+    *,
+    db: AsyncSession = Depends(get_db),
+    current_tenant: Tenant = Depends(get_current_tenant),
+):
+    """
+    Get live pulse data for the dashboard (Real-time).
+    """
+    # 1. Active Calls (real-time)
+    active_calls_query = select(func.count()).where(
+        VAPICall.tenant_id == current_tenant.id,
+        VAPICall.call_status == CallStatus.IN_PROGRESS
+    )
+    active_calls = (await db.execute(active_calls_query)).scalar() or 0
+    
+    # 2. Today's Clients (New or Interacted)
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    today_clients_query = select(func.count(func.distinct(Interaction.customer_id))).where(
+        Interaction.tenant_id == current_tenant.id,
+        Interaction.start_time >= today_start
+    )
+    today_clients = (await db.execute(today_clients_query)).scalar() or 0
+    
+    # 3. Pending Appointments
+    pending_apps_query = select(func.count()).where(
+        Interaction.tenant_id == current_tenant.id,
+        Interaction.status == 'PENDING',
+        Interaction.start_time >= datetime.utcnow()
+    )
+    pending_appointments = (await db.execute(pending_apps_query)).scalar() or 0
+    
+    # 4. Conversion Rate (Today) - Confirmed / Total
+    total_apps_query = select(func.count()).where(
+        Interaction.tenant_id == current_tenant.id,
+        Interaction.start_time >= today_start
+    )
+    confirmed_apps_query = select(func.count()).where(
+        Interaction.tenant_id == current_tenant.id,
+        Interaction.status == 'CONFIRMED',
+        Interaction.start_time >= today_start
+    )
+    
+    total_apps = (await db.execute(total_apps_query)).scalar() or 0
+    confirmed_apps = (await db.execute(confirmed_apps_query)).scalar() or 0
+    
+    conversion_rate = 0.0
+    if total_apps > 0:
+        conversion_rate = round((confirmed_apps / total_apps) * 100, 1)
+
+    return {
+        "activeCalls": active_calls,
+        "conversionRate": conversion_rate,
+        "todayClients": today_clients,
+        "pendingAppointments": pending_appointments
+    }
 
 
 

@@ -67,12 +67,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, inject } from 'vue'
 import { Activity, Phone, TrendingUp, Users, Clock, ChevronDown } from 'lucide-vue-next'
 import { useSectorStore } from '../stores/sector'
 import gsap from 'gsap'
 
 const sectorStore = useSectorStore()
+const axios = inject('axios')
 
 // State
 const isVisible = ref(true)
@@ -108,29 +109,32 @@ const animateMetric = (target, value) => {
   })
 }
 
-const updateMetrics = () => {
-  // Simulate real-time data changes
-  metrics.value.activeCalls = Math.floor(Math.random() * 5) + 10
-  metrics.value.conversionRate = (Math.random() * 10 + 65).toFixed(1)
-  metrics.value.todayClients = Math.floor(Math.random() * 10) + 42
-  metrics.value.pendingAppointments = Math.floor(Math.random() * 5) + 5
-
-  // Animate to new values
-  animateMetric(animatedActiveCalls, metrics.value.activeCalls)
-  animateMetric(animatedConversionRate, metrics.value.conversionRate)
-  animateMetric(animatedTodayClients, metrics.value.todayClients)
-  animateMetric(animatedPendingAppointments, metrics.value.pendingAppointments)
+const updateMetrics = async () => {
+  try {
+    const response = await axios.get('/analytics/pulse')
+    if (response.data) {
+      metrics.value = response.data
+      
+      // Animate to new values
+      animateMetric(animatedActiveCalls, metrics.value.activeCalls)
+      animateMetric(animatedConversionRate, metrics.value.conversionRate)
+      animateMetric(animatedTodayClients, metrics.value.todayClients)
+      animateMetric(animatedPendingAppointments, metrics.value.pendingAppointments)
+    }
+  } catch (error) {
+    console.error('Pulse data fetch failed:', error)
+  }
 }
 
 // Lifecycle
 let updateInterval = null
 
 onMounted(() => {
-  // Initial animation
+  // Initial fetch
   updateMetrics()
   
-  // Update metrics every 5 seconds
-  updateInterval = setInterval(updateMetrics, 5000)
+  // Update metrics every 10 seconds (optimized for real-time feel vs load)
+  updateInterval = setInterval(updateMetrics, 10000)
 })
 
 onUnmounted(() => {
@@ -139,7 +143,7 @@ onUnmounted(() => {
   }
 })
 
-// Watch for sector changes and re-animate
+// Watch for sector changes and refresh
 watch(() => sectorStore.currentSector, () => {
   updateMetrics()
 })

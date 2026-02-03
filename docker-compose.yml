@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # ==========================================
   # DATABASE (PostgreSQL)
@@ -43,7 +41,7 @@ services:
     command: redis-server --appendonly yes
 
   # ==========================================
-  # BACKEND (FastAPI - Port 8000)
+  # BACKEND (FastAPI - Port 8000 inside, 8001 outside)
   # ==========================================
   backend:
     build:
@@ -52,7 +50,7 @@ services:
     volumes:
       - ./backend:/app # Hot reload for demo adjustments
     ports:
-      - "8000:8000"
+      - "8001:8000"
     environment:
       - PROJECT_NAME=NextGent
       - SECRET_KEY=your-secret-key-change-in-production

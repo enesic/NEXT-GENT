@@ -22,10 +22,14 @@
     </div>
 
     <div class="topbar-right">
-      <button class="icon-button">
-        <Bell :size="20" :stroke-width="2" />
-        <span class="notification-badge"></span>
-      </button>
+      <div class="notification-container">
+        <button class="icon-button" @click="toggleNotifications">
+          <Bell :size="20" :stroke-width="2" />
+          <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
+        </button>
+        <!-- Notification Panel -->
+        <NotificationPanel :isOpen="isNotificationPanelOpen" @close="closeNotifications" />
+      </div>
       <button class="icon-button">
         <Settings :size="20" :stroke-width="2" />
       </button>
@@ -34,8 +38,12 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { Search, Bell, Settings } from 'lucide-vue-next'
 import RoleSwitcher from './RoleSwitcher.vue'
+import NotificationPanel from './NotificationPanel.vue'
+import { useNotificationStore } from '../stores/notification'
 
 defineProps({
   pageTitle: {
@@ -53,6 +61,19 @@ defineProps({
 })
 
 defineEmits(['update:searchQuery', 'toggleRole'])
+
+// Notification panel state
+const isNotificationPanelOpen = ref(false)
+const notificationStore = useNotificationStore()
+const { unreadCount } = storeToRefs(notificationStore)
+
+const toggleNotifications = () => {
+  isNotificationPanelOpen.value = !isNotificationPanelOpen.value
+}
+
+const closeNotifications = () => {
+  isNotificationPanelOpen.value = false
+}
 </script>
 
 <style scoped>
@@ -148,6 +169,10 @@ defineEmits(['update:searchQuery', 'toggleRole'])
   gap: 12px;
 }
 
+.notification-container {
+  position: relative;
+}
+
 .icon-button {
   width: 40px;
   height: 40px;
@@ -174,11 +199,18 @@ defineEmits(['update:searchQuery', 'toggleRole'])
   position: absolute;
   top: 8px;
   right: 8px;
-  width: 8px;
-  height: 8px;
+  min-width: 18px;
+  height: 18px;
   background: #ef4444;
-  border-radius: 50%;
+  border-radius: 9px;
   border: 2px solid var(--obsidian-black);
   box-shadow: 0 0 12px #ef4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  padding: 0 4px;
 }
 </style>

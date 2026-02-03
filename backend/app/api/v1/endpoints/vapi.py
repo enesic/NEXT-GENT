@@ -67,9 +67,13 @@ async def vapi_webhook(
     event_type = payload.type
     
     if event_type == "call.ended":
-        await process_call_ended(payload, db)
+        background_tasks.add_task(process_call_ended, payload, db)
     elif event_type == "function-call":
         # Handle live function calls during call (e.g. check_appointment)
+        # Note: Function calls might need synchronous response if Vapi waits for it.
+        # But for heavy processing, we can offload.
+        # However, Vapi expects a result from function calls usually.
+        # Let's keep distinct logic: call.ended is fire-and-forget. function-call is sync.
         return await process_function_call(payload, db)
         
     return {"status": "received"}

@@ -8,7 +8,10 @@ import VueApexCharts from 'vue3-apexcharts'
 import axios from 'axios'
 
 // Configure default base URL
-axios.defaults.baseURL = 'http://localhost:8000/api/v1'
+// Use relative URL for production (nginx proxy) or localhost for development
+axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1'
+console.log('🚀 NextGent System v3.0 - Loaded')
+console.log('✅ Dashboard Alerts Disabled')
 
 const app = createApp(App)
 const pinia = createPinia()

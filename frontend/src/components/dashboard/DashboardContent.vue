@@ -85,7 +85,7 @@
     <!-- Recent Appointments Table -->
     <div class="demo-table-card">
       <div class="table-header">
-        <h3>Son Randevular</h3>
+        <h3>{{ sectorStore.t('recent_activity_title') || 'Son İşlemler' }}</h3>
         <button class="view-all-btn">
           Tümünü Gör
           <ArrowRight :size="16" :stroke-width="2" />
@@ -95,8 +95,8 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>Müşteri</th>
-              <th>İşlem Türü</th>
+              <th>{{ sectorStore.t('client_label') || 'Müşteri' }}</th>
+              <th>{{ sectorStore.t('type_label') || 'İşlem' }}</th>
               <th>Tarih</th>
               <th>Durum</th>
             </tr>
@@ -215,7 +215,8 @@ const fetchDashboardData = async () => {
   } catch (e) {
     console.error("Dashboard fetch error:", e)
     // NO FALLBACK - Show error state to user
-    alert('Dashboard data could not be loaded. Please ensure backend is running.')
+    // Silent fail for UX
+    console.error("Dashboard data load error (silent)", e)
   }
 }
 

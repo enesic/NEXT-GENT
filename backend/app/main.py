@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
     Handles startup and shutdown events to prevent memory leaks.
     """
     # Startup
-    print("🚀 Starting up application...")
+    print("🚀 Starting up application (Expert Fix)...")
     print("✅ Redis connection pool initialized")
     print("✅ HTTP client pool initialized")
     
@@ -96,7 +96,7 @@ app.add_middleware(RequestIDMiddleware)
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS] + ["http://localhost:5173", "http://127.0.0.1:5173"],
+        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS] + ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost", "http://127.0.0.1", "http://localhost:80"],
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=[

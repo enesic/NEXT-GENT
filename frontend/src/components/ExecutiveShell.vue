@@ -66,12 +66,25 @@
         <div class="topbar-right">
           <!-- Sector is now auto-detected from login, no manual switching -->
           <div class="topbar-actions">
-            <button class="action-btn">
+            <button class="action-btn" @click="handleNotifications">
               <Bell :size="18" :stroke-width="2" />
             </button>
-            <button class="action-btn">
-              <Search :size="18" :stroke-width="2" />
-            </button>
+            <!-- Search Bar -->
+            <div class="search-container" :class="{ active: isSearchActive }">
+              <input 
+                v-if="isSearchActive"
+                ref="searchInput"
+                v-model="searchQuery"
+                @keyup.enter="handleSearch"
+                @blur="handleSearchBlur"
+                type="text" 
+                placeholder="Müşteri veya İşlem Ara..." 
+                class="search-input"
+              />
+              <button class="action-btn" @click="toggleSearch">
+                <Search :size="18" :stroke-width="2" />
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -100,17 +113,24 @@ import {
   LayoutDashboard, TrendingUp, FolderKanban, Users, 
   FileText, Calendar, Settings, MoreVertical, Bell, Search,
   Briefcase, Target, ArrowRight, CalendarCheck, User, UserCheck,
-  Phone, Heart
+  Phone, Heart, ShoppingBag, Factory, GraduationCap, Car,
+  Landmark, Coffee, ShoppingCart
 } from 'lucide-vue-next'
 import { useSectorStore } from '../stores/sector'
+import { useNotificationStore } from '../stores/notification'
 import PulseCenter from './PulseCenter.vue'
 import DashboardContent from './dashboard/DashboardContent.vue'
 import CallCenterDashboard from './CallCenterDashboard.vue'
 import SatisfactionDashboard from './SatisfactionDashboard.vue'
 import PlaceholderView from './dashboard/PlaceholderView.vue'
+import CalendarView from '../views/CalendarView.vue'
+import AnalyticsView from '../views/AnalyticsView.vue'
+import DocumentsView from '../views/DocumentsView.vue'
+import SettingsView from '../views/SettingsView.vue'
 import gsap from 'gsap'
 
 const sectorStore = useSectorStore()
+const notificationStore = useNotificationStore()
 const axios = inject('axios')
 
 // State
@@ -121,18 +141,33 @@ const currentSectorIcon = computed(() => {
   const iconMap = {
     medical: Stethoscope,
     legal: Scale,
-    real_estate: Building2
+    real_estate: Building2,
+    retail: ShoppingBag,
+    manufacturing: Factory,
+    education: GraduationCap,
+    automotive: Car,
+    finance: Landmark,
+    hospitality: Coffee,
+    ecommerce: ShoppingCart
   }
-  return iconMap[sectorStore.currentSector]
+  return iconMap[sectorStore.currentSector] || Activity
 })
 
+// Current logo icon
 const currentLogoIcon = computed(() => {
   const iconMap = {
     medical: Activity,
     legal: Scale,
-    real_estate: Home
+    real_estate: Home,
+    retail: ShoppingBag,
+    manufacturing: Factory,
+    education: GraduationCap,
+    automotive: Car,
+    finance: Landmark,
+    hospitality: Coffee,
+    ecommerce: ShoppingCart
   }
-  return iconMap[sectorStore.currentSector]
+  return iconMap[sectorStore.currentSector] || Activity
 })
 
 // Navigation items
@@ -145,12 +180,29 @@ const mainNavigation = computed(() => {
   ]
   
   // Add sector-specific items
-  if (sectorStore.currentSector === 'medical') {
-    baseNav.push({ id: 'appointments', label: 'Randevular', icon: CalendarCheck })
-  } else if (sectorStore.currentSector === 'legal') {
-    baseNav.push({ id: 'cases', label: 'Dosyalar', icon: Briefcase })
-  } else if (sectorStore.currentSector === 'real_estate') {
-    baseNav.push({ id: 'properties', label: 'Emlaklar', icon: Home })
+  switch (sectorStore.currentSector) {
+    case 'medical':
+      baseNav.push({ id: 'appointments', label: 'Randevular', icon: CalendarCheck })
+      break;
+    case 'legal':
+      baseNav.push({ id: 'cases', label: 'Dosyalar', icon: Briefcase })
+      break;
+    case 'real_estate':
+      baseNav.push({ id: 'properties', label: 'Emlaklar', icon: Home })
+      break;
+    case 'retail':
+    case 'ecommerce':
+      baseNav.push({ id: 'orders', label: 'Siparişler', icon: ShoppingBag })
+      break;
+    case 'manufacturing':
+      baseNav.push({ id: 'production', label: 'Üretim', icon: Factory })
+      break;
+    case 'education':
+      baseNav.push({ id: 'classes', label: 'Sınıflar', icon: GraduationCap })
+      break;
+    case 'automotive':
+      baseNav.push({ id: 'repairs', label: 'Servis', icon: Car })
+      break;
   }
   
   return baseNav
@@ -170,17 +222,29 @@ const currentPageTitle = computed(() => {
 
 // Dynamic Component Resolution
 const activeComponent = computed(() => {
+    // Core Modules
     if (activeNav.value === 'dashboard') return DashboardContent
     if (activeNav.value === 'callcenter') return CallCenterDashboard
     if (activeNav.value === 'satisfaction') return SatisfactionDashboard
+    if (activeNav.value === 'analytics') return AnalyticsView
+    
+    // Workspace Tools
+    if (activeNav.value === 'documents') return DocumentsView
+    if (activeNav.value === 'calendar') return CalendarView
+    if (activeNav.value === 'settings') return SettingsView
+
+    // Sector Specific Shortcuts (map to relevant view)
+    if (['appointments', 'classes'].includes(activeNav.value)) return CalendarView
+    if (['cases', 'orders', 'production', 'repairs', 'properties'].includes(activeNav.value)) return DashboardContent
+
     return PlaceholderView
 })
 
 // Props passed to the active component
 const activeComponentProps = computed(() => {
-    if (activeNav.value === 'dashboard') return {}
+    if (['dashboard', 'analytics', 'documents', 'calendar', 'settings'].includes(activeNav.value)) return {}
     
-    // For placeholders, pass title and icon
+    // For placeholders or specific sector dashboards using DashboardContent
     const item = [...mainNavigation.value, ...workspaceNavigation.value].find(i => i.id === activeNav.value)
     return {
         title: item ? item.label : 'Modül',
@@ -196,6 +260,57 @@ const sectorBadge = ref(null)
 // Methods
 const handleNavigate = (navId) => {
   activeNav.value = navId
+}
+
+// Search Logic
+const isSearchActive = ref(false)
+const searchQuery = ref('')
+const searchInput = ref(null)
+
+const toggleSearch = () => {
+  isSearchActive.value = !isSearchActive.value
+  if (isSearchActive.value) {
+    nextTick(() => {
+      searchInput.value.focus()
+    })
+  }
+}
+
+const handleNotifications = () => {
+  // Toggle notification panel (implementation pending sidebar)
+  notificationStore.info('Bildirim paneli sağda açıldı (Simülasyon)', 'Bildirimler')
+}
+
+const handleSearch = () => {
+  const query = searchQuery.value.toLowerCase()
+  if (!query) return
+  
+  // Smart Navigation
+  if (query.includes('randevu') || query.includes('takvim') || query.includes('calendar')) {
+      activeNav.value = 'calendar'
+      notificationStore.success('Takvime yönlendirildi', 'Arama')
+  } else if (query.includes('belge') || query.includes('rapor') || query.includes('dosya')) {
+      activeNav.value = 'documents'
+      notificationStore.success('Belgelere yönlendirildi', 'Arama')
+  } else if (query.includes('analiz') || query.includes('grafik') || query.includes('kpi')) {
+      activeNav.value = 'analytics'
+      notificationStore.success('Analitik sayfasına yönlendirildi', 'Arama')
+  } else if (query.includes('ayar') || query.includes('profil')) {
+      activeNav.value = 'settings'
+      notificationStore.success('Ayarlara yönlendirildi', 'Arama')
+  } else {
+      notificationStore.info(`"${searchQuery.value}" için sonuç bulunamadı.`, 'Arama')
+  }
+  
+  isSearchActive.value = false
+  searchQuery.value = ''
+}
+
+const handleSearchBlur = () => {
+  // Optional: Auto-close on blur if empty
+  if (!searchQuery.value) {
+    isSearchActive.value = false
+  }
 }
 
 // Sector is auto-set from login, no manual switching needed
@@ -485,6 +600,40 @@ const handleNavigate = (navId) => {
   background: var(--surface-hover);
   border-color: var(--border-hover);
   color: var(--text-primary);
+}
+
+/* Search Bar Expansion */
+.search-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.search-input {
+  width: 0;
+  opacity: 0;
+  padding: 0;
+  border: none;
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 40px;
+  font-size: 14px;
+}
+
+.search-container.active .search-input {
+  width: 240px;
+  opacity: 1;
+  padding: 0 12px;
+  border: 1px solid var(--border-subtle);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--current-accent);
+  box-shadow: 0 0 0 2px var(--current-glow);
 }
 
 /* Content Area */

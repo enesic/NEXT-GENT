@@ -75,6 +75,7 @@
 import { ref, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { useNotificationStore } from '../stores/notification'
 import { useSectorStore } from '../stores/sector'
 import { Activity, CreditCard, Lock, Check } from 'lucide-vue-next'
 import gsap from 'gsap'
@@ -82,6 +83,7 @@ import { inject } from 'vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const notificationStore = useNotificationStore()
 const sectorStore = useSectorStore()
 const axios = inject('axios')
 
@@ -132,8 +134,8 @@ const handleLogin = async () => {
           gsap.set(loginCard.value, { x: 0 })
         }
       })
-      // Show error message
-      alert('Geçersiz Müşteri ID veya PIN. Lütfen tekrar deneyin.')
+      // Show error notification
+      notificationStore.error('Geçersiz Müşteri ID veya PIN. Lütfen tekrar deneyin.', 'Giriş Başarısız')
       return
     }
     
@@ -154,7 +156,7 @@ const handleLogin = async () => {
       errorMessage += error.message
     }
     
-    alert(errorMessage)
+    notificationStore.error(errorMessage, 'Giriş Hatası')
   }
 }
 
@@ -183,7 +185,7 @@ const proceedToDashboard = () => {
       // Wait a bit before navigating so user sees the success message
       setTimeout(() => {
         router.push('/dashboard')
-      }, 2000)
+      }, 800)
     }
   })
 }

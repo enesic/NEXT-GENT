@@ -1,7 +1,7 @@
 """
 AI Helpdesk endpoint for customer support.
 """
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,123 +24,73 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     response: str
-    suggestions: Optional[list[str]] = None
+    suggestions: Optional[List[str]] = None
 
 
 @router.post("/chat", response_model=ChatResponse)
 async def chat_with_ai(
     request: ChatRequest,
-    background_tasks: BackgroundTasks,
-    db: AsyncSession = Depends(get_db),
-    current_tenant: Optional[Tenant] = Depends(get_current_tenant)
+    background_tasks: BackgroundTasks
 ):
     """
-    AI-powered helpdesk chat endpoint with automatic action execution.
-    Processes customer questions, detects intent, and automatically performs actions.
+    AI-powered helpdesk chat endpoint.
+    Public endpoint - No authentication required.
     """
     try:
-        from app.services.ai_service import AIService
-        from app.services.function_calling_service import FunctionCallingService
+        logger.info(f"Helpdesk Chat Request: {request.message[:50]}...")
         
-        # Step 1: Detect intent using AI
-        intent_result = await AIService.detect_intent(request.message)
-        detected_intent = intent_result.get("intent")
-        entities = intent_result.get("entities", {})
-        confidence = intent_result.get("confidence", 0.5)
+        # Import here to avoid circular dependencies
+        from app.services.ml_service import get_ml_service
         
-        # Step 2: If high confidence and actionable intent, execute function
-        ai_response = None
-        action_taken = False
+        # Step 1: Use ML service
+        try:
+            ml_service = get_ml_service()
+            ml_result = ml_service.process_message(request.message)
+        except Exception as ml_error:
+            logger.error(f"ML Service Failed: {str(ml_error)}")
+            # Fallback if ML service fails completely
+            return ChatResponse(
+                response="Üzgünüm, şu anda sistemde bir yoğunluk var. Lütfen support@nextgent.com ile iletişime geçin.",
+                suggestions=["Teknik Destek", "İletişim"]
+            )
+            
+        intent = ml_result.get("intent")
+        confidence = ml_result.get("confidence", 0.0)
+        ai_response = ml_result.get("response")
+        suggestions = ml_result.get("suggestions", [])
         
-        if confidence > 0.8 and detected_intent in ["appointment_create", "appointment_cancel", "customer_info"]:
-            try:
-                # Prepare function parameters
-                if detected_intent == "appointment_create":
-                    function_result = await FunctionCallingService.execute_function(
-                        function_name="create_appointment",
-                        parameters={
-                            "title": entities.get("reason", "Appointment"),
-                            "date": entities.get("date"),
-                            "time": entities.get("time"),
-                            "customer_name": entities.get("customer_name", "Customer"),
-                            "customer_phone": entities.get("customer_phone", ""),
-                            "customer_email": entities.get("customer_email", ""),
-                            "type": "appointment"
-                        },
-                        context={
-                            "db": db,
-                            "tenant_id": current_tenant.id if current_tenant else (request.context.get("tenant_id") if request.context else None)
-                        }
-                    )
-                    
-                    if function_result.get("success"):
-                        ai_response = function_result.get("result", {}).get("message", "Randevunuz oluşturuldu.")
-                        action_taken = True
-                
-                elif detected_intent == "appointment_cancel":
-                    function_result = await FunctionCallingService.execute_function(
-                        function_name="cancel_appointment",
-                        parameters={
-                            "appointment_id": entities.get("appointment_id"),
-                            "reason": entities.get("reason", "Customer request")
-                        },
-                        context={
-                            "db": db,
-                            "tenant_id": current_tenant.id if current_tenant else (request.context.get("tenant_id") if request.context else None)
-                        }
-                    )
-                    
-                    if function_result.get("success"):
-                        ai_response = function_result.get("result", {}).get("message", "Randevunuz iptal edildi.")
-                        action_taken = True
-                
-                elif detected_intent == "customer_info":
-                    function_result = await FunctionCallingService.execute_function(
-                        function_name="get_customer_info",
-                        parameters={
-                            "phone": entities.get("customer_phone"),
-                            "email": entities.get("customer_email")
-                        },
-                        context={
-                            "db": db,
-                            "tenant_id": current_tenant.id if current_tenant else (request.context.get("tenant_id") if request.context else None)
-                        }
-                    )
-                    
-                    if function_result.get("success") and function_result.get("result", {}).get("found"):
-                        customer = function_result.get("result", {}).get("customer", {})
-                        ai_response = f"Müşteri bilgileri: {customer.get('name')}, Segment: {customer.get('segment')}, Durum: {customer.get('status')}"
-                        action_taken = True
-                
-            except Exception as e:
-                logger.error("function_execution_error", error=str(e), intent=detected_intent)
-                # Continue to generate response even if function fails
+        logger.info(f"Response Generated: Intent={intent}, Confidence={confidence}")
         
-        # Step 3: If no action taken, generate AI response
-        if not ai_response:
-            ai_response = await generate_ai_response(request.message, request.context)
-        
-        # Step 4: Send notification to admin in background
-        background_tasks.add_task(
-            notify_admin,
-            message=request.message,
-            response=ai_response,
-            context=request.context,
-            intent=detected_intent,
-            action_taken=action_taken
-        )
+        # Step 2: Send notification (Wrapped in try/except to prevent 500)
+        try:
+            # Uncomment when stable
+            # background_tasks.add_task(
+            #     notify_admin,
+            #     message=request.message,
+            #     response=ai_response,
+            #     context=request.context,
+            #     intent=intent,
+            #     action_taken=False
+            # )
+            pass
+        except Exception as bg_error:
+            logger.error(f"Background Task Failed: {str(bg_error)}")
         
         return ChatResponse(
             response=ai_response,
-            suggestions=get_suggestions(request.message)
+            suggestions=suggestions
         )
         
     except Exception as e:
-        logger.error("helpdesk_chat_error", error=str(e))
+        logger.error("helpdesk_chat_critical_error", error=str(e))
+        # Print to stdout/stderr to be sure we see it in console
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="AI yardımcı şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin."
+            detail=f"Sunucu hatası: {str(e)}"
         )
+
 
 
 async def generate_ai_response(message: str, context: Optional[Dict[str, Any]]) -> str:
@@ -154,10 +104,16 @@ async def generate_ai_response(message: str, context: Optional[Dict[str, Any]]) 
         ai_response = await AIService.generate_response(
             message=message,
             context=context,
-            system_prompt="""You are a helpful AI assistant for NextGent customer support.
-Be professional, friendly, and helpful. Answer questions clearly and concisely.
-If you can help with appointments, customer info, or technical support, do so.
-If you don't know something, politely say so and offer to connect them with a human representative."""
+            system_prompt="""You are the official AI Assistant for NextGent (Next Gen Technology).
+Your goal is to provide **definitive, clear, and professional** answers in Turkish.
+Company Info:
+- **NextGent** is an AI-powered Operation System integrating Phone, WhatsApp, CRM, and Automation into one 24/7 platform.
+- **Key Features**: Auto-scheduling, Real-time Analytics, KVKK/GDPR Compliance, Multi-tenant SaaS.
+- **Sectors**: Health (Clinics), Legal (Law Firms), Real Estate.
+- **Pricing**: Starter (2.999 TL/mo), Pro (5.999 TL/mo), Enterprise (Custom).
+- **Contact**: support@nextgent.com.
+- **Philosophy**: "Future Management with AI".
+If you are unsure, offer to connect to a human agent immediately. Do not guess."""
         )
         return ai_response
     except Exception as e:
@@ -184,9 +140,9 @@ Hangi konuda yardıma ihtiyacınız var?"""
 
 NextGent, işletmenizin ihtiyaçlarına göre özelleştirilmiş fiyatlandırma sunar:
 
-• **Starter Plan**: Aylık $99 - Temel özellikler
-• **Professional Plan**: Aylık $299 - Gelişmiş analitik
-• **Enterprise Plan**: Özel fiyatlandırma - Tam özelleştirme
+• **Başlangıç Paketi**: 2.999 TL/ay
+• **Profesyonel Paket**: 5.999 TL/ay
+• **Enterprise**: Size özel teklif
 
 Detaylı bilgi için lütfen bizimle iletişime geçin: sales@nextgent.com
 

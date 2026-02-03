@@ -95,7 +95,15 @@ import { MessageCircle, Sparkles, X, User, Send } from 'lucide-vue-next'
 import { inject } from 'vue'
 import { useWebSocket } from '../composables/useWebSocket'
 
-const axios = inject('axios')
+import axios from 'axios'
+
+// Create clean axios instance for public helpdesk endpoint
+const helpdeskApi = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+})
 
 // State
 const isOpen = ref(false)
@@ -178,7 +186,7 @@ const sendMessage = async () => {
 
   try {
     // Send to backend AI helpdesk endpoint
-    const response = await axios.post('/helpdesk/chat', {
+    const response = await helpdeskApi.post('/helpdesk/chat', {
       message: currentMessage,
       context: {
         page: 'landing',

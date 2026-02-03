@@ -12,7 +12,7 @@ RUN npm run build
 # Stage 2: Production
 FROM nginx:stable-alpine as production-stage
 COPY --from=build-stage /app/dist /usr/share/nginx/html
-# Custom Nginx config can be added here if needed
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Custom Nginx config for Vue Router history mode
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
