@@ -103,12 +103,15 @@ async def create_user(
     """
     try:
         # Check if user already exists
+        # Generate phone hash for lookup
+        phone_hash = Customer.generate_phone_hash(user_data.phone)
+        
         result = await db.execute(
             select(Customer).where(
                 or_(
                     Customer.customer_id == user_data.customer_id,
                     Customer.email == user_data.email,
-                    Customer.phone == user_data.phone
+                    Customer.phone_hash == phone_hash
                 )
             )
         )
@@ -136,11 +139,13 @@ async def create_user(
             first_name=user_data.first_name,
             last_name=user_data.last_name,
             email=user_data.email,
-            phone=user_data.phone,
             segment=user_data.segment,
             status=CustomerStatus.ACTIVE,
-            pin_hash=pin_hash
+            pin_hash=pin_hash,
+            phone_hash=phone_hash  # Set hash directly
         )
+        # Set phone with encryption
+        new_user.set_phone(user_data.phone)
         
         db.add(new_user)
         await db.flush()
@@ -282,6 +287,12 @@ async def update_user(
         
         # Update fields
         update_fields = update_data.model_dump(exclude_unset=True)
+        
+        # Handle phone update separately for encryption
+        if 'phone' in update_fields:
+            phone_value = update_fields.pop('phone')
+            user.set_phone(phone_value)
+        
         for field, value in update_fields.items():
             setattr(user, field, value)
         
@@ -499,7 +510,7 @@ async def anonymize_user(
         user.first_name = "ANONYMIZED"
         user.last_name = "ANONYMIZED"
         user.email = f"anonymized_{user.id}@deleted.local"
-        user.phone = "ANONYMIZED"
+        user.set_phone("0000000000")  # Anonymized phone with proper encryption
         user.status = CustomerStatus.INACTIVE
         
         # Create audit log

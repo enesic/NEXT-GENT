@@ -16,7 +16,8 @@ from app.api.v1.endpoints import (
     auth_endpoints,
     user_management_endpoints,
     flow_engine,
-    portal_endpoints
+    portal_endpoints,
+    documents
 )
 
 api_router = APIRouter()
@@ -39,3 +40,4 @@ api_router.include_router(auth_endpoints.router, prefix="/auth/admin", tags=["Ad
 api_router.include_router(user_management_endpoints.router, prefix="/admin", tags=["User Management"])
 api_router.include_router(flow_engine.router, prefix="/flow", tags=["Flow Engine"])
 api_router.include_router(portal_endpoints.router, prefix="/portal", tags=["Portal"])
+api_router.include_router(documents.router, prefix="/documents", tags=["Documents"])

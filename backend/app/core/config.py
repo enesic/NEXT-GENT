@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
     
+    # Encryption for PII (KVKK/GDPR Compliance)
+    ENCRYPTION_KEY: str  # Fernet key for encrypting sensitive data
+    
     ENVIRONMENT: str = "local"
     DEBUG: bool = True
     

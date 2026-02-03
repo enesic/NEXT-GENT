@@ -4,6 +4,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 import enum
 
 from app.models.base import Base, UUIDMixin, TimestampMixin, TenantMixin
+from app.core.encrypted_types import EncryptedString
+from app.core.encryption import encryption_service
 
 
 class CustomerSegment(str, enum.Enum):
@@ -26,11 +28,15 @@ class CustomerStatus(str, enum.Enum):
 class Customer(Base, UUIDMixin, TimestampMixin, TenantMixin):
     __tablename__ = "customers"
 
-    # Temel Bilgiler
+    # Temel Bilgiler (PII - Encrypted)
     first_name: Mapped[str] = mapped_column(String(100), nullable=False)
     last_name: Mapped[str] = mapped_column(String(100), nullable=False)
     email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
-    phone: Mapped[str] = mapped_column(String(50), nullable=False, index=True, unique=True)
+    
+    # Phone - ENCRYPTED for PII protection
+    phone: Mapped[str] = mapped_column(EncryptedString(50), nullable=False)
+    # Phone hash for searchable lookup (cannot be reversed to get actual phone)
+    phone_hash: Mapped[str] = mapped_column(String(64), nullable=False, index=True, unique=True)
     
     # ID-Based Authentication (NEW)
     customer_id: Mapped[str] = mapped_column(String(20), nullable=True, unique=True, index=True)
@@ -77,3 +83,16 @@ class Customer(Base, UUIDMixin, TimestampMixin, TenantMixin):
     # Referans
     referral_code: Mapped[str] = mapped_column(String(50), nullable=True, unique=True)
     referred_by: Mapped[str] = mapped_column(String(50), nullable=True)  # Referral code of referrer
+
+    def set_phone(self, phone: str):
+        """
+        Set phone number with automatic hash generation for lookup.
+        Use this method instead of directly setting phone attribute.
+        """
+        self.phone = phone
+        self.phone_hash = encryption_service.hash_phone_for_lookup(phone)
+    
+    @staticmethod
+    def generate_phone_hash(phone: str) -> str:
+        """Generate hash for phone lookup without setting the phone."""
+        return encryption_service.hash_phone_for_lookup(phone)

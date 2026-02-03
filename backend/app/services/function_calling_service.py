@@ -250,15 +250,68 @@ async def _get_customer_info(params: Dict[str, Any], context: Optional[Dict[str,
     }
 
 
+
 async def _send_satisfaction_survey(params: Dict[str, Any], context: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     """Send satisfaction survey function."""
-    # This will be implemented with satisfaction service
-    customer_id = params.get("customer_id")
+    if not context:
+        raise ValueError("Context is required")
     
-    # TODO: Implement survey sending
+    db: AsyncSession = context.get("db")
+    tenant_id: UUID = context.get("tenant_id")
+    
+    if not db or not tenant_id:
+        raise ValueError("db and tenant_id are required in context")
+    
+    customer_id = params.get("customer_id")
+    interaction_id = params.get("interaction_id")
+    
+    # Get customer info
+    from sqlalchemy import select
+    from app.models.customer import Customer
+    from app.models.satisfaction import Satisfaction, SatisfactionType, SatisfactionChannel
+    
+    query = select(Customer).where(
+        Customer.tenant_id == tenant_id,
+        Customer.id == UUID(customer_id)
+    )
+    result = await db.execute(query)
+    customer = result.scalar_one_or_none()
+    
+    if not customer:
+        raise ValueError("Customer not found")
+    
+    # Create satisfaction record (pending response)
+    satisfaction = Satisfaction(
+        tenant_id=tenant_id,
+        customer_id=customer_id,
+        interaction_id=interaction_id,
+        survey_type=SatisfactionType.CSAT,
+        channel=SatisfactionChannel.SMS,  # Default to SMS
+        survey_sent_at=datetime.utcnow()
+    )
+    
+    db.add(satisfaction)
+    await db.commit()
+    await db.refresh(satisfaction)
+    
+    # Generate survey link
+    survey_link = f"https://survey.nextgent.com/{satisfaction.id}"
+    
+    # TODO: Integrate with SMS/Email service to actually send the survey
+    # For now, we just log it
+    logger.info(
+        "survey_sent",
+        customer_id=customer_id,
+        survey_id=str(satisfaction.id),
+        phone=customer.phone,
+        link=survey_link
+    )
+    
     return {
-        "message": "Memnuniyet anketi gönderildi.",
-        "customer_id": customer_id
+        "message": f"Memnuniyet anketi {customer.first_name} {customer.last_name} adlı müşteriye gönderildi.",
+        "customer_id": customer_id,
+        "survey_id": str(satisfaction.id),
+        "survey_link": survey_link
     }
 
 

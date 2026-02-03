@@ -175,12 +175,14 @@ async def create_customers(db, tenants):
                 total_spent = random.uniform(100, 2000)
                 total_orders = random.randint(1, 15)
             
+            # Generate phone number
+            phone_number = f"+905{random.randint(300000000, 599999999)}"
+            
             customer = Customer(
                 tenant_id=tenant.id,
                 first_name=first_name,
                 last_name=last_name,
                 email=email,
-                phone=f"+905{random.randint(300000000, 599999999)}",
                 customer_id=customer_id,
                 pin_hash=pin_hash,
                 segment=segment,
@@ -188,8 +190,11 @@ async def create_customers(db, tenants):
                 total_orders=total_orders,
                 total_spent=total_spent,
                 lifetime_value=total_spent * 1.2,
-                notes=f"{sector_key.title()} sektöründen müşteri"
+                notes=f"{sector_key.title()} sektöründen müşteri",
+                phone_hash=Customer.generate_phone_hash(phone_number)  # Set hash directly
             )
+            # Set phone with encryption
+            customer.set_phone(phone_number)
             db.add(customer)
             sector_customers.append(customer)
         

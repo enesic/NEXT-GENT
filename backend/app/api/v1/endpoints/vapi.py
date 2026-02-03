@@ -141,14 +141,10 @@ async def process_call_ended(payload: VAPIWebhookPayload, db: AsyncSession):
     # 7. Find Customer (if exists)
     customer_id = None
     if phone_hash:
-        # Check by phone hash (fast secure lookup)
-        # Note: We haven't added phone_hash to Customer model yet, 
-        # so for MVP we might query by scanning (slow) or add hash to customer
-        # For now, let's assume we can't link without hash, or we just encrypt/decrypt to match? 
-        # Better: Add hashed_phone to Customer model too. 
-        # For MVP speed: Look up by plain phone (since Customer.phone is plain in DB currently)
-        # TODO: Move Customer.phone to encrypted + hash in next phase
-        customer_result = await db.execute(select(Customer).where(Customer.phone == caller_phone))
+        # Check by phone hash (fast secure lookup with encrypted phone)
+        customer_result = await db.execute(
+            select(Customer).where(Customer.phone_hash == phone_hash)
+        )
         customer = customer_result.scalar_one_or_none()
         if customer:
             customer_id = str(customer.id)
@@ -197,7 +193,7 @@ async def process_function_call(payload: VAPIWebhookPayload, db: AsyncSession):
     if isinstance(args, str):
         try:
             args = json.loads(args)
-        except:
+        except json.JSONDecodeError:
             args = {}
             
     response = {"result": "Function not implemented"}

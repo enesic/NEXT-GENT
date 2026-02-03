@@ -40,7 +40,7 @@
             v-for="notification in displayedNotifications"
             :key="notification.id"
             :class="['notification-item', notification.type, { unread: !notification.read }]"
-            @click="markAsRead(notification.id)"
+            @click="handleNotificationClick(notification)"
           >
             <div class="notification-icon">
               <Info v-if="notification.type === 'info'" :size="16" :stroke-width="2" />
@@ -78,6 +78,7 @@
 <script setup>
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
 import { 
   Bell, BellOff, X, Trash2, CheckCheck, CheckCircle, 
   Info, AlertTriangle, AlertCircle 
@@ -92,6 +93,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close'])
+const router = useRouter()
 
 const notificationStore = useNotificationStore()
 const { notifications, unreadCount } = storeToRefs(notificationStore)
@@ -124,8 +126,26 @@ const clearAll = () => {
 }
 
 const viewAll = () => {
-  // TODO: Navigate to full notifications page
-  console.log('View all notifications')
+  // Navigate to admin dashboard where all notifications are visible
+  closePanel()
+  router.push({ name: 'AdminDashboard' })
+}
+
+const handleNotificationClick = (notification) => {
+  // Mark as read
+  markAsRead(notification.id)
+  
+  // Navigate if notification has a route
+  if (notification.route) {
+    closePanel()
+    
+    // Handle both string routes and route objects
+    if (typeof notification.route === 'string') {
+      router.push(notification.route)
+    } else {
+      router.push(notification.route)
+    }
+  }
 }
 
 const formatTime = (timestamp) => {

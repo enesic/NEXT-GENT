@@ -119,17 +119,20 @@ router.beforeEach((to, from, next) => {
     const authStore = useAuthStore()
     const adminStore = useAdminStore()
 
-    // Admin routes check
+    // Admin routes check - handle these first and exclusively
     if (to.meta.requiresAdminAuth) {
         if (!adminStore.isAuthenticated) {
             // Redirect to admin login if not authenticated
             next({ name: 'AdminLogin', query: { redirect: to.fullPath } })
             return
         }
+        // Admin is authenticated, allow navigation
+        next()
+        return
     }
 
-    // Regular user routes check
-    if (to.meta.requiresAuth && !to.meta.requiresAdminAuth) {
+    // Regular user routes check - only for non-admin routes
+    if (to.meta.requiresAuth) {
         if (!authStore.isAuthenticated) {
             // Redirect to login if not authenticated
             next({ name: 'Login', query: { redirect: to.fullPath } })

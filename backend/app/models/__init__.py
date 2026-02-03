@@ -11,6 +11,7 @@ from app.models.flow import Flow, FlowExecution
 from app.models.admin_user import AdminUser
 from app.models.audit_log import AuditLog
 from app.models.token_usage import TokenUsage
+from app.models.document import Document
 
 __all__ = [
     "Base",
@@ -27,4 +28,5 @@ __all__ = [
     "AdminUser",
     "AuditLog",
     "TokenUsage",
+    "Document",
 ]
