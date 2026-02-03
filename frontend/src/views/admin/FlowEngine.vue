@@ -101,11 +101,16 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Plus, Play, Edit2, Activity, Trash2, Zap } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
 import api from '@/config/api'
+
+const router = useRouter()
 
 const flows = ref([])
 const loading = ref(true)
 const showCreateDialog = ref(false)
+const showEditDialog = ref(false)
+const selectedFlow = ref(null)
 
 const loadFlows = async () => {
   try {
@@ -131,12 +136,15 @@ const executeFlow = async (flow) => {
 
 const editFlow = (flow) => {
   console.log('Edit flow:', flow)
-  // TODO: Implement edit dialog
+  // Open edit dialog with flow data
+  selectedFlow.value = flow
+  showEditDialog.value = true
 }
 
 const viewExecutions = (flow) => {
   console.log('View executions:', flow)
-  // TODO: Navigate to executions page
+  // Navigate to flow execution history page
+  router.push({ name: 'FlowExecutions', params: { flowId: flow.id } })
 }
 
 const deleteFlow = async (flow) => {

@@ -1,3 +1,5 @@
+enes burada güncelleme yaptı
+
 # 🧪 NextGent Lab Ortamı Kurulum Kılavuzu
 
 Bu dokümantasyon, NextGent projesinin development, staging ve production ortamlarının kurulumu için adım adım rehberdir.

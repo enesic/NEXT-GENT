@@ -78,6 +78,7 @@ import api from '@/config/api'
 const cards = ref([])
 const loading = ref(true)
 const showAddDialog = ref(false)
+const selectedCard = ref(null)
 
 const loadCards = async () => {
   try {
@@ -109,15 +110,26 @@ const formatFeature = (key, value) => {
 
 const editCard = (card) => {
   console.log('Edit card:', card)
-  // TODO: Implement edit dialog
+  // Open edit dialog with card data
+  showAddDialog.value = true
+  selectedCard.value = card
 }
 
 const toggleCard = async (card) => {
   try {
-    // TODO: Implement toggle API
+    // Call API to toggle card active status
+    await api.patch(`/admin/cards/${card.id}/toggle`, {
+      is_active: !card.is_active
+    })
+    
+    // Update local state
     card.is_active = !card.is_active
+    
+    console.log(`Card ${card.name} is now ${card.is_active ? 'active' : 'inactive'}`)
   } catch (error) {
     console.error('Kart durumu değiştirilemedi:', error)
+    // Revert on error
+    card.is_active = !card.is_active
   }
 }
 

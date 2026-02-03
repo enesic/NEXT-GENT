@@ -26,25 +26,6 @@ const routes = [
     },
     // Admin Routes
     {
-        path: '/admin/dashboard',
-        name: 'AdminDashboard',
-        component: () => import('../views/admin/AdminDashboard.vue'),
-        meta: { requiresAuth: true, role: 'admin' }
-    },
-    {
-        path: '/admin/cards',
-        name: 'CardsManagement',
-        component: () => import('../views/admin/CardsManagement.vue'),
-        meta: { requiresAuth: true, role: 'admin' }
-    },
-    {
-        path: '/admin/flow',
-        name: 'FlowEngine',
-        component: () => import('../views/admin/FlowEngine.vue'),
-        meta: { requiresAuth: true, role: 'admin' }
-    },
-    // Admin Routes
-    {
         path: '/admin/login',
         name: 'AdminLogin',
         component: () => import('../views/admin/AdminLogin.vue'),
@@ -54,6 +35,18 @@ const routes = [
         path: '/admin/dashboard',
         name: 'AdminDashboard',
         component: () => import('../views/admin/AdminDashboard.vue'),
+        meta: { requiresAuth: true, role: 'admin', requiresAdminAuth: true }
+    },
+    {
+        path: '/admin/cards',
+        name: 'CardsManagement',
+        component: () => import('../views/admin/CardsManagement.vue'),
+        meta: { requiresAuth: true, role: 'admin', requiresAdminAuth: true }
+    },
+    {
+        path: '/admin/flow',
+        name: 'FlowEngine',
+        component: () => import('../views/admin/FlowEngine.vue'),
         meta: { requiresAuth: true, role: 'admin', requiresAdminAuth: true }
     },
     {

@@ -3,6 +3,21 @@
 Thumbs.db
 *.log
 *.tmp
+*.txt
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# Logs
+*.log
+error.log
+full_error.log
+full_error.txt
+full_log.txt
 
 # Python / Backend
 __pycache__/
@@ -11,11 +26,12 @@ __pycache__/
 .venv/
 venv/
 env/
-.env
 *.egg-info/
 backend/coverage/
 backend/htmlcov/
 backend/.pytest_cache/
+backend/*.log
+backend/*.txt
 
 # Node / Frontend
 node_modules/

@@ -2,9 +2,12 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, status, Header, D
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 import time
+import hmac
+import os
 
 from app.core.database import get_db
 from app.core.dependencies import get_current_tenant
+from app.core.config import settings
 from app.models.tenant import Tenant
 from app.schemas.message import (
     IncomingWebhookMessage,
@@ -16,6 +19,28 @@ from app.services.message_service import MessageService
 from app.services.vapi_service import VapiService
 
 router = APIRouter()
+
+
+def validate_webhook_secret(provided_secret: Optional[str]) -> bool:
+    """
+    Validate webhook secret using constant-time comparison to prevent timing attacks.
+    
+    Args:
+        provided_secret: Secret provided in X-Webhook-Secret header
+        
+    Returns:
+        True if valid, False otherwise
+    """
+    if not provided_secret:
+        return False
+    
+    expected_secret = settings.WEBHOOK_SECRET if hasattr(settings, 'WEBHOOK_SECRET') else os.getenv("WEBHOOK_SECRET")
+    
+    if not expected_secret or expected_secret == "your-webhook-secret-change-in-production":
+        # In dev mode, allow if no secret is configured
+        return True
+    
+    return hmac.compare_digest(provided_secret, expected_secret)
 
 
 @router.post("/whatsapp", response_model=MessageResponse)
@@ -32,6 +57,7 @@ async def whatsapp_webhook(
     
     Features:
     - Pydantic validation
+    - HMAC secret validation
     - Background task for response
     - Exponential backoff retry (3 attempts)
     - Intent routing
@@ -51,9 +77,12 @@ async def whatsapp_webhook(
     """
     start_time = time.time()
     
-    # TODO: Validate webhook secret
-    # if x_webhook_secret != settings.WEBHOOK_SECRET:
-    #     raise HTTPException(status_code=401, detail="Invalid webhook secret")
+    # Validate webhook secret
+    if not validate_webhook_secret(x_webhook_secret):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid webhook secret"
+        )
     
     # Set provider
     message.provider = MessageProvider.WHATSAPP
@@ -93,6 +122,13 @@ async def vapi_webhook(
     Similar to WhatsApp webhook but for Vapi voice AI platform.
     """
     start_time = time.time()
+    
+    # Validate webhook secret
+    if not validate_webhook_secret(x_webhook_secret):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid webhook secret"
+        )
     
     # Set provider
     message.provider = MessageProvider.VAPI

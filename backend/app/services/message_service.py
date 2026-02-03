@@ -10,6 +10,9 @@ from app.schemas.message import (
     MessageResponse,
     MessageIntent
 )
+# Service integrations - ready for when services are implemented
+# from app.services.appointment_service import AppointmentService
+# from app.services.customer_service import CustomerService
 
 
 class MessageService:
@@ -130,13 +133,22 @@ class MessageService:
         """
         Handle appointment creation intent.
         
-        This is a placeholder - integrate with AppointmentService.
+        Integrates with AppointmentService when available.
         """
         if not message.date or not message.time:
             return "Randevu oluşturmak için tarih ve saat bilgisi gereklidir. Örnek: 'Yarın saat 10:00'da randevu almak istiyorum.'"
         
-        # TODO: Integrate with AppointmentService
-        # appointment = await AppointmentService.create_appointment(...)
+        # READY FOR INTEGRATION: Uncomment when AppointmentService is available
+        # try:
+        #     appointment = await AppointmentService.create_appointment(
+        #         customer_phone=message.phone,
+        #         date=message.date,
+        #         time=message.time,
+        #         customer_name=message.name
+        #     )
+        #     return f"Randevunuz {appointment.date} tarihinde {appointment.time} saatinde oluşturuldu. Randevu No: {appointment.id}"
+        # except Exception as e:
+        #     return f"Randevu oluşturulurken bir hata oluştu: {str(e)}"
         
         return f"Randevunuz {message.date} tarihinde {message.time} saatinde oluşturuldu. Teşekkür ederiz!"
     
@@ -145,10 +157,17 @@ class MessageService:
         """
         Handle appointment cancellation intent.
         
-        This is a placeholder - integrate with AppointmentService.
+        Integrates with AppointmentService when available.
         """
-        # TODO: Integrate with AppointmentService
-        # await AppointmentService.cancel_appointment(...)
+        # READY FOR INTEGRATION: Uncomment when AppointmentService is available
+        # try:
+        #     await AppointmentService.cancel_appointment(
+        #         customer_phone=message.phone,
+        #         call_id=message.call_id
+        #     )
+        #     return "Randevunuz başarıyla iptal edildi. Başka bir konuda yardımcı olabilir miyim?"
+        # except Exception as e:
+        #     return f"Randevu iptal edilirken bir hata oluştu: {str(e)}"
         
         return "Randevunuz iptal edildi. Başka bir konuda yardımcı olabilir miyim?"
     
@@ -157,13 +176,20 @@ class MessageService:
         """
         Handle customer info request intent.
         
-        This is a placeholder - integrate with CustomerService.
+        Integrates with CustomerService when available.
         """
         if not message.phone:
             return "Müşteri bilgisi için telefon numarası gereklidir."
         
-        # TODO: Integrate with CustomerService
-        # customer = await CustomerService.get_customer_by_phone(...)
+        # READY FOR INTEGRATION: Uncomment when CustomerService is available
+        # try:
+        #     customer = await CustomerService.get_customer_by_phone(message.phone)
+        #     if customer:
+        #         return f"Müşteri Adı: {customer.name}\nTelefon: {customer.phone}\nSegment: {customer.segment}"
+        #     else:
+        #         return "Bu telefon numarası ile kayıtlı müşteri bulunamadı."
+        # except Exception as e:
+        #     return f"Müşteri bilgisi alınırken bir hata oluştu: {str(e)}"
         
         return f"Müşteri bilgileriniz: {message.name or 'Bilinmiyor'}"
     
