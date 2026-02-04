@@ -54,6 +54,7 @@ services:
     environment:
       - PROJECT_NAME=NextGent
       - SECRET_KEY=your-secret-key-change-in-production
+      - ENCRYPTION_KEY=3Gep12jBuF2mOXopiBcr9WSCGB9F2bJ4WGXichUJKhU=
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/nextgent
       - POSTGRES_SERVER=db
       - POSTGRES_USER=postgres
