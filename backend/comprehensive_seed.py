@@ -124,6 +124,7 @@ async def create_customers(db, tenants):
     import bcrypt
     
     customers = {}
+    customer_phones = {}  # Store phone numbers separately to avoid lazy loading issues
     
     # Sector code mapping
     sector_codes = {
@@ -197,15 +198,18 @@ async def create_customers(db, tenants):
             customer.set_phone(phone_number)
             db.add(customer)
             sector_customers.append(customer)
+            
+            # Store phone number for later use
+            customer_phones[id(customer)] = phone_number
         
         await db.flush()
         customers[sector_key] = sector_customers
         print(f"  ✅ {len(sector_customers)} customers for {sector_key} (IDs: {sector_code}-000001 to {sector_code}-{customer_number})")
     
     await db.commit()
-    return customers
+    return customers, customer_phones
 
-async def create_interactions(db, tenants, customers):
+async def create_interactions(db, tenants, customers, customer_phones):
     """Create interactions (appointments) for each tenant."""
     print("\n📅 Creating interactions...")
     
@@ -239,6 +243,7 @@ async def create_interactions(db, tenants, customers):
             
             customer = random.choice(sector_customers)
             customer_full_name = f"{customer.first_name} {customer.last_name}"
+            customer_phone = customer_phones.get(id(customer), "+905000000000")  # Get from dict
             
             interaction = Interaction(
                 tenant_id=tenant.id,
@@ -249,7 +254,7 @@ async def create_interactions(db, tenants, customers):
                 end_time=end,
                 client_name=customer_full_name,
                 client_email=customer.email,
-                client_phone=customer.phone,
+                client_phone=customer_phone,
                 status=status,
                 created_at=start - timedelta(days=random.randint(1, 5))
             )
@@ -344,8 +349,8 @@ async def seed():
         
         # Create data
         tenants = await create_tenants(db)
-        customers = await create_customers(db, tenants)
-        await create_interactions(db, tenants, customers)
+        customers, customer_phones = await create_customers(db, tenants)
+        await create_interactions(db, tenants, customers, customer_phones)
         await create_satisfaction_data(db, tenants)
         
         print("\n" + "="*60)

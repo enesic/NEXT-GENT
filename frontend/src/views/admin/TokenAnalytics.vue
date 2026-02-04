@@ -315,9 +315,9 @@ onMounted(() => {
 
 <style scoped>
 .token-analytics {
-  padding: 32px;
-  max-width: 1600px;
-  margin: 0 auto;
+  padding: 24px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .page-header {

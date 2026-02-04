@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { API_CONFIG } from '../config/api.js'
+import { isCriticalEndpoint, getFallbackData } from '../config/brave_fallback.js'
 
 /**
  * Executive-Level Axios HTTP Client
@@ -98,8 +99,6 @@ axiosInstance.interceptors.response.use(
         // BRAVE FALLBACK: Resilience Mode
         // If critical demo endpoint fails, return mock data silently
         if (error.config && error.config.url) {
-            const { isCriticalEndpoint, getFallbackData } = require('../config/brave_fallback')
-
             if (isCriticalEndpoint(error.config.url)) {
                 console.warn(`🛡️ Brave Fallback Activated for: ${error.config.url}`)
                 return Promise.resolve({

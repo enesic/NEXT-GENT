@@ -11,9 +11,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 # Install system dependencies
-# gcc and libpq-dev are often needed for psycopg2 (PostgreSQL adapter)
+# gcc and libpq-dev are needed for psycopg2 (PostgreSQL adapter)
+# postgresql-client is needed for pg_isready command
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends gcc libpq-dev \
+    && apt-get install -y --no-install-recommends gcc libpq-dev postgresql-client \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -24,9 +25,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
+# Copy and set permissions for entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # Expose port (FastAPI default)
 EXPOSE 8000
 
-# Run the application
-# "app.main:app" assumes your FastAPI instance is in app/main.py
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Use entrypoint script
+ENTRYPOINT ["/entrypoint.sh"]

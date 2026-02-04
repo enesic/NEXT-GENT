@@ -140,9 +140,9 @@ onMounted(() => {
 
 <style scoped>
 .cards-management {
-  padding: 32px;
-  max-width: 1400px;
-  margin: 0 auto;
+  padding: 24px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .page-header {

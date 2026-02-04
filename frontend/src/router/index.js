@@ -32,40 +32,47 @@ const routes = [
         meta: { requiresAuth: false, isAdminRoute: true }
     },
     {
-        path: '/admin/dashboard',
-        name: 'AdminDashboard',
-        component: () => import('../views/admin/AdminDashboard.vue'),
-        meta: { requiresAuth: true, role: 'admin', requiresAdminAuth: true }
-    },
-    {
-        path: '/admin/cards',
-        name: 'CardsManagement',
-        component: () => import('../views/admin/CardsManagement.vue'),
-        meta: { requiresAuth: true, role: 'admin', requiresAdminAuth: true }
-    },
-    {
-        path: '/admin/flow',
-        name: 'FlowEngine',
-        component: () => import('../views/admin/FlowEngine.vue'),
-        meta: { requiresAuth: true, role: 'admin', requiresAdminAuth: true }
-    },
-    {
-        path: '/admin/users',
-        name: 'UserManagement',
-        component: () => import('../views/admin/UserManagement.vue'),
-        meta: { requiresAuth: true, role: 'admin', requiresAdminAuth: true }
-    },
-    {
-        path: '/admin/logs',
-        name: 'AuditLogs',
-        component: () => import('../views/admin/AuditLogs.vue'),
-        meta: { requiresAuth: true, role: 'admin', requiresAdminAuth: true }
-    },
-    {
-        path: '/admin/analytics',
-        name: 'TokenAnalytics',
-        component: () => import('../views/admin/TokenAnalytics.vue'),
-        meta: { requiresAuth: true, role: 'admin', requiresAdminAuth: true }
+        path: '/admin',
+        component: () => import('../components/AdminLayout.vue'),
+        meta: { requiresAdminAuth: true },
+        children: [
+            {
+                path: 'dashboard',
+                name: 'AdminDashboard',
+                component: () => import('../views/admin/AdminDashboard.vue'),
+                meta: { requiresAuth: true, role: 'admin', requiresAdminAuth: true }
+            },
+            {
+                path: 'cards',
+                name: 'CardsManagement',
+                component: () => import('../views/admin/CardsManagement.vue'),
+                meta: { requiresAuth: true, role: 'admin', requiresAdminAuth: true }
+            },
+            {
+                path: 'flow',
+                name: 'FlowEngine',
+                component: () => import('../views/admin/FlowEngine.vue'),
+                meta: { requiresAuth: true, role: 'admin', requiresAdminAuth: true }
+            },
+            {
+                path: 'users',
+                name: 'UserManagement',
+                component: () => import('../views/admin/UserManagement.vue'),
+                meta: { requiresAuth: true, role: 'admin', requiresAdminAuth: true }
+            },
+            {
+                path: 'logs',
+                name: 'AuditLogs',
+                component: () => import('../views/admin/AuditLogs.vue'),
+                meta: { requiresAuth: true, role: 'admin', requiresAdminAuth: true }
+            },
+            {
+                path: 'analytics',
+                name: 'TokenAnalytics',
+                component: () => import('../views/admin/TokenAnalytics.vue'),
+                meta: { requiresAuth: true, role: 'admin', requiresAdminAuth: true }
+            }
+        ]
     },
     // Portal Routes
     {
