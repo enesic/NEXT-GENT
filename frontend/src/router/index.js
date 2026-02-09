@@ -150,4 +150,25 @@ router.beforeEach((to, from, next) => {
     next()
 })
 
+// Global error handler for chunk loading errors
+router.onError((error) => {
+    const pattern = /Loading chunk (\d)+ failed/g;
+    const isChunkLoadFailed = error.message.match(pattern);
+    const targetPath = router.currentRoute.value.fullPath;
+
+    if (isChunkLoadFailed || error.message.includes('Failed to fetch dynamically imported module')) {
+        console.error('Chunk load error detected, reloading page...', error);
+
+        // Prevent infinite reload loops
+        const storageKey = 'chunk_reload_' + targetPath;
+        const lastReload = sessionStorage.getItem(storageKey);
+        const now = Date.now();
+
+        if (!lastReload || now - parseInt(lastReload) > 10000) {
+            sessionStorage.setItem(storageKey, now.toString());
+            window.location.reload(true);
+        }
+    }
+});
+
 export default router

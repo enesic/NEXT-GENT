@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, Dict, Any
 from uuid import UUID
-from pydantic import BaseModel, EmailStr, ConfigDict, field_validator
+from pydantic import BaseModel, EmailStr, ConfigDict, field_validator, Field
 from enum import Enum
 
 
@@ -23,7 +23,7 @@ class InteractionBase(BaseModel):
     client_phone: Optional[str] = None
     
     # Universal Integration: Flexible metadata
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: Optional[Dict[str, Any]] = Field(default=None, alias="meta_data")
 
     @field_validator('end_time')
     def validate_end_time(cls, v, info):

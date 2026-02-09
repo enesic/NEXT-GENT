@@ -161,8 +161,12 @@ class InteractionService:
         )
         
         # Step 2: Create interaction
+        data = interaction_data.model_dump()
+        if 'metadata' in data:
+            data['meta_data'] = data.pop('metadata')
+
         interaction = Interaction(
-            **interaction_data.model_dump(),
+            **data,
             tenant_id=tenant_id,
             status=InteractionStatus.PENDING
         )
@@ -250,6 +254,8 @@ class InteractionService:
                 )
         
         update_dict = interaction_data.model_dump(exclude_unset=True)
+        if 'metadata' in update_dict:
+            update_dict['meta_data'] = update_dict.pop('metadata')
         
         if 'start_time' in update_dict or 'end_time' in update_dict:
             new_start = update_dict.get('start_time', interaction.start_time)

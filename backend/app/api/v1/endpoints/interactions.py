@@ -44,7 +44,7 @@ async def create_interaction(
             rules = current_tenant.config.get('validation_rules') if current_tenant.config else ContextValidator.get_sector_rules(sector)
             
             validated_metadata = ContextValidator.validate_metadata(interaction_in.metadata, rules)
-            interaction_in.metadata = validated_metadata
+            interaction_in.metadata = validated_metadata # Keep as metadata for Pydantic model
         except ValueError as e:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -92,8 +92,8 @@ async def list_interactions(
     privacy_rules = current_tenant.config.get('privacy_rules') if current_tenant.config else KVKKMasker.get_privacy_rules(sector)
     
     for interaction in interactions:
-        if interaction.metadata:
-            interaction.metadata = KVKKMasker.mask_data(interaction.metadata, privacy_rules)
+        if interaction.meta_data:
+            interaction.meta_data = KVKKMasker.mask_data(interaction.meta_data, privacy_rules)
             
     return interactions
 
@@ -124,8 +124,8 @@ async def get_interaction(
     sector = current_tenant.config.get('sector') if current_tenant.config else "medical"
     privacy_rules = current_tenant.config.get('privacy_rules') if current_tenant.config else KVKKMasker.get_privacy_rules(sector)
     
-    if interaction.metadata:
-        interaction.metadata = KVKKMasker.mask_data(interaction.metadata, privacy_rules)
+    if interaction.meta_data:
+        interaction.meta_data = KVKKMasker.mask_data(interaction.meta_data, privacy_rules)
     
     return interaction
 
@@ -150,7 +150,7 @@ async def update_interaction(
             rules = current_tenant.config.get('validation_rules') if current_tenant.config else ContextValidator.get_sector_rules(sector)
             
             validated_metadata = ContextValidator.validate_metadata(interaction_in.metadata, rules)
-            interaction_in.metadata = validated_metadata
+            interaction_in.meta_data = validated_metadata
         except ValueError as e:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

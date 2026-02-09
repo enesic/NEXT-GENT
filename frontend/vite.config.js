@@ -21,5 +21,21 @@ export default defineConfig({
                 rewrite: (path) => path
             }
         }
+    },
+    build: {
+        outDir: 'dist',
+        assetsDir: 'assets',
+        emptyOutDir: true, // Ensure old files are removed on build
+        sourcemap: false,
+        manifest: true, // Enable build manifest
+        rollupOptions: {
+            output: {
+                // Return to standard hashing for better caching behavior, 
+                // relying on Nginx no-cache for index.html to handle updates.
+                entryFileNames: `assets/[name]-[hash].js`,
+                chunkFileNames: `assets/[name]-[hash].js`,
+                assetFileNames: `assets/[name]-[hash].[ext]`
+            }
+        }
     }
 })

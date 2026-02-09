@@ -21,3 +21,28 @@ app.use(router)
 app.use(VueApexCharts)
 app.provide('axios', axios)
 app.mount('#app')
+
+// Global error handler for dynamic import failures (Proactive Reload)
+window.addEventListener('unhandledrejection', (event) => {
+    // Check for common chunk load errors
+    const isChunkLoadFailed = event.reason && (
+        (event.reason.message && event.reason.message.includes('Failed to fetch dynamically imported module')) ||
+        (event.reason.message && event.reason.message.includes('Importing a module script failed')) ||
+        (event.reason.name === 'ChunkLoadError')
+    );
+
+    if (isChunkLoadFailed) {
+        console.error('Dynamic import failed (likely stale cache). Reloading page...', event.reason);
+
+        const storageKey = 'global_chunk_reload_' + window.location.pathname;
+        const lastReload = sessionStorage.getItem(storageKey);
+        const now = Date.now();
+
+        // Limit reloads to once every 5 seconds to prevent frenzied loops, 
+        // but allow quick recovery if it happens again on a different route
+        if (!lastReload || now - parseInt(lastReload) > 5000) {
+            sessionStorage.setItem(storageKey, now.toString());
+            window.location.reload(true);
+        }
+    }
+});

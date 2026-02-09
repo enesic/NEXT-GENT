@@ -35,7 +35,7 @@ async def get_live_pulse(
     # 2. Today's Clients (New or Interacted)
     today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
     
-    today_clients_query = select(func.count(func.distinct(Interaction.customer_id))).where(
+    today_clients_query = select(func.count(func.distinct(Interaction.client_email))).where(
         Interaction.tenant_id == current_tenant.id,
         Interaction.start_time >= today_start
     )
