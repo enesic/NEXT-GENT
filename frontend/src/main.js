@@ -20,6 +20,34 @@ app.use(pinia)
 app.use(router)
 app.use(VueApexCharts)
 app.provide('axios', axios)
+app.config.errorHandler = (err, instance, info) => {
+    console.error('Global Vue Error:', err)
+    console.error('Component:', instance)
+    console.error('Info:', info)
+
+    // Show error on screen (Critical for debugging Black Screen)
+    const errorBox = document.createElement('div')
+    errorBox.style.position = 'fixed'
+    errorBox.style.top = '0'
+    errorBox.style.left = '0'
+    errorBox.style.width = '100%'
+    errorBox.style.height = '100%'
+    errorBox.style.backgroundColor = '#000'
+    errorBox.style.color = '#ff4444'
+    errorBox.style.zIndex = '99999'
+    errorBox.style.padding = '20px'
+    errorBox.style.fontFamily = 'monospace'
+    errorBox.style.overflow = 'auto'
+    errorBox.innerHTML = `
+        <h1>Application Crash</h1>
+        <p>A critical error occurred preventing the app from loading.</p>
+        <pre style="background: #111; padding: 10px; border: 1px solid #333; white-space: pre-wrap;">${err.stack || err.message}</pre>
+        <p>Info: ${info}</p>
+        <button onclick="location.reload()" style="padding: 10px 20px; background: #333; color: white; border: none; cursor: pointer; margin-top: 20px;">Reload App</button>
+    `
+    document.body.appendChild(errorBox)
+}
+
 app.mount('#app')
 
 // Global error handler for dynamic import failures (Proactive Reload)

@@ -10,8 +10,8 @@
         <a href="#security">Güvenlik</a>
         <a href="#sectors">Sektörler</a>
         <a href="#pricing">Fiyatlandırma</a>
-        <router-link to="/destek" class="nav-link">Destek</router-link>
-        <router-link to="/iletisim" class="nav-link">İletişim</router-link>
+        <a href="#support" class="nav-link">Destek</a>
+        <a href="#contact" class="nav-link">İletişim</a>
         <button class="login-btn" @click="$router.push('/login')">Giriş Yap</button>
       </div>
     </nav>
@@ -346,6 +346,18 @@
       </div>
     </section>
 
+
+
+    <!-- Support Section -->
+    <section id="support" class="spacing-section">
+      <LandingSupport />
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+      <LandingContact />
+    </section>
+
     <footer class="landing-footer">
       <div class="footer-content">
         <div class="footer-section">
@@ -363,8 +375,8 @@
         
         <div class="footer-section">
           <h4>Şirket</h4>
-          <router-link to="/destek">Destek</router-link>
-          <router-link to="/iletisim">İletişim</router-link>
+          <a href="#support">Destek</a>
+          <a href="#contact">İletişim</a>
           <router-link to="/kvkk">KVKK</router-link>
           <router-link to="/gizlilik-politikasi">Gizlilik Politikası</router-link>
         </div>
@@ -391,6 +403,8 @@ import { ArrowRight, ShieldCheck, Zap, Cpu, Activity, MessageSquare, Scale, Buil
 import { onMounted } from 'vue'
 import gsap from 'gsap'
 import HelpdeskChatbot from '../components/HelpdeskChatbot.vue'
+import LandingSupport from '../components/landing/LandingSupport.vue'
+import LandingContact from '../components/landing/LandingContact.vue'
 
 onMounted(() => {
   // Intro Animation
@@ -787,6 +801,10 @@ a.pricing-btn.outline:hover {
   align-items: center;
   justify-content: center;
   color: #a855f7;
+}
+
+.spacing-section {
+  margin-bottom: 80px; /* Added separation between Support and Contact */
 }
 
 .card-text span {
@@ -1428,6 +1446,89 @@ a.pricing-btn.outline:hover {
   .steps-grid {
     grid-template-columns: 1fr;
     gap: 20px;
+  }
+}
+
+/* Footer Styles */
+.landing-footer {
+  background: #000000;
+  padding: 80px 48px 40px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 14px;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.5fr;
+  gap: 64px;
+  margin-bottom: 64px;
+}
+
+.footer-logo {
+  font-size: 24px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #fff, #94a3b8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 16px;
+}
+
+.footer-description {
+  color: #94a3b8;
+  line-height: 1.6;
+  max-width: 300px;
+}
+
+.footer-section h4 {
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.footer-section a {
+  display: block;
+  color: #94a3b8;
+  text-decoration: none;
+  margin-bottom: 12px;
+  transition: color 0.2s;
+}
+
+.footer-section a:hover {
+  color: #6366f1;
+}
+
+.footer-bottom {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-top: 32px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  text-align: center;
+  color: #64748b;
+}
+
+@media (max-width: 1024px) {
+  .footer-content {
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+  }
+}
+
+@media (max-width: 768px) {
+  .landing-footer {
+    padding: 60px 24px 32px;
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    text-align: center;
+  }
+  
+  .footer-description {
+    margin: 0 auto;
   }
 }
 

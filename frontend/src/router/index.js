@@ -100,19 +100,7 @@ const routes = [
         component: () => import('../views/legal/TechnicalRequirements.vue'),
         meta: { requiresAuth: false }
     },
-    // Support Routes
-    {
-        path: '/destek',
-        name: 'Support',
-        component: () => import('../views/support/Support.vue'),
-        meta: { requiresAuth: false }
-    },
-    {
-        path: '/iletisim',
-        name: 'Contact',
-        component: () => import('../views/support/Contact.vue'),
-        meta: { requiresAuth: false }
-    },
+    // Routes for Support and Contact are now sections in LandingPage
     // Admin Routes
 ]
 
