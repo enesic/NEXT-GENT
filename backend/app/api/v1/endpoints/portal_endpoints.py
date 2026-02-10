@@ -79,7 +79,7 @@ async def get_customer_appointments(
         query = select(Interaction).where(
             and_(
                 Interaction.tenant_id == current_tenant.id,
-                Interaction.interaction_type == "appointment"
+                Interaction.type == "appointment"
             )
         )
         
@@ -94,7 +94,7 @@ async def get_customer_appointments(
         
         appointments = []
         for interaction in interactions:
-            metadata = interaction.metadata or {}
+            metadata = interaction.meta_data or {}
             appointments.append(AppointmentResponse(
                 id=str(interaction.id),
                 title=metadata.get("title", "Randevu"),
@@ -136,12 +136,12 @@ async def get_customer_messages(
         query = select(Interaction).where(
             and_(
                 Interaction.tenant_id == current_tenant.id,
-                Interaction.interaction_type.in_(["whatsapp", "sms", "email"])
+                Interaction.type.in_(["whatsapp", "sms", "email"])
             )
         )
         
         if channel:
-            query = query.where(Interaction.interaction_type == channel)
+            query = query.where(Interaction.type == channel)
         
         query = query.order_by(desc(Interaction.created_at)).limit(limit)
         
@@ -150,12 +150,12 @@ async def get_customer_messages(
         
         messages = []
         for interaction in interactions:
-            metadata = interaction.metadata or {}
+            metadata = interaction.meta_data or {}
             messages.append(MessageResponse(
                 id=str(interaction.id),
                 message=metadata.get("message", interaction.summary or ""),
                 direction=metadata.get("direction", "inbound"),
-                channel=interaction.interaction_type,
+                channel=interaction.type,
                 created_at=interaction.created_at
             ))
         
@@ -198,8 +198,8 @@ async def get_customer_calls(
         return [
             CallResponse(
                 id=str(call.id),
-                duration=call.duration or 0,
-                status=call.status,
+                duration=call.call_duration_seconds or 0,
+                status=call.call_status,
                 summary=call.summary,
                 created_at=call.created_at
             )
@@ -343,10 +343,10 @@ async def get_customer_reports(
             "interactions": {
                 "total": len(interactions),
                 "by_type": {
-                    "whatsapp": len([i for i in interactions if i.interaction_type == "whatsapp"]),
-                    "sms": len([i for i in interactions if i.interaction_type == "sms"]),
-                    "email": len([i for i in interactions if i.interaction_type == "email"]),
-                    "appointment": len([i for i in interactions if i.interaction_type == "appointment"])
+                    "whatsapp": len([i for i in interactions if i.type == "whatsapp"]),
+                    "sms": len([i for i in interactions if i.type == "sms"]),
+                    "email": len([i for i in interactions if i.type == "email"]),
+                    "appointment": len([i for i in interactions if i.type == "appointment"])
                 }
             }
         }

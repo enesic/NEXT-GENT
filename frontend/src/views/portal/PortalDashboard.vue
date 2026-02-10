@@ -1,186 +1,172 @@
 <template>
   <div class="portal-dashboard">
     <div class="welcome-section">
-      <h1>Hoş Geldiniz</h1>
-      <p class="subtitle">Hesap özetiniz ve son aktiviteleriniz</p>
+      <h1 :style="{ color: colors.primary }">{{ t('welcome_message') }}</h1>
+      <p class="subtitle">{{ t('dashboard_subtitle') }}</p>
     </div>
 
-    <!-- Quick Stats -->
-    <div class="quick-stats">
-      <div class="stat-card">
-        <div class="stat-icon appointments">
-          <Calendar :size="24" />
+    <!-- MAIN DRAFT: 4-Column Stats Grid (Medical Style) -->
+    <div class="stats-grid">
+      <div 
+        v-for="(stat, index) in displayStats" 
+        :key="index"
+        class="stat-card"
+        :style="{ borderTop: `4px solid ${getColor(stat.color)}` }"
+      >
+        <div class="stat-header">
+            <span class="stat-label">{{ stat.label }}</span>
+            <div class="stat-icon" :style="{ color: getColor(stat.color), background: getGlowColor(stat.color) }">
+                <component :is="sectorStore.getIcon(stat.icon)" :size="20" />
+            </div>
         </div>
-        <div class="stat-info">
-          <span class="stat-label">Aktif Randevular</span>
-          <span class="stat-value">{{ stats.appointments }}</span>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon messages">
-          <MessageSquare :size="24" />
-        </div>
-        <div class="stat-info">
-          <span class="stat-label">Mesajlar</span>
-          <span class="stat-value">{{ stats.messages }}</span>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon calls">
-          <Phone :size="24" />
-        </div>
-        <div class="stat-info">
-          <span class="stat-label">Aramalar</span>
-          <span class="stat-value">{{ stats.calls }}</span>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon subscription">
-          <CreditCard :size="24" />
-        </div>
-        <div class="stat-info">
-          <span class="stat-label">Abonelik</span>
-          <span class="stat-value">{{ subscription?.card_name || 'Yok' }}</span>
+        <div class="stat-body">
+            <span class="stat-value" :style="{ color: colors.text }">{{ stat.value }}</span>
+            <span v-if="stat.change" class="stat-change" :class="stat.change > 0 ? 'positive' : 'negative'">
+              {{ stat.change > 0 ? '↑' : '↓' }} {{ Math.abs(stat.change) }}%
+            </span>
         </div>
       </div>
     </div>
 
-    <!-- Recent Activity -->
-    <div class="activity-section">
-      <h2>Son Aktiviteler</h2>
-      <div class="activity-list">
-        <div v-for="activity in recentActivities" :key="activity.id" class="activity-item">
-          <div class="activity-icon" :class="activity.type">
-            <component :is="getActivityIcon(activity.type)" :size="20" />
-          </div>
-          <div class="activity-content">
-            <p class="activity-title">{{ activity.title }}</p>
-            <span class="activity-time">{{ formatTime(activity.created_at) }}</span>
-          </div>
+    <div class="dashboard-grid">
+        <!-- MAIN DRAFT: Large Chart Section -->
+        <div class="chart-section glass-panel">
+            <div class="section-header">
+                <h3 :style="{ color: colors.text }">{{ chartConfig?.title || 'Hasta Trafiği' }}</h3>
+                <span class="section-subtitle">{{ chartConfig?.subtitle || 'Yıllık Veriler' }}</span>
+            </div>
+             <LuxuryChart 
+                v-if="chartConfig"
+                :title="''" 
+                :type="'area'"
+                :series="chartConfig.datasets"
+                :categories="chartConfig.labels"
+                :height="350"
+                :color="colors.primary"
+                :details="{}"
+              />
         </div>
-      </div>
-    </div>
 
-    <!-- Quick Actions -->
-    <div class="quick-actions">
-      <h2>Hızlı Erişim</h2>
-      <div class="actions-grid">
-        <button class="action-btn" @click="$router.push('/portal/appointments')">
-          <Calendar :size="24" />
-          <span>Randevularım</span>
-        </button>
-        <button class="action-btn" @click="$router.push('/portal/messages')">
-          <MessageSquare :size="24" />
-          <span>Mesajlar</span>
-        </button>
-        <button class="action-btn" @click="$router.push('/portal/calls')">
-          <Phone :size="24" />
-          <span>Aramalar</span>
-        </button>
-        <button class="action-btn" @click="$router.push('/portal/subscription')">
-          <CreditCard :size="24" />
-          <span>Abonelik</span>
-        </button>
-      </div>
+        <!-- MAIN DRAFT: Right Side Quick Actions -->
+        <div class="side-panel">
+            <div class="quick-actions-card">
+                <h3 :style="{ color: colors.text }">Hızlı İşlemler</h3>
+                <div class="actions-list">
+                    <button 
+                        v-for="(action, index) in displayActions" 
+                        :key="index"
+                        class="action-btn"
+                        :style="{ '--hover-color': colors.primary }"
+                    >
+                        <div class="action-icon" :style="{ background: getGlowColor('primary'), color: colors.primary }">
+                             <component :is="sectorStore.getIcon(action.icon)" :size="18" />
+                        </div>
+                        <span>{{ action.label }}</span>
+                        <div class="post-icon">→</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MAIN DRAFT: Recent Activity Widget -->
+             <div class="activity-card">
+                <h3 :style="{ color: colors.text }">Son Aktiviteler</h3>
+                <div class="activity-list">
+                    <div v-for="i in 3" :key="i" class="activity-row">
+                        <div class="dot" :style="{ background: i === 1 ? colors.primary : colors.secondary }"></div>
+                        <div class="activity-text">
+                            <strong :style="{ color: colors.text }">{{ getDummyActivity(i).title }}</strong>
+                            <span class="time">2 saat önce</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { Calendar, MessageSquare, Phone, CreditCard, Clock } from 'lucide-vue-next'
-import api from '@/config/api'
+import { ref, computed, inject } from 'vue'
+import { useSectorStore } from '../../stores/sector'
+import LuxuryChart from '../../components/LuxuryChart.vue'
 
-const stats = ref({
-  appointments: 0,
-  messages: 0,
-  calls: 0
+const sectorStore = useSectorStore()
+
+// Dynamic Theme Colors
+const colors = computed(() => sectorStore.theme || {
+    primary: '#0ea5e9',
+    secondary: '#0f766e',
+    accent: '#38bdf8',
+    text: '#0f172a'
 })
 
-const subscription = ref(null)
-const recentActivities = ref([])
-
-const loadDashboardData = async () => {
-  try {
-    // Load appointments count
-    const appointmentsRes = await api.get('/portal/appointments?limit=100')
-    stats.value.appointments = appointmentsRes.data.length
-
-    // Load messages count
-    const messagesRes = await api.get('/portal/messages?limit=100')
-    stats.value.messages = messagesRes.data.length
-
-    // Load calls count
-    const callsRes = await api.get('/portal/calls?limit=100')
-    stats.value.calls = callsRes.data.length
-
-    // Load subscription
-    const subRes = await api.get('/portal/subscription')
-    subscription.value = subRes.data
-
-    // Combine recent activities
-    recentActivities.value = [
-      ...appointmentsRes.data.slice(0, 3).map(a => ({
-        id: a.id,
-        type: 'appointment',
-        title: a.title,
-        created_at: a.date
-      })),
-      ...messagesRes.data.slice(0, 3).map(m => ({
-        id: m.id,
-        type: 'message',
-        title: m.message.substring(0, 50) + '...',
-        created_at: m.created_at
-      })),
-      ...callsRes.data.slice(0, 3).map(c => ({
-        id: c.id,
-        type: 'call',
-        title: `Arama - ${c.duration}s`,
-        created_at: c.created_at
-      }))
-    ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 10)
-
-  } catch (error) {
-    console.error('Dashboard verileri yüklenemedi:', error)
-  }
+// Translation Helper
+const t = (key) => {
+    if (sectorStore.t) return sectorStore.t(key)
+    return key
 }
 
-const getActivityIcon = (type) => {
-  const icons = {
-    appointment: Calendar,
-    message: MessageSquare,
-    call: Phone
-  }
-  return icons[type] || Clock
+// Helpers
+const getColor = (colorName) => {
+    const themeColors = sectorStore.theme || {}
+    return themeColors[colorName] || themeColors.primary || '#0ea5e9'
 }
 
-const formatTime = (date) => {
-  const d = new Date(date)
-  const now = new Date()
-  const diff = now - d
-  const minutes = Math.floor(diff / 60000)
-  const hours = Math.floor(minutes / 60)
-  const days = Math.floor(hours / 24)
-
-  if (days > 0) return `${days} gün önce`
-  if (hours > 0) return `${hours} saat önce`
-  if (minutes > 0) return `${minutes} dakika önce`
-  return 'Az önce'
+const getGlowColor = (colorName) => {
+    return getColor(colorName) + '1A' // 10% opacity
 }
 
-onMounted(() => {
-  loadDashboardData()
+// DEFAULT MEDICAL DATA (Fallback)
+const defaultStats = [
+    { label: 'Bugünkü Randevular', value: '124', change: 5.2, icon: 'Calendar', color: 'primary' },
+    { label: 'Aktif Hastalar', value: '1,284', change: 2.1, icon: 'Users', color: 'accent' },
+    { label: 'Acil Durumlar', value: '3', change: -10.5, icon: 'AlertCircle', color: 'red' },
+    { label: 'Memnuniyet', value: '98%', change: 1.2, icon: 'Heart', color: 'secondary' }
+]
+
+const defaultActions = [
+    { label: 'Randevu Ekle', icon: 'CalendarPlus' },
+    { label: 'Hasta Kaydı', icon: 'UserPlus' },
+    { label: 'Reçete Yaz', icon: 'FileText' },
+    { label: 'Lab Sonuçları', icon: 'Activity' }
+]
+
+// Computed Display Data (Merges Defaults if Sector Data Missing)
+const displayStats = computed(() => {
+    return (sectorStore.stats && sectorStore.stats.length > 0) ? sectorStore.stats : defaultStats
 })
+
+const displayActions = computed(() => {
+    return (sectorStore.quickActions && sectorStore.quickActions.length > 0) ? sectorStore.quickActions : defaultActions
+})
+
+const chartConfig = computed(() => sectorStore.chartConfig || {
+    title: 'Hasta Trafiği',
+    subtitle: 'Haftalık Veriler',
+    datasets: [{ name: 'Hasta', data: [30, 40, 35, 50, 49, 60, 70, 91, 125] }],
+    labels: [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999]
+})
+
+const getDummyActivity = (i) => {
+    const sector = sectorStore.currentSector || 'medical'
+    const messages = {
+        medical: ['Yeni randevu oluşturuldu', 'Lab sonuçları onaylandı', 'Acil servis girişi'],
+        legal: ['Dava dosyası güncellendi', 'Müvekkil araması', 'Duruşma hatırlatması'],
+        technology: ['Server yedeklemesi tamamlandı', 'Yeni deployment', 'CPU kullanımı arttı'],
+        finance: ['Para transferi geldi', 'Fatura kesildi', 'Kur güncellemesi'],
+        real_estate: ['Yeni ilan yayında', 'Müşteri randevusu', 'Tapu işlemleri başlatıldı']
+    }
+    return { title: (messages[sector] || messages.medical)[i-1] || 'İşlem tamamlandı' }
+}
+
 </script>
 
 <style scoped>
 .portal-dashboard {
   padding: 32px;
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 .welcome-section {
@@ -188,11 +174,9 @@ onMounted(() => {
 }
 
 .welcome-section h1 {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-  letter-spacing: var(--letter-spacing-tight);
+  margin-bottom: 4px;
 }
 
 .subtitle {
@@ -200,198 +184,223 @@ onMounted(() => {
   font-size: 14px;
 }
 
-.quick-stats {
+/* Stats Grid - Fixed 4 Cols */
+.stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 24px;
   margin-bottom: 32px;
 }
 
 .stat-card {
   background: var(--surface-elevated);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  padding: 24px;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: transform 0.2s;
   display: flex;
-  align-items: center;
-  gap: 16px;
-  transition: all var(--transition-base);
+  flex-direction: column;
+  justify-content: space-between;
+  height: 140px;
 }
 
 .stat-card:hover {
-  border-color: var(--border-hover);
-  transform: translateY(-2px);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
-.stat-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.stat-icon.appointments {
-  background: rgba(99, 102, 241, 0.1);
-  color: var(--indigo-primary);
-}
-
-.stat-icon.messages {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--emerald-primary);
-}
-
-.stat-icon.calls {
-  background: rgba(245, 158, 11, 0.1);
-  color: var(--gold-primary);
-}
-
-.stat-icon.subscription {
-  background: rgba(168, 85, 247, 0.1);
-  color: #a855f7;
-}
-
-.stat-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
 }
 
 .stat-label {
-  font-size: 14px;
-  color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-body {
+    margin-top: auto;
 }
 
 .stat-value {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--text-primary);
+    font-size: 28px;
+    font-weight: 700;
+    display: block;
 }
 
-.activity-section,
-.quick-actions {
-  margin-bottom: 32px;
+.stat-change {
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 4px;
+    display: inline-block;
 }
 
-.activity-section h2,
-.quick-actions h2 {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 16px;
+.stat-change.positive { color: #10b981; }
+.stat-change.negative { color: #ef4444; }
+
+/* Dashboard Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    gap: 24px;
 }
 
-.activity-list {
-  background: var(--surface-elevated);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
+/* Chart Section */
+.chart-section {
+    background: var(--surface-elevated);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.activity-item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 24px;
-  border-bottom: 1px solid var(--border-subtle);
-  transition: background var(--transition-base);
+.section-header {
+    margin-bottom: 20px;
 }
 
-.activity-item:last-child {
-  border-bottom: none;
+.section-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
 }
 
-.activity-item:hover {
-  background: var(--surface-hover);
+.section-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
 }
 
-.activity-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+/* Side Panel */
+.side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
-.activity-icon.appointment {
-  background: rgba(99, 102, 241, 0.1);
-  color: var(--indigo-primary);
+.quick-actions-card, .activity-card {
+    background: var(--surface-elevated);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.activity-icon.message {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--emerald-primary);
+.quick-actions-card h3, .activity-card h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
 }
 
-.activity-icon.call {
-  background: rgba(245, 158, 11, 0.1);
-  color: var(--gold-primary);
-}
-
-.activity-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.activity-title {
-  font-size: 14px;
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-.activity-time {
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.actions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+.actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .action-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 24px;
-  background: var(--surface-elevated);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  color: var(--text-primary);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--surface-hover);
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .action-btn:hover {
-  background: var(--surface-hover);
-  border-color: var(--border-hover);
-  transform: translateY(-2px);
+    background: var(--bg-secondary);
+    border-color: var(--hover-color);
+    transform: translateX(4px);
 }
 
-.action-btn svg {
-  color: var(--indigo-primary);
+.action-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-@media (max-width: 768px) {
-  .portal-dashboard {
-    padding: 16px;
-  }
+.post-icon {
+    margin-left: auto;
+    font-size: 16px;
+    color: var(--text-secondary);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
 
-  .quick-stats {
-    grid-template-columns: 1fr;
-  }
+.action-btn:hover .post-icon {
+    opacity: 1;
+}
 
-  .actions-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+/* Activity List */
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.activity-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.activity-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.activity-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.activity-text strong {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.time {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+@media (max-width: 1200px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
 }
 </style>

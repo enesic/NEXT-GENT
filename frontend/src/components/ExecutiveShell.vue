@@ -1,6 +1,6 @@
 <template>
   <div class="executive-shell">
-    <!-- Sector-Adaptive Sidebar -->
+    <!-- Sidebar Pillar -->
     <aside class="shell-sidebar">
       <div class="sidebar-header">
         <div class="logo">
@@ -53,23 +53,21 @@
 
     <!-- Main Content Area -->
     <main class="shell-main">
-      <!-- Sector-Adaptive Topbar -->
+      <!-- Topbar -->
       <header class="shell-topbar">
         <div class="topbar-left">
           <h1 class="page-title">{{ currentPageTitle }}</h1>
-          <div class="sector-badge" ref="sectorBadge">
+          <div class="sector-badge" ref="sectorBadge" v-if="isCustomer">
             <component :is="currentSectorIcon" :size="14" :stroke-width="2.5" />
-            <span>{{ sectorStore.config?.displayName || sectorStore.currentSector || 'Medical' }}</span>
+            <span>{{ sectorStore.currentSector?.label || 'Sağlık' }}</span>
           </div>
         </div>
 
         <div class="topbar-right">
-          <!-- Sector is now auto-detected from login, no manual switching -->
           <div class="topbar-actions">
             <button class="action-btn" @click="handleNotifications">
               <Bell :size="18" :stroke-width="2" />
             </button>
-            <!-- Search Bar -->
             <div class="search-container" :class="{ active: isSearchActive }">
               <input 
                 v-if="isSearchActive"
@@ -127,10 +125,23 @@ import CalendarView from '../views/CalendarView.vue'
 import AnalyticsView from '../views/AnalyticsView.vue'
 import DocumentsView from '../views/DocumentsView.vue'
 import SettingsView from '../views/SettingsView.vue'
+import PortalDashboard from '../views/portal/PortalDashboard.vue'
+import PortalMessages from '../views/portal/PortalMessages.vue'
+import PortalCalls from '../views/portal/PortalCalls.vue'
+import PortalSatisfaction from '../views/portal/PortalSatisfaction.vue'
+import PortalAnalytics from '../views/portal/PortalAnalytics.vue'
+import PortalSectorSpecific from '../views/portal/PortalSectorSpecific.vue'
+import AdminDashboard from '../views/admin/AdminDashboard.vue'
+import UserManagement from '../views/admin/UserManagement.vue'
+import CardsManagement from '../views/admin/CardsManagement.vue'
+import FlowEngine from '../views/admin/FlowEngine.vue'
+import AuditLogs from '../views/admin/AuditLogs.vue'
+import { useAuthStore } from '../stores/auth'
 import gsap from 'gsap'
 
 const sectorStore = useSectorStore()
 const notificationStore = useNotificationStore()
+const authStore = useAuthStore()
 const axios = inject('axios')
 
 // State
@@ -138,6 +149,7 @@ const activeNav = ref('dashboard')
 
 // Current sector icon (based on auto-detected sector from login)
 const currentSectorIcon = computed(() => {
+  if (!sectorStore || !sectorStore.currentSectorId) return Activity
   const iconMap = {
     medical: Stethoscope,
     legal: Scale,
@@ -150,7 +162,7 @@ const currentSectorIcon = computed(() => {
     hospitality: Coffee,
     ecommerce: ShoppingCart
   }
-  return iconMap[sectorStore.currentSector] || Activity
+  return iconMap[sectorStore.currentSectorId] || Activity
 })
 
 // Current logo icon
@@ -167,45 +179,41 @@ const currentLogoIcon = computed(() => {
     hospitality: Coffee,
     ecommerce: ShoppingCart
   }
-  return iconMap[sectorStore.currentSector] || Activity
+  return iconMap[sectorStore.currentSectorId] || Activity
+})
+
+// Helper to check if user is customer
+const isCustomer = computed(() => {
+    // Assuming non-admin users are customers for this context
+    // You might need a more specific check based on your auth response structure
+    return authStore.user && authStore.user?.role !== 'admin'
 })
 
 // Navigation items
 const mainNavigation = computed(() => {
-  const baseNav = [
+  // Safe sector check
+  const sectorName = sectorStore?.currentSectorId || 'medical'
+  
+  // Customer Navigation (Restore original)
+  if (isCustomer.value) {
+      return [
+        { id: 'dashboard', label: 'Genel Bakış', icon: LayoutDashboard },
+        { id: 'appointments', label: 'Randevularım', icon: CalendarCheck },
+        { id: 'messages', label: 'Mesajlar', icon: Briefcase },
+        { id: 'calls', label: 'Aramalar', icon: Phone },
+        { id: 'satisfaction', label: 'Memnuniyet', icon: Heart }
+      ]
+  }
+
+  // Admin Navigation (Classic)
+  return [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'callcenter', label: 'Call Center', icon: Phone },
-    { id: 'satisfaction', label: 'Memnuniyet', icon: Heart },
+    { id: 'users', label: 'Kullanıcılar', icon: Users },
+    { id: 'cards', label: 'Kartlar', icon: FileText }, // Using FileText as credit card placeholder
+    { id: 'flows', label: 'Akış Motoru', icon: Activity },
+    { id: 'audits', label: 'Audit Logları', icon: FileText },
     { id: 'analytics', label: 'Analitik', icon: TrendingUp }
   ]
-  
-  // Add sector-specific items
-  switch (sectorStore.currentSector) {
-    case 'medical':
-      baseNav.push({ id: 'appointments', label: 'Randevular', icon: CalendarCheck })
-      break;
-    case 'legal':
-      baseNav.push({ id: 'cases', label: 'Dosyalar', icon: Briefcase })
-      break;
-    case 'real_estate':
-      baseNav.push({ id: 'properties', label: 'Emlaklar', icon: Home })
-      break;
-    case 'retail':
-    case 'ecommerce':
-      baseNav.push({ id: 'orders', label: 'Siparişler', icon: ShoppingBag })
-      break;
-    case 'manufacturing':
-      baseNav.push({ id: 'production', label: 'Üretim', icon: Factory })
-      break;
-    case 'education':
-      baseNav.push({ id: 'classes', label: 'Sınıflar', icon: GraduationCap })
-      break;
-    case 'automotive':
-      baseNav.push({ id: 'repairs', label: 'Servis', icon: Car })
-      break;
-  }
-  
-  return baseNav
 })
 
 const workspaceNavigation = computed(() => [
@@ -220,23 +228,36 @@ const currentPageTitle = computed(() => {
   return item ? item.label : sectorStore.t('dashboard')
 })
 
+
 // Dynamic Component Resolution
 const activeComponent = computed(() => {
+    // Customer Dashboard Override
+    if (isCustomer.value) {
+        if (activeNav.value === 'dashboard') return PortalDashboard
+        if (activeNav.value === 'appointments') return CalendarView
+        if (activeNav.value === 'messages') return PortalMessages
+        if (activeNav.value === 'calls') return PortalCalls
+        if (activeNav.value === 'satisfaction') return PortalSatisfaction
+        if (activeNav.value === 'analytics') return PortalAnalytics
+        if (['cases', 'properties', 'status', 'budget', 'syllabus'].includes(activeNav.value)) return PortalSectorSpecific
+    }
+
     // Core Modules
-    if (activeNav.value === 'dashboard') return DashboardContent
-    if (activeNav.value === 'callcenter') return CallCenterDashboard
-    if (activeNav.value === 'satisfaction') return SatisfactionDashboard
-    if (activeNav.value === 'analytics') return AnalyticsView
-    
-    // Workspace Tools
     if (activeNav.value === 'documents') return DocumentsView
     if (activeNav.value === 'calendar') return CalendarView
     if (activeNav.value === 'settings') return SettingsView
 
-    // Sector Specific Shortcuts (map to relevant view)
-    if (['appointments', 'classes'].includes(activeNav.value)) return CalendarView
-    if (['cases', 'orders', 'production', 'repairs', 'properties'].includes(activeNav.value)) return DashboardContent
+    // Admin Routes
+    if (!isCustomer.value) {
+        if (activeNav.value === 'dashboard') return AdminDashboard
+        if (activeNav.value === 'users') return UserManagement
+        if (activeNav.value === 'cards') return CardsManagement
+        if (activeNav.value === 'flows') return FlowEngine
+        if (activeNav.value === 'audits') return AuditLogs
+        if (activeNav.value === 'analytics') return AnalyticsView
+    }
 
+    // Default Fallback
     return PlaceholderView
 })
 
@@ -499,6 +520,7 @@ const handleSearchBlur = () => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  width: 100%;
 }
 
 .shell-topbar {
@@ -540,41 +562,6 @@ const handleSearchBlur = () => {
   display: flex;
   align-items: center;
   gap: 16px;
-}
-
-.sector-switcher {
-  display: flex;
-  gap: 8px;
-  padding: 4px;
-  background: var(--surface-elevated);
-  border-radius: 12px;
-  border: 1px solid var(--border-subtle);
-}
-
-.sector-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  background: transparent;
-  border: none;
-  border-radius: 8px;
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.sector-btn:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
-}
-
-.sector-btn.active {
-  background: var(--current-glow);
-  color: var(--current-accent);
-  box-shadow: 0 0 12px var(--current-glow);
 }
 
 .topbar-actions {
@@ -643,24 +630,30 @@ const handleSearchBlur = () => {
   overflow-y: auto;
   background: var(--obsidian-black);
   width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Transitions */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 
 /* Responsive Design */
 @media (max-width: 1024px) {
   .shell-sidebar {
     width: 240px;
-  }
-  
-  .shell-content {
-    padding: 24px;
-  }
-  
-  .shell-topbar {
-    padding: 16px 24px;
-  }
-  
-  .sector-switcher {
-    display: none; /* Hide on tablet */
   }
 }
 
@@ -699,11 +692,7 @@ const handleSearchBlur = () => {
   }
   
   .sidebar-footer {
-    display: none; /* Hide user profile on mobile */
-  }
-  
-  .shell-content {
-    padding: 16px;
+    display: none;
   }
   
   .shell-topbar {
@@ -711,64 +700,5 @@ const handleSearchBlur = () => {
     flex-wrap: wrap;
     gap: 12px;
   }
-  
-  .topbar-left {
-    flex: 1;
-    min-width: 0;
-  }
-  
-  .page-title {
-    font-size: 18px;
-  }
-  
-  .topbar-right {
-    width: 100%;
-    justify-content: space-between;
-  }
-  
-  .sector-switcher {
-    display: flex;
-    flex: 1;
-    justify-content: center;
-  }
-  
-  .sector-btn span {
-    display: none; /* Hide text, show only icons on mobile */
-  }
-}
-
-@media (max-width: 480px) {
-  .shell-content {
-    padding: 12px;
-  }
-  
-  .page-title {
-    font-size: 16px;
-  }
-  
-  .sector-badge {
-    font-size: 10px;
-    padding: 4px 8px;
-  }
-  
-  .sector-badge span {
-    display: none; /* Hide text on very small screens */
-  }
-}
-
-/* Transitions */
-.fade-slide-enter-active,
-.fade-slide-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.fade-slide-enter-from {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.fade-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
 }
 </style>
