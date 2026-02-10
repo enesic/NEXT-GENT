@@ -143,6 +143,8 @@ const handleLogout = async () => {
 .admin-layout {
   display: flex;
   height: 100vh;
+  width: 100vw !important;
+  max-width: none !important;
   background: var(--background);
   overflow: hidden;
 }
@@ -314,7 +316,8 @@ const handleLogout = async () => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  width: 100%;
+  width: 100% !important;
+  max-width: none !important;
   min-width: 0;
 }
 
@@ -322,11 +325,13 @@ const handleLogout = async () => {
   height: 80px;
   background: var(--surface-elevated);
   border-bottom: 1px solid var(--border-subtle);
-  padding: 0 32px;
+  padding: 0 40px; /* Increased padding slightly but kept wide */
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
+  width: 100% !important;
+  max-width: none !important;
 }
 
 .header-left {
@@ -434,7 +439,10 @@ const handleLogout = async () => {
   flex: 1;
   overflow-y: auto;
   background: var(--background);
-  width: 100%;
+  width: 100% !important;
+  max-width: none !important;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Scrollbar */

@@ -331,11 +331,15 @@ onMounted(() => {
   font-size: 32px;
   font-weight: 700;
   margin-bottom: 8px;
+  animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .subtitle {
   color: var(--text-secondary);
   font-size: 14px;
+  animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.1s;
+  opacity: 0;
 }
 
 .period-selector {
@@ -366,7 +370,14 @@ onMounted(() => {
   align-items: center;
   gap: 16px;
   transition: all 0.3s;
+  animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
 }
+
+.stat-card:nth-child(1) { animation-delay: 0.2s; }
+.stat-card:nth-child(2) { animation-delay: 0.3s; }
+.stat-card:nth-child(3) { animation-delay: 0.4s; }
+.stat-card:nth-child(4) { animation-delay: 0.5s; }
 
 .stat-card:hover {
   transform: translateY(-2px);
@@ -436,12 +447,18 @@ onMounted(() => {
 .chart-container {
   height: 300px;
   position: relative;
+  animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.6s;
+  opacity: 0;
 }
 
 /* Table */
 .table-container {
   padding: 24px;
   border-radius: 16px;
+  animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.7s;
+  opacity: 0;
 }
 
 .table-container h3 {
@@ -519,6 +536,17 @@ onMounted(() => {
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Responsive */

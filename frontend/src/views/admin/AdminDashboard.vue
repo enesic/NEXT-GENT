@@ -1,635 +1,534 @@
 <template>
-  <div class="dashboard-wrapper">
-    <!-- Stats Grid -->
-    <div class="stats-grid">
-      <div class="stat-card" v-for="stat in stats" :key="stat.label">
-        <div class="stat-icon" :style="{ background: stat.color }">
-          <component :is="stat.icon" :size="24" :stroke-width="2" />
+  <div class="classic-dashboard">
+
+
+    <!-- Top Stats Row (4 Columns to spread everywhere) -->
+    <div class="top-stats">
+      <!-- Total Users -->
+      <div class="stat-card">
+        <div class="stat-icon-wrapper purple">
+            <Users :size="24" color="#a855f7" />
         </div>
-        <div class="stat-content">
-          <p class="stat-label">{{ stat.label }}</p>
-          <h3 class="stat-value">{{ stat.value }}</h3>
-          <div class="stat-footer">
-            <span class="stat-change" :class="{ positive: stat.change > 0, negative: stat.change < 0 }">
-              <TrendingUp v-if="stat.change > 0" :size="14" />
-              <TrendingDown v-else :size="14" />
-              {{ Math.abs(stat.change) }}%
-            </span>
-            <span class="stat-period">vs geçen ay</span>
-          </div>
+        <div class="stat-info">
+            <span class="label">TOPLAM KULLANICI</span>
+            <span class="value">2,543</span>
+            <div class="stat-meta">
+                 <span class="change positive">
+                    <TrendingUp :size="14" /> 12.5%
+                </span>
+                <span class="muted">vs geçen ay</span>
+            </div>
+        </div>
+      </div>
+
+      <!-- Monthly Income -->
+      <div class="stat-card">
+        <div class="stat-icon-wrapper pink">
+            <DollarSign :size="24" color="#ec4899" />
+        </div>
+        <div class="stat-info">
+            <span class="label">AYLIK GELİR</span>
+            <span class="value">₺45,231</span>
+            <div class="stat-meta">
+                <span class="change positive">
+                    <TrendingUp :size="14" /> 8.2%
+                </span>
+                <span class="muted">vs geçen ay</span>
+            </div>
+        </div>
+      </div>
+
+      <!-- Active Calls -->
+      <div class="stat-card">
+        <div class="stat-icon-wrapper blue">
+            <Phone :size="24" color="#0ea5e9" />
+        </div>
+        <div class="stat-info">
+            <span class="label">AKTİF ÇAĞRILAR</span>
+            <span class="value">1,234</span>
+            <div class="stat-meta">
+                <span class="change negative">
+                    <TrendingDown :size="14" /> 3.1%
+                </span>
+                <span class="muted">vs geçen ay</span>
+            </div>
+        </div>
+      </div>
+
+      <!-- Success Rate (Moved here to fill width) -->
+      <div class="stat-card">
+         <div class="stat-icon-wrapper green">
+            <Activity :size="24" color="#22c55e" />
+        </div>
+        <div class="stat-info">
+            <span class="label">BAŞARI ORANI</span>
+            <span class="value">94.2%</span>
+            <div class="stat-meta">
+                <span class="change positive">
+                    <TrendingUp :size="14" /> 2.4%
+                </span>
+                <span class="muted">vs geçen ay</span>
+            </div>
         </div>
       </div>
     </div>
 
     <!-- Charts Row -->
-    <div class="charts-row">
-      <!-- Traffic Chart -->
-      <div class="chart-card">
-        <div class="chart-header">
-          <div>
-            <h3 class="chart-title">Haftalık Trafik</h3>
-            <p class="chart-subtitle">Son 7 günlük aktivite</p>
-          </div>
-          <select class="chart-select">
-            <option>Son 7 Gün</option>
-            <option>Son 30 Gün</option>
-            <option>Son 90 Gün</option>
-          </select>
+    <div class="charts-grid">
+        <!-- Weekly Traffic (Line Chart) -->
+        <div class="chart-card large">
+            <div class="chart-header">
+                <div>
+                    <h3>Haftalık Trafik</h3>
+                    <p>Son 7 günlük aktivite</p>
+                </div>
+                <select class="chart-select">
+                    <option>Son 7 Gün</option>
+                </select>
+            </div>
+            <div class="chart-container">
+                <canvas ref="trafficChartEl"></canvas>
+            </div>
         </div>
-        <div class="chart-container">
-          <canvas ref="trafficChart"></canvas>
-        </div>
-      </div>
 
-      <!-- Performance Chart -->
-      <div class="chart-card">
-        <div class="chart-header">
-          <div>
-            <h3 class="chart-title">Sistem Performansı</h3>
-            <p class="chart-subtitle">Başarı oranları</p>
-          </div>
+        <!-- System Performance (Donut) -->
+        <div class="chart-card small">
+            <div class="chart-header">
+                <div>
+                     <h3>Sistem Performansı</h3>
+                     <p>Başarı oranları</p>
+                </div>
+            </div>
+             <div class="chart-container donut-container">
+                <canvas ref="performanceChartEl"></canvas>
+            </div>
+             <div class="chart-legend center">
+                <div class="legend-item"><span class="dot green"></span>Başarılı</div>
+                <div class="legend-item"><span class="dot purple"></span>Beklemede</div>
+                <div class="legend-item"><span class="dot red"></span>Başarısız</div>
+            </div>
         </div>
-        <div class="chart-container">
-          <canvas ref="performanceChart"></canvas>
-        </div>
-      </div>
     </div>
 
-    <!-- Activity & Quick Actions -->
-    <div class="bottom-row">
-      <!-- Recent Activity -->
-      <div class="activity-card">
-        <div class="card-header">
-          <h3 class="card-title">
-            <Activity :size="20" :stroke-width="2" />
-            Son Aktiviteler
-          </h3>
-          <button class="view-all-btn">Tümünü Gör</button>
-        </div>
-        <div class="activity-list">
-          <div class="activity-item" v-for="activity in recentActivities" :key="activity.id">
-            <div class="activity-icon" :class="activity.type">
-              <component :is="activity.icon" :size="16" :stroke-width="2" />
-            </div>
-            <div class="activity-content">
-              <p class="activity-text">{{ activity.text }}</p>
-              <span class="activity-time">{{ activity.time }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Quick Actions -->
-      <div class="quick-actions-card">
-        <div class="card-header">
-          <h3 class="card-title">
-            <Zap :size="20" :stroke-width="2" />
-            Hızlı İşlemler
-          </h3>
-        </div>
-        <div class="actions-grid">
-          <button class="action-btn" v-for="action in quickActions" :key="action.label">
-            <component :is="action.icon" :size="20" :stroke-width="2" />
-            <span>{{ action.label }}</span>
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Chart, registerables } from 'chart.js'
-import {
-  Users,
-  DollarSign,
-  Phone,
-  TrendingUp,
-  TrendingDown,
-  Activity,
-  Zap,
-  UserPlus,
-  FileText,
-  Settings,
-  Download,
-  Upload,
-  RefreshCw,
-  BarChart3
-} from 'lucide-vue-next'
+import { Users, DollarSign, Phone, Activity, TrendingUp, TrendingDown, Bell, Settings } from 'lucide-vue-next'
 
 Chart.register(...registerables)
 
-const stats = ref([
-  {
-    label: 'Toplam Kullanıcı',
-    value: '2,543',
-    change: 12.5,
-    icon: Users,
-    color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-  },
-  {
-    label: 'Aylık Gelir',
-    value: '₺45,231',
-    change: 8.2,
-    icon: DollarSign,
-    color: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
-  },
-  {
-    label: 'Aktif Çağrılar',
-    value: '1,234',
-    change: -3.1,
-    icon: Phone,
-    color: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
-  },
-  {
-    label: 'Başarı Oranı',
-    value: '94.2%',
-    change: 2.4,
-    icon: TrendingUp,
-    color: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
-  }
-])
-
-const recentActivities = ref([
-  {
-    id: 1,
-    text: 'Yeni kullanıcı kaydı: Ahmet Yılmaz',
-    time: '2 dakika önce',
-    type: 'user',
-    icon: UserPlus
-  },
-  {
-    id: 2,
-    text: 'Sistem güncellemesi tamamlandı',
-    time: '15 dakika önce',
-    type: 'system',
-    icon: RefreshCw
-  },
-  {
-    id: 3,
-    text: 'Yeni rapor oluşturuldu',
-    time: '1 saat önce',
-    type: 'report',
-    icon: FileText
-  },
-  {
-    id: 4,
-    text: 'Ayarlar güncellendi',
-    time: '2 saat önce',
-    type: 'settings',
-    icon: Settings
-  }
-])
-
-const quickActions = ref([
-  { label: 'Kullanıcı Ekle', icon: UserPlus },
-  { label: 'Rapor Oluştur', icon: FileText },
-  { label: 'Veri İndir', icon: Download },
-  { label: 'Veri Yükle', icon: Upload },
-  { label: 'Ayarlar', icon: Settings },
-  { label: 'Analitik', icon: BarChart3 }
-])
-
-const trafficChart = ref(null)
-const performanceChart = ref(null)
-
-const renderCharts = () => {
-  // Traffic Chart
-  if (trafficChart.value) {
-    new Chart(trafficChart.value, {
-      type: 'line',
-      data: {
-        labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
-        datasets: [
-          {
-            label: 'Çağrılar',
-            data: [65, 78, 90, 81, 56, 55, 40],
-            borderColor: '#667eea',
-            backgroundColor: 'rgba(102, 126, 234, 0.1)',
-            tension: 0.4,
-            fill: true,
-            borderWidth: 2
-          },
-          {
-            label: 'Mesajlar',
-            data: [45, 52, 65, 59, 48, 42, 35],
-            borderColor: '#f093fb',
-            backgroundColor: 'rgba(240, 147, 251, 0.1)',
-            tension: 0.4,
-            fill: true,
-            borderWidth: 2
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: true,
-            position: 'bottom',
-            labels: {
-              color: '#9ca3af',
-              usePointStyle: true,
-              padding: 15
-            }
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: { color: '#9ca3af' },
-            grid: { color: 'rgba(255, 255, 255, 0.05)' }
-          },
-          x: {
-            ticks: { color: '#9ca3af' },
-            grid: { display: false }
-          }
-        }
-      }
-    })
-  }
-
-  // Performance Chart (Doughnut)
-  if (performanceChart.value) {
-    new Chart(performanceChart.value, {
-      type: 'doughnut',
-      data: {
-        labels: ['Başarılı', 'Beklemede', 'Başarısız'],
-        datasets: [
-          {
-            data: [85, 10, 5],
-            backgroundColor: [
-              '#43e97b',
-              '#f093fb',
-              '#f5576c'
-            ],
-            borderWidth: 0
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: true,
-            position: 'bottom',
-            labels: {
-              color: '#9ca3af',
-              usePointStyle: true,
-              padding: 15
-            }
-          }
-        }
-      }
-    })
-  }
-}
+const trafficChartEl = ref(null)
+const performanceChartEl = ref(null)
 
 onMounted(() => {
-  renderCharts()
+    // Traffic Chart
+    if (trafficChartEl.value) {
+        new Chart(trafficChartEl.value, {
+            type: 'line',
+            data: {
+                labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+                datasets: [
+                    {
+                        label: 'Çağrılar',
+                        data: [65, 78, 90, 81, 56, 55, 40],
+                        borderColor: '#3b82f6', // Mobile Blue
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#1e1e2e',
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Mesajlar',
+                        data: [45, 52, 65, 59, 48, 42, 35],
+                        borderColor: '#a855f7', // Purple
+                        backgroundColor: 'transparent',
+                        tension: 0.4,
+                        borderDash: [5, 5],
+                        pointBackgroundColor: '#1e1e2e',
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: '#1e1e2e',
+                        titleColor: '#fff',
+                        bodyColor: '#94a3b8',
+                        borderColor: '#334155',
+                        borderWidth: 1,
+                        padding: 10,
+                        displayColors: true,
+                        usePointStyle: true,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y;
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#64748b' }
+                    },
+                    x: { 
+                        grid: { display: false },
+                        ticks: { color: '#64748b' }
+                    }
+                }
+            }
+        })
+    }
+
+    // Performance Chart
+    if (performanceChartEl.value) {
+        new Chart(performanceChartEl.value, {
+            type: 'doughnut',
+            data: {
+                labels: ['Başarılı', 'Beklemede', 'Başarısız'],
+                datasets: [{
+                    data: [75, 15, 10],
+                    backgroundColor: ['#22c55e', '#d8b4fe', '#ef4444'], // Green, Light Purple, Red
+                    borderWidth: 0,
+                    cutout: '70%'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        })
+    }
 })
 </script>
 
 <style scoped>
-/* Main Wrapper - Full Width */
-.dashboard-wrapper {
-  width: 100%;
-  padding: 24px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+.classic-dashboard {
+    width: 100%;
+    min-width: 100%; /* Ensure it doesn't shrink */
+    max-width: none !important; /* Force override any hidden limits */
+    padding: 32px 40px; 
+    background: #030303; 
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Stats Grid - 4 Columns */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  width: 100%;
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.page-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.subtitle {
+    color: #64748b;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.icon-btn {
+    background: transparent;
+    border: 1px solid #334155;
+    color: #94a3b8;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.icon-btn:hover {
+    background: #1e293b;
+    color: #fff;
+}
+
+.user-chip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #1e293b;
+    padding: 8px 16px 8px 8px;
+    border-radius: 12px;
+    border: 1px solid #334155;
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    background: #6366f1;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+}
+
+.name { font-size: 14px; font-weight: 600; }
+.role { font-size: 11px; color: #94a3b8; }
+
+.top-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 32px; 
+    margin-bottom: 32px;
+    margin-top: 10px;
+    width: 100%;
 }
 
 .stat-card {
-  background: var(--surface-elevated);
-  border: 1px solid var(--border-subtle);
-  border-radius: 16px;
-  padding: 24px;
-  display: flex;
-  gap: 20px;
-  align-items: flex-start;
-  transition: all 0.3s;
-  width: 100%;
-  box-sizing: border-box;
+    flex: 1; /* Allow cards to grow if needed */
+    min-width: 0; /* Prevent overflow issues in flex/grid */
+}
+
+@keyframes appear {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stat-card {
+    background: #0f0f11;
+    border: 1px solid #1f1f23;
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0; /* Init hidden */
+    transform: translateY(20px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add transition for hover */
+    cursor: pointer;
 }
 
 .stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-  border-color: var(--border-hover);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px -10px rgba(168, 85, 247, 0.15); /* Subtle purple glow */
+    border-color: #334155;
+    background: #141417;
 }
 
-.stat-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  flex-shrink: 0;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+/* Stagger delays */
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+.stat-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
-.stat-content {
-  flex: 1;
-  min-width: 0;
+.stat-icon-wrapper.purple { background: rgba(168, 85, 247, 0.1); }
+.stat-icon-wrapper.pink { background: rgba(236, 72, 153, 0.1); }
+.stat-icon-wrapper.blue { background: rgba(14, 165, 233, 0.1); }
+.stat-icon-wrapper.green { background: rgba(34, 197, 94, 0.1); }
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
 }
 
-.stat-label {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin-bottom: 8px;
-  font-weight: 500;
+.label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
 }
 
-.stat-value {
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -0.02em;
-  margin-bottom: 12px;
+.value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
 }
 
-.stat-footer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.stat-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
 }
 
-.stat-change {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
+.change {
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 2px;
 }
 
-.stat-change.positive {
-  background: rgba(67, 233, 123, 0.15);
-  color: #43e97b;
+.change.positive { color: #22c55e; }
+.change.negative { color: #ef4444; }
+
+.muted {
+    color: #475569;
+    font-size: 11px;
 }
 
-.stat-change.negative {
-  background: rgba(245, 87, 108, 0.15);
-  color: #f5576c;
-}
-
-.stat-period {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-/* Charts Row - 2 Columns */
-.charts-row {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  width: 100%;
+.charts-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    width: 100%;
+    margin-top: 10px;
 }
 
 .chart-card {
-  background: var(--surface-elevated);
-  border: 1px solid var(--border-subtle);
-  border-radius: 16px;
-  padding: 24px;
-  width: 100%;
-  box-sizing: border-box;
+    background: #0f0f11;
+    border: 1px solid #1f1f23;
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    /* Entrance Animation */
+    animation: appear 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+    transform: translateY(20px);
+    animation-delay: 0.5s;
+}
+
+.chart-card.small { animation-delay: 0.6s; }
+
+.chart-card.large { 
+    flex: 2;
+    min-width: 500px;
+    min-height: 350px; 
+}
+.chart-card.small { 
+    flex: 1;
+    min-width: 300px;
+    min-height: 350px; 
 }
 
 .chart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
 }
 
-.chart-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-
-.chart-subtitle {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
+.chart-header h3 { font-size: 16px; font-weight: 600; margin: 0; }
+.chart-header p { font-size: 12px; color: #64748b; margin-top: 4px; }
 
 .chart-select {
-  padding: 8px 12px;
-  background: var(--surface-hover);
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  color: var(--text-primary);
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.chart-select:hover {
-  border-color: var(--border-hover);
+    background: #18181b;
+    border: 1px solid #27272a;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    outline: none;
 }
 
 .chart-container {
-  height: 300px;
-  position: relative;
+    flex: 1;
+    position: relative;
+    width: 100%;
 }
 
-/* Bottom Row */
-.bottom-row {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap: 20px;
-  width: 100%;
+.donut-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.activity-card,
-.quick-actions-card {
-  background: var(--surface-elevated);
-  border: 1px solid var(--border-subtle);
-  border-radius: 16px;
-  padding: 24px;
-  width: 100%;
-  box-sizing: border-box;
+.chart-legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+    justify-content: center;
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #94a3b8;
 }
 
-.card-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
 }
 
-.view-all-btn {
-  padding: 6px 14px;
-  background: transparent;
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
+.dot.blue { background: #3b82f6; }
+.dot.purple { background: #a855f7; }
+.dot.green { background: #22c55e; }
+.dot.red { background: #ef4444; }
 
-.view-all-btn:hover {
-  background: var(--surface-hover);
-  border-color: var(--border-hover);
-  color: var(--text-primary);
-}
-
-/* Activity List */
-.activity-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.activity-item {
-  display: flex;
-  gap: 12px;
-  padding: 12px;
-  background: var(--surface-hover);
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  transition: all 0.2s;
-}
-
-.activity-item:hover {
-  border-color: var(--border-hover);
-}
-
-.activity-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.activity-icon.user {
-  background: rgba(102, 126, 234, 0.15);
-  color: #667eea;
-}
-
-.activity-icon.system {
-  background: rgba(67, 233, 123, 0.15);
-  color: #43e97b;
-}
-
-.activity-icon.report {
-  background: rgba(240, 147, 251, 0.15);
-  color: #f093fb;
-}
-
-.activity-icon.settings {
-  background: rgba(79, 172, 254, 0.15);
-  color: #4facfe;
-}
-
-.activity-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.activity-text {
-  font-size: 14px;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-
-.activity-time {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-/* Quick Actions */
-.actions-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-.action-btn {
-  padding: 16px;
-  background: var(--surface-hover);
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.action-btn:hover {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-  border-color: #667eea;
-  color: #667eea;
-  transform: translateY(-2px);
-}
-
-/* Responsive Design */
-@media (max-width: 1600px) {
-  .stats-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
+@media (max-width: 1400px) {
+    .charts-grid { grid-template-columns: 3fr 2fr; }
 }
 
 @media (max-width: 1200px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .charts-row {
-    grid-template-columns: 1fr;
-  }
-  
-  .bottom-row {
-    grid-template-columns: 1fr;
-  }
+    .top-stats { grid-template-columns: repeat(2, 1fr); }
+    .charts-grid { grid-template-columns: 1fr; }
+    .chart-card { min-height: 350px; }
 }
 
 @media (max-width: 768px) {
-  .dashboard-wrapper {
-    padding: 16px;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .actions-grid {
-    grid-template-columns: 1fr;
-  }
+    .top-stats { grid-template-columns: 1fr; }
+    .dashboard-header { flex-direction: column; align-items: flex-start; gap: 16px; }
 }
 </style>

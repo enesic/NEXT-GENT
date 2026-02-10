@@ -480,11 +480,15 @@ onMounted(() => {
   font-size: 32px;
   font-weight: 700;
   margin-bottom: 8px;
+  animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .subtitle {
   color: var(--text-secondary);
   font-size: 14px;
+  animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.1s;
+  opacity: 0;
 }
 
 .btn-primary {
@@ -523,7 +527,13 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 16px;
+  animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
 }
+
+.stat-card:nth-child(1) { animation-delay: 0.2s; }
+.stat-card:nth-child(2) { animation-delay: 0.3s; }
+.stat-card:nth-child(3) { animation-delay: 0.4s; }
 
 .stat-icon {
   width: 56px;
@@ -567,6 +577,9 @@ onMounted(() => {
   padding: 16px;
   border-radius: 12px;
   margin-bottom: 24px;
+  animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.5s;
+  opacity: 0;
 }
 
 .search-box {
@@ -609,6 +622,9 @@ onMounted(() => {
   border-radius: 16px;
   overflow: hidden;
   margin-bottom: 24px;
+  animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.6s;
+  opacity: 0;
 }
 
 .users-table {
@@ -761,6 +777,17 @@ onMounted(() => {
   padding: 64px;
   text-align: center;
   color: var(--text-secondary);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Pagination */

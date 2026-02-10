@@ -311,11 +311,15 @@ onMounted(() => {
   font-size: 32px;
   font-weight: 700;
   margin-bottom: 8px;
+  animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .subtitle {
   color: var(--text-secondary);
   font-size: 14px;
+  animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.1s;
+  opacity: 0;
 }
 
 .btn-export {
@@ -344,6 +348,9 @@ onMounted(() => {
   padding: 16px;
   border-radius: 12px;
   margin-bottom: 24px;
+  animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.2s;
+  opacity: 0;
 }
 
 .filter-group {
@@ -390,6 +397,9 @@ onMounted(() => {
   margin-bottom: 24px;
   min-height: 400px;
   position: relative;
+  animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.3s;
+  opacity: 0;
 }
 
 .logs-table {
@@ -532,6 +542,17 @@ onMounted(() => {
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .pagination {

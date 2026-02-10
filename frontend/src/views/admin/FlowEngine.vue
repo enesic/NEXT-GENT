@@ -185,11 +185,15 @@ onMounted(() => {
   color: var(--text-primary);
   margin-bottom: 8px;
   letter-spacing: var(--letter-spacing-tight);
+  animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .subtitle {
   color: var(--text-secondary);
   font-size: 14px;
+  animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.1s;
+  opacity: 0;
 }
 
 .btn-primary {
@@ -223,7 +227,15 @@ onMounted(() => {
   border-radius: var(--radius-lg);
   padding: 24px;
   transition: all var(--transition-base);
+  animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
 }
+
+.flow-card:nth-child(1) { animation-delay: 0.2s; }
+.flow-card:nth-child(2) { animation-delay: 0.3s; }
+.flow-card:nth-child(3) { animation-delay: 0.4s; }
+.flow-card:nth-child(4) { animation-delay: 0.5s; }
+.flow-card:nth-child(5) { animation-delay: 0.6s; }
 
 .flow-card:hover {
   border-color: var(--border-hover);
@@ -420,6 +432,17 @@ onMounted(() => {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 768px) {

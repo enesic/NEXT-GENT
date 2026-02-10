@@ -155,11 +155,15 @@ onMounted(() => {
   color: var(--text-primary);
   margin-bottom: 8px;
   letter-spacing: var(--letter-spacing-tight);
+  animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .subtitle {
   color: var(--text-secondary);
   font-size: 14px;
+  animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.1s;
+  opacity: 0;
 }
 
 .cards-grid {
@@ -175,7 +179,15 @@ onMounted(() => {
   padding: 32px;
   position: relative;
   transition: all var(--transition-base);
+  animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
 }
+
+.card-item:nth-child(1) { animation-delay: 0.2s; }
+.card-item:nth-child(2) { animation-delay: 0.3s; }
+.card-item:nth-child(3) { animation-delay: 0.4s; }
+.card-item:nth-child(4) { animation-delay: 0.5s; }
+.card-item:nth-child(5) { animation-delay: 0.6s; }
 
 .card-item:hover {
   border-color: var(--border-hover);
@@ -348,6 +360,17 @@ onMounted(() => {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 768px) {
