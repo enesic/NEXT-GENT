@@ -57,6 +57,7 @@
                         :key="index"
                         class="action-btn"
                         :style="{ '--hover-color': colors.primary }"
+                        @click="handleActionClick(action)"
                     >
                         <div class="action-icon" :style="{ background: getGlowColor('primary'), color: colors.primary }">
                              <component :is="sectorStore.getIcon(action.icon)" :size="18" />
@@ -224,6 +225,34 @@ const getDummyActivity = (i) => {
         real_estate: ['Yeni ilan yayında', 'Müşteri randevusu', 'Tapu işlemleri başlatıldı']
     }
     return { title: (messages[sector] || messages.medical)[i-1] || 'İşlem tamamlandı' }
+}
+
+// Button click handler
+const handleActionClick = (action) => {
+    console.log('Action clicked:', action)
+    
+    // Map action labels to routes
+    const routeMap = {
+        'Randevu Ekle': '/portal/appointments',
+        'Hasta Kaydı': '/portal/customers',
+        'Reçete Yaz': '/portal/documents',
+        'Lab Sonuçları': '/portal/documents',
+        'Dava Aç': '/portal/cases',
+        'Müvekkil Ekle': '/portal/customers',
+        'Dosya Yükle': '/portal/documents',
+        'Takvim': '/portal/calendar',
+        'Mülk Ekle': '/portal/properties',
+        'Müşteri Ekle': '/portal/customers',
+        'Görüşme Planla': '/portal/appointments',
+        'Rapor': '/portal/analytics'
+    }
+    
+    // Fallback: try to navigate based on label
+    const route = routeMap[action.label] || '/portal/dashboard'
+    
+    // For now, show alert (you can replace with router.push(route) when routes are ready)
+    console.log(`Navigating to: ${route}`)
+    alert(`"${action.label}" özelliği yakında eklenecek!\nHedef sayfa: ${route}`)
 }
 
 </script>
