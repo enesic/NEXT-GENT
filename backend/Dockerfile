@@ -14,7 +14,7 @@ WORKDIR /app
 # gcc and libpq-dev are needed for psycopg2 (PostgreSQL adapter)
 # postgresql-client is needed for pg_isready command
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends gcc libpq-dev postgresql-client \
+    && apt-get install -y --no-install-recommends gcc libpq-dev postgresql-client dos2unix \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -27,7 +27,7 @@ COPY . .
 
 # Copy and set permissions for entrypoint script
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN dos2unix /entrypoint.sh && chmod +x /entrypoint.sh
 
 # Expose port (FastAPI default)
 EXPOSE 8000

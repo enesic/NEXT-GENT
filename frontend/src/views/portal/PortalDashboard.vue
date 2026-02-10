@@ -86,11 +86,19 @@
 </template>
 
 <script setup>
-import { ref, computed, inject } from 'vue'
+import { ref, computed, inject, onMounted } from 'vue'
 import { useSectorStore } from '../../stores/sector'
 import LuxuryChart from '../../components/LuxuryChart.vue'
+import dashboardAPI from '../../config/dashboardAPI'
 
 const sectorStore = useSectorStore()
+
+// Data state
+const loading = ref(true)
+const error = ref(null)
+const stats = ref([])
+const satisfactionData = ref(null)
+const quickStatsData = ref(null)
 
 // Dynamic Theme Colors
 const colors = computed(() => sectorStore.theme || {
@@ -131,9 +139,68 @@ const defaultActions = [
     { label: 'Lab Sonuçları', icon: 'Activity' }
 ]
 
+// Fetch dashboard data from API
+const fetchDashboardData = async () => {
+    try {
+        loading.value = true
+        error.value = null
+
+        // Fetch data in parallel
+        const [kpis, satisfaction, quickStats] = await Promise.all([
+            dashboardAPI.getSectoralKPIs().catch(() => null),
+            dashboardAPI.getSatisfactionMetrics(30).catch(() => null),
+            dashboardAPI.getQuickStats(30).catch(() => null)
+        ])
+
+        // Map KPIs to stat cards format
+        if (kpis && Array.isArray(kpis)) {
+            stats.value = kpis.map((kpi, index) => ({
+                label: kpi.label,
+                value: kpi.value,
+                change: parseFloat(kpi.trend) || 0,
+                icon: getIconForKPI(index),
+                color: kpi.positive ? 'primary' : 'red',
+                description: kpi.description
+            }))
+        }
+
+        satisfactionData.value = satisfaction
+        quickStatsData.value = quickStats
+
+        console.log('✅ Dashboard data loaded:', { kpis, satisfaction, quickStats })
+    } catch (err) {
+        console.error('❌ Error fetching dashboard data:', err)
+        error.value = err.message || 'Veri yüklenirken hata oluştu'
+        // Fallback to default data on error
+        stats.value = []
+    } finally {
+        loading.value = false
+    }
+}
+
+// Get appropriate icon for KPI based on index
+const getIconForKPI = (index) => {
+    const icons = ['TrendingUp', 'Users', 'AlertCircle', 'Heart', 'Activity', 'CheckCircle']
+    return icons[index] || 'BarChart'
+}
+
+// OnMounted - Fetch data when component loads
+onMounted(() => {
+    fetchDashboardData()
+})
+
 // Computed Display Data (Merges Defaults if Sector Data Missing)
 const displayStats = computed(() => {
-    return (sectorStore.stats && sectorStore.stats.length > 0) ? sectorStore.stats : defaultStats
+    // Priority: 1. API data, 2. Sector store data, 3. Default fallback
+    if (stats.value && stats.value.length > 0) {
+        return stats.value
+    }
+    
+    if (sectorStore.stats && sectorStore.stats.length > 0) {
+        return sectorStore.stats
+    }
+    
+    return defaultStats
 })
 
 const displayActions = computed(() => {

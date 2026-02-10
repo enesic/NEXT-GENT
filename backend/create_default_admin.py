@@ -22,7 +22,7 @@ async def create_default_admin():
     async with AsyncSessionLocal() as db:
         # Check if any admin already exists
         result = await db.execute(select(AdminUser))
-        existing_admin = result.scalar_one_or_none()
+        existing_admin = result.scalars().first()
         
         if existing_admin:
             print(f"✅ Admin user already exists: {existing_admin.username}")
