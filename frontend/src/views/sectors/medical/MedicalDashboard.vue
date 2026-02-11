@@ -1,45 +1,63 @@
 <template>
   <DashboardLayout sector="medical" :sector-icon="Activity">
-    <!-- Stats Overview -->
-    <section class="stats-grid">
-      <StatCard
-        :icon="Users"
-        label="Bugünkü Hastalar"
-        :value="stats.todayPatients"
-        change="+12.5%"
-        changeType="positive"
-        :gradient="theme.primaryGradient"
-        @click="navigateTo('/patients/today')"
-      />
-      <StatCard
-        :icon="Calendar"
-        label="Aktif Randevular"
-        :value="stats.activeAppointments"
-        change="+8.3%"
-        changeType="positive"
-        :gradient="theme.primaryGradient"
-        @click="navigateTo('/appointments')"
-      />
-      <StatCard
-        :icon="TrendingUp"
-        label="Haftalık Gelir"
-        :value="`₺${stats.weeklyRevenue.toLocaleString('tr-TR')}`"
-        change="+15.2%"
-        changeType="positive"
-        :gradient="theme.primaryGradient"
-        :animated="false"
-        @click="navigateTo('/revenue')"
-      />
-      <StatCard
-        :icon="AlertCircle"
-        label="Acil Durumlar"
-        :value="stats.emergencies"
-        change="-5.1%"
-        changeType="positive"
-        :gradient="'linear-gradient(135deg, #10b981, #34d399)'"
-        @click="navigateTo('/emergencies')"
-      />
-    </section>
+    <!-- Error State -->
+    <ErrorState
+      v-if="hasError && !isLoading"
+      variant="network"
+      title="Dashboard Yüklenemedi"
+      message="Sunucuya bağlanılamadı. Lütfen internet bağlantınızı kontrol edin."
+      @action="retry"
+    />
+    
+    <!-- Loading State -->
+    <template v-else-if="isLoading && !kpis">
+      <section class="stats-grid">
+        <SkeletonStatCard v-for="i in 4" :key="i" />
+      </section>
+    </template>
+    
+    <!-- Data Loaded -->
+    <template v-else>
+      <!-- Stats Overview -->
+      <section class="stats-grid">
+        <StatCard
+          :icon="Users"
+          label="Bugünkü Hastalar"
+          :value="stats.todayPatients"
+          change="+12.5%"
+          changeType="positive"
+          :gradient="theme.primaryGradient"
+          @click="navigateTo('/patients/today')"
+        />
+        <StatCard
+          :icon="Calendar"
+          label="Aktif Randevular"
+          :value="stats.activeAppointments"
+          change="+8.3%"
+          changeType="positive"
+          :gradient="theme.primaryGradient"
+          @click="navigateTo('/appointments')"
+        />
+        <StatCard
+          :icon="TrendingUp"
+          label="Haftalık Gelir"
+          :value="`₺${stats.weeklyRevenue.toLocaleString('tr-TR')}`"
+          change="+15.2%"
+          changeType="positive"
+          :gradient="theme.primaryGradient"
+          :animated="false"
+          @click="navigateTo('/revenue')"
+        />
+        <StatCard
+          :icon="AlertCircle"
+          label="Acil Durumlar"
+          :value="stats.emergencies"
+          change="-5.1%"
+          changeType="positive"
+          :gradient="'linear-gradient(135deg, #10b981, #34d399)'"
+          @click="navigateTo('/emergencies')"
+        />
+      </section>
 
     <!-- Main Content Grid -->
     <div class="content-grid">
@@ -61,16 +79,21 @@
             <button 
               v-for="filter in timeFilters" 
               :key="filter.value"
+              v-ripple
               class="filter-btn" 
               :class="{ active: selectedTimeFilter === filter.value }"
               @click="selectedTimeFilter = filter.value"
+              :aria-pressed="selectedTimeFilter === filter.value"
+              :aria-label="`Filter by ${filter.label}`"
             >
               {{ filter.label }}
             </button>
           </div>
         </div>
         <div class="chart-wrapper">
+          <SkeletonChart v-if="patientFlowLoading || !patientFlowData" type="line" />
           <InteractiveChart
+            v-else
             type="line"
             :data="patientFlowData"
             :gradient-colors="['rgba(239, 68, 68, 0.8)', 'rgba(239, 68, 68, 0.1)']"
@@ -87,8 +110,14 @@
           <div 
             v-for="dept in departments" 
             :key="dept.id"
+            v-ripple
             class="department-item"
             @click="handleDepartmentClick(dept)"
+            role="button"
+            tabindex="0"
+            :aria-label="`View ${dept.name} department details`"
+            @keydown.enter="handleDepartmentClick(dept)"
+            @keydown.space.prevent="handleDepartmentClick(dept)"
           >
             <div class="dept-info">
               <div class="dept-icon" :style="{ background: dept.gradient }">
@@ -130,7 +159,12 @@
               <p class="emergency-condition">{{ emergency.condition }}</p>
               <p class="emergency-time">{{ emergency.time }}</p>
             </div>
-            <button class="btn-action" @click="handleEmergency(emergency)">
+            <button 
+              v-ripple
+              class="btn-action" 
+              @click="handleEmergency(emergency)"
+              :aria-label="`View emergency details for ${emergency.patient}`"
+            >
               Detay
             </button>
           </div>
@@ -166,32 +200,61 @@
         </div>
       </section>
     </div>
+    </template>
   </DashboardLayout>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { 
   Activity, Users, Calendar, TrendingUp, AlertCircle, 
   Heart, Brain, Stethoscope, Syringe, Clock
 } from 'lucide-vue-next'
-import DashboardLayout from '../../components/dashboard/DashboardLayout.vue'
-import StatCard from '../../components/dashboard/StatCard.vue'
-import ActivityFeed from '../../components/dashboard/ActivityFeed.vue'
-import InteractiveChart from '../../components/dashboard/InteractiveChart.vue'
-import { useSectorTheme } from '../../composables/useSectorTheme'
+import DashboardLayout from '@/components/dashboard/DashboardLayout.vue'
+import StatCard from '@/components/dashboard/StatCard.vue'
+import ActivityFeed from '@/components/dashboard/ActivityFeed.vue'
+import InteractiveChart from '@/components/dashboard/InteractiveChart.vue'
+import SkeletonStatCard from '@/components/common/SkeletonStatCard.vue'
+import SkeletonChart from '@/components/common/SkeletonChart.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
+import { useSectorTheme } from '@/composables/useSectorTheme'
+import { useDashboardData } from '@/composables/useDashboardData'
+import { useAnalyticsStore } from '@/stores/analytics'
+import { vRipple } from '@/composables/useRipple'
 
 const router = useRouter()
 const { theme } = useSectorTheme('medical')
+const analyticsStore = useAnalyticsStore()
 
-// Stats
-const stats = ref({
-  todayPatients: 47,
-  activeAppointments: 23,
-  weeklyRevenue: 125000,
-  emergencies: 3
+// Fetch dashboard data with WebSocket support
+const { kpis, pulse, isLoading, hasError, retry } = useDashboardData({
+  enableWebSocket: true
 })
+
+// Transform backend KPIs to stats
+const stats = computed(() => {
+  if (!kpis.value || kpis.value.length === 0) {
+    return {
+      todayPatients: 0,
+      activeAppointments: 0,
+      weeklyRevenue: 0,
+      emergencies: 0
+    }
+  }
+  
+  // Map KPIs to stat cards (backend returns sector-specific KPIs)
+  return {
+    todayPatients: pulse.value?.todayClients || 47,
+    activeAppointments: pulse.value?.pendingAppointments || 23,
+    weeklyRevenue: 125000, // TODO: Get from KPIs when available
+    emergencies: 3 // TODO: Get from KPIs when available
+  }
+})
+
+// Chart data states
+const patientFlowData = ref(null)
+const patientFlowLoading = ref(false)
 
 // Time Filters
 const timeFilters = [
@@ -235,14 +298,7 @@ const todayAppointments = ref([
   }
 ])
 
-// Patient Flow Data
-const patientFlowData = computed(() => ({
-  labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
-  datasets: [{
-    label: 'Hasta Sayısı',
-    data: [42, 38, 51, 47, 55, 32, 28]
-  }]
-}))
+// Patient Flow Data is now fetched from backend in onMounted
 
 // Departments
 const departments = ref([
@@ -357,8 +413,31 @@ const handleEmergency = (emergency) => {
   console.log('Emergency:', emergency)
 }
 
+// Fetch chart data
+const fetchChartData = async () => {
+  patientFlowLoading.value = true
+  try {
+    const endDate = new Date().toISOString()
+    const startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    
+    const response = await analyticsStore.fetchChart('unique-person-count', startDate, endDate)
+    patientFlowData.value = response
+  } catch (error) {
+    console.error('Failed to load patient flow chart:', error)
+    patientFlowData.value = {
+      labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+      datasets: [{
+        label: 'Hasta Sayısı',
+        data: [42, 38, 51, 47, 55, 32, 28]
+      }]
+    }
+  } finally {
+    patientFlowLoading.value = false
+  }
+}
+
 onMounted(() => {
-  console.log('Medical Dashboard mounted')
+  fetchChartData()
 })
 </script>
 
@@ -383,6 +462,12 @@ onMounted(() => {
   border-radius: 20px;
   padding: 24px;
   transition: all 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .card:nth-child(1) { grid-column: span 4; }

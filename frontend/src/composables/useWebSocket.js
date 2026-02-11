@@ -3,6 +3,36 @@ import { API_CONFIG } from '../config/api'
 import { useAuthStore } from '../stores/auth'
 
 /**
+ * WebSocket Event Types
+ */
+export const WS_EVENTS = {
+  // Data updates
+  PULSE_UPDATE: 'pulse_update',
+  STATS_UPDATE: 'stats_update',
+  KPI_UPDATE: 'kpi_update',
+  INSIGHT_UPDATE: 'insight_update',
+  
+  // Appointment events
+  APPOINTMENT_CREATED: 'appointment_created',
+  APPOINTMENT_UPDATED: 'appointment_updated',
+  APPOINTMENT_CANCELLED: 'appointment_cancelled',
+  APPOINTMENT_CONFIRMED: 'appointment_confirmed',
+  
+  // Call events
+  CALL_STARTED: 'call_started',
+  CALL_ENDED: 'call_ended',
+  CALL_UPDATED: 'call_updated',
+  
+  // System events
+  NOTIFICATION: 'notification',
+  ALERT: 'alert',
+  
+  // Connection events
+  PING: 'ping',
+  PONG: 'pong'
+}
+
+/**
  * WebSocket Composable
  * Handles real-time connections with automatic reconnection
  */
@@ -54,9 +84,21 @@ export function useWebSocket() {
             ws.value.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data)
-                    // Dispatch event to listeners
+                    
+                    // Handle ping/pong
+                    if (data.type === WS_EVENTS.PING) {
+                        ws.value.send(JSON.stringify({ type: WS_EVENTS.PONG }))
+                        return
+                    }
+                    
+                    // Dispatch event to specific listeners
                     if (data.type && listeners.value.has(data.type)) {
                         listeners.value.get(data.type).forEach(callback => callback(data))
+                    }
+                    
+                    // Dispatch to global wildcard listeners
+                    if (listeners.value.has('*')) {
+                        listeners.value.get('*').forEach(callback => callback(data))
                     }
                 } catch (e) {
                     console.error('Error parsing WebSocket message:', e)

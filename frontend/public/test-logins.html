@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextGent - Sektör Giriş Testi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .sectors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .sector-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .sector-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+        
+        .sector-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .sector-icon {
+            font-size: 32px;
+        }
+        
+        .sector-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .credentials {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .cred-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .cred-label {
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .cred-value {
+            color: #333;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .test-button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+        
+        .test-button:hover {
+            opacity: 0.9;
+        }
+        
+        .test-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin-top: 12px;
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status.testing {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .info-box {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .info-box h2 {
+            color: #333;
+            margin-bottom: 16px;
+        }
+        
+        .info-box p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+        
+        .api-url {
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #e83e8c;
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 NextGent Sektör Giriş Testi</h1>
+        
+        <div class="info-box">
+            <h2>ℹ️ Bilgilendirme</h2>
+            <p><strong>API Endpoint:</strong> <span class="api-url">http://localhost:8001/api/v1/auth/login</span></p>
+            <p><strong>Tüm sektörler için PIN:</strong> <code>1234</code></p>
+            <p>Her sektör için aşağıdaki "Test Giriş" butonuna tıklayarak giriş işlemini test edebilirsiniz.</p>
+        </div>
+        
+        <div class="sectors-grid" id="sectorsGrid"></div>
+    </div>
+
+    <script>
+        const sectors = [
+            { id: 'MED', name: 'Medical (Sağlık)', icon: '🏥', customerId: 'MED-000001', path: '/sectors/medical/dashboard' },
+            { id: 'LEG', name: 'Legal (Hukuk)', icon: '⚖️', customerId: 'LEG-000001', path: '/sectors/legal/dashboard' },
+            { id: 'BEA', name: 'Beauty (Güzellik)', icon: '💅', customerId: 'BEA-000001', path: '/sectors/beauty/dashboard' },
+            { id: 'HOS', name: 'Hospitality (Otel)', icon: '🏨', customerId: 'HOS-000001', path: '/sectors/hospitality/dashboard' },
+            { id: 'EST', name: 'Real Estate (Gayrimenkul)', icon: '🏢', customerId: 'EST-000001', path: '/sectors/real_estate/dashboard' },
+            { id: 'MFG', name: 'Manufacturing (Üretim)', icon: '🏭', customerId: 'MFG-000001', path: '/sectors/manufacturing/dashboard' },
+            { id: 'ECM', name: 'E-commerce (E-Ticaret)', icon: '🛒', customerId: 'ECM-000001', path: '/sectors/ecommerce/dashboard' },
+            { id: 'EDU', name: 'Education (Eğitim)', icon: '🎓', customerId: 'EDU-000001', path: '/sectors/education/dashboard' },
+            { id: 'FIN', name: 'Finance (Finans)', icon: '💰', customerId: 'FIN-000001', path: '/sectors/finance/dashboard' },
+            { id: 'AUT', name: 'Automotive (Otomotiv)', icon: '🚗', customerId: 'AUT-000001', path: '/sectors/automotive/dashboard' },
+            { id: 'RTL', name: 'Retail (Perakende)', icon: '🏪', customerId: 'RTL-000001', path: '/sectors/retail/dashboard' }
+        ];
+
+        const grid = document.getElementById('sectorsGrid');
+
+        sectors.forEach(sector => {
+            const card = document.createElement('div');
+            card.className = 'sector-card';
+            card.innerHTML = `
+                <div class="sector-header">
+                    <span class="sector-icon">${sector.icon}</span>
+                    <div class="sector-name">${sector.name}</div>
+                </div>
+                <div class="credentials">
+                    <div class="cred-item">
+                        <span class="cred-label">Müşteri ID:</span>
+                        <span class="cred-value">${sector.customerId}</span>
+                    </div>
+                    <div class="cred-item">
+                        <span class="cred-label">PIN:</span>
+                        <span class="cred-value">1234</span>
+                    </div>
+                    <div class="cred-item">
+                        <span class="cred-label">Path:</span>
+                        <span class="cred-value" style="font-size: 11px;">${sector.path}</span>
+                    </div>
+                </div>
+                <button class="test-button" onclick="testLogin('${sector.customerId}', '${sector.id}')">
+                    🔐 Test Giriş
+                </button>
+                <div id="status-${sector.id}" class="status" style="display: none;"></div>
+            `;
+            grid.appendChild(card);
+        });
+
+        async function testLogin(customerId, sectorId) {
+            const statusDiv = document.getElementById(`status-${sectorId}`);
+            const button = event.target;
+            
+            button.disabled = true;
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status testing';
+            statusDiv.textContent = '⏳ Test ediliyor...';
+
+            try {
+                const response = await fetch('http://localhost:8001/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        customer_id: customerId,
+                        pin: '1234'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    statusDiv.className = 'status success';
+                    statusDiv.innerHTML = `✅ Başarılı!<br>Tenant: ${data.tenant_id.substring(0, 8)}...`;
+                    console.log(`${customerId} login success:`, data);
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = `❌ Hata: ${data.detail || 'Bilinmeyen hata'}`;
+                    console.error(`${customerId} login failed:`, data);
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = `❌ Bağlantı Hatası: ${error.message}`;
+                console.error(`${customerId} login error:`, error);
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        // Test all on page load (optional)
+        window.addEventListener('load', () => {
+            console.log('NextGent Login Test Page Loaded');
+            console.log('Available sectors:', sectors.map(s => s.customerId).join(', '));
+        });
+    </script>
+</body>
+</html>

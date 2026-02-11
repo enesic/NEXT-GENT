@@ -166,11 +166,12 @@ import {
   Hotel, Bed, Users, DollarSign, Star,
   Bell, Coffee, Utensils, Wifi, Droplet
 } from 'lucide-vue-next'
-import DashboardLayout from '../../components/dashboard/DashboardLayout.vue'
-import StatCard from '../../components/dashboard/StatCard.vue'
-import ActivityFeed from '../../components/dashboard/ActivityFeed.vue'
-import InteractiveChart from '../../components/dashboard/InteractiveChart.vue'
-import { useSectorTheme } from '../../composables/useSectorTheme'
+import DashboardLayout from '@/components/dashboard/DashboardLayout.vue'
+import StatCard from '@/components/dashboard/StatCard.vue'
+import ActivityFeed from '@/components/dashboard/ActivityFeed.vue'
+import InteractiveChart from '@/components/dashboard/InteractiveChart.vue'
+import { useSectorTheme } from '@/composables/useSectorTheme'
+import { vRipple } from '@/composables/useRipple'
 
 const router = useRouter()
 const { theme } = useSectorTheme('hospitality')
@@ -335,6 +336,13 @@ const handleRequestClick = (request) => {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
   padding: 24px;
+  transition: all 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .card:nth-child(1) { grid-column: span 8; }

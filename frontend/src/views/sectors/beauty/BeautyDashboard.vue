@@ -48,14 +48,20 @@
       <section class="card">
         <div class="card-header">
           <h3 class="card-title">Bugünün Randevuları</h3>
-          <button class="btn-link" @click="navigateTo('/appointments')">Tümünü Gör</button>
+          <button v-ripple class="btn-link" @click="navigateTo('/appointments')" aria-label="View all appointments">Tümünü Gör</button>
         </div>
         <div class="appointments-list">
           <div 
             v-for="apt in todayAppointments" 
             :key="apt.id"
+            v-ripple
             class="appointment-item"
             @click="handleAppointmentClick(apt)"
+            role="button"
+            tabindex="0"
+            :aria-label="`View appointment for ${apt.client}`"
+            @keydown.enter="handleAppointmentClick(apt)"
+            @keydown.space.prevent="handleAppointmentClick(apt)"
           >
             <div class="appointment-time">
               <Clock :size="16" />
@@ -111,6 +117,7 @@
             <button 
               v-for="filter in timeFilters" 
               :key="filter.value"
+              v-ripple
               class="filter-btn" 
               :class="{ active: selectedTimeFilter === filter.value }"
               @click="selectedTimeFilter = filter.value"
@@ -176,10 +183,11 @@ import {
   Sparkles, Calendar, DollarSign, Users, Star,
   Clock, Trophy
 } from 'lucide-vue-next'
-import DashboardLayout from '../../components/dashboard/DashboardLayout.vue'
-import StatCard from '../../components/dashboard/StatCard.vue'
-import InteractiveChart from '../../components/dashboard/InteractiveChart.vue'
-import { useSectorTheme } from '../../composables/useSectorTheme'
+import DashboardLayout from '@/components/dashboard/DashboardLayout.vue'
+import StatCard from '@/components/dashboard/StatCard.vue'
+import InteractiveChart from '@/components/dashboard/InteractiveChart.vue'
+import { useSectorTheme } from '@/composables/useSectorTheme'
+import { vRipple } from '@/composables/useRipple'
 
 const router = useRouter()
 const { theme } = useSectorTheme('beauty')
@@ -354,6 +362,13 @@ const handleStaffClick = (staff) => {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
   padding: 24px;
+  transition: all 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .card:nth-child(1) { grid-column: span 6; }

@@ -1,5 +1,5 @@
 <template>
-  <div class="interactive-chart">
+  <div ref="chartContainer" class="interactive-chart" :class="{ 'chart-visible': isVisible }">
     <canvas ref="chartCanvas"></canvas>
   </div>
 </template>
@@ -61,19 +61,62 @@ const props = defineProps({
   gradientColors: {
     type: Array,
     default: () => ['rgba(99, 102, 241, 0.8)', 'rgba(139, 92, 246, 0.2)']
+  },
+  animateOnView: {
+    type: Boolean,
+    default: true
+  },
+  staggerDelay: {
+    type: Number,
+    default: 50 // milliseconds between each data point animation
   }
 })
 
 const chartCanvas = ref(null)
+const chartContainer = ref(null)
+const isVisible = ref(false)
+const hasAnimated = ref(false)
 let chartInstance = null
+let intersectionObserver = null
+
+// Enhanced animation configuration with stagger
+const getAnimationConfig = () => {
+  const baseConfig = {
+    duration: 1500,
+    easing: 'easeOutQuart'
+  }
+
+  // Progressive reveal animation with stagger
+  if (props.type === 'bar' || props.type === 'line') {
+    return {
+      ...baseConfig,
+      delay: (context) => {
+        let delay = 0
+        if (context.type === 'data' && context.mode === 'default') {
+          delay = context.dataIndex * props.staggerDelay
+        }
+        return delay
+      },
+      onProgress: (animation) => {
+        // Use requestAnimationFrame for smooth animation
+        if (animation.currentStep < animation.numSteps) {
+          window.requestAnimationFrame(() => {
+            if (chartInstance) {
+              chartInstance.update('none')
+            }
+          })
+        }
+      }
+    }
+  }
+
+  return baseConfig
+}
 
 const defaultOptions = {
   responsive: true,
   maintainAspectRatio: false,
-  animation: {
-    duration: 1500,
-    easing: 'easeInOutQuart'
-  },
+  animation: false, // Will be set dynamically
   interaction: {
     mode: 'nearest',
     intersect: false
@@ -183,9 +226,13 @@ const initChart = () => {
     })
   }
 
+  // Determine if animation should be enabled
+  const shouldAnimate = props.animateOnView ? (isVisible.value && !hasAnimated.value) : true
+
   const mergedOptions = {
     ...defaultOptions,
     ...props.options,
+    animation: shouldAnimate ? getAnimationConfig() : false,
     plugins: {
       ...defaultOptions.plugins,
       ...(props.options.plugins || {})
@@ -201,6 +248,36 @@ const initChart = () => {
     data: chartData,
     options: mergedOptions
   })
+
+  if (shouldAnimate) {
+    hasAnimated.value = true
+  }
+}
+
+// Setup Intersection Observer for viewport detection
+const setupIntersectionObserver = () => {
+  if (!props.animateOnView || !chartContainer.value) return
+
+  const options = {
+    root: null,
+    rootMargin: '50px', // Trigger slightly before element is visible
+    threshold: 0.1 // 10% of element must be visible
+  }
+
+  intersectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting && !hasAnimated.value) {
+        isVisible.value = true
+        // Reinitialize chart with animation
+        if (chartInstance) {
+          chartInstance.destroy()
+        }
+        initChart()
+      }
+    })
+  }, options)
+
+  intersectionObserver.observe(chartContainer.value)
 }
 
 const updateChart = () => {
@@ -214,12 +291,23 @@ watch(() => props.data, updateChart, { deep: true })
 watch(() => props.options, updateChart, { deep: true })
 
 onMounted(() => {
-  initChart()
+  if (props.animateOnView) {
+    setupIntersectionObserver()
+    // Initialize chart without animation first if not visible
+    if (!isVisible.value) {
+      initChart()
+    }
+  } else {
+    initChart()
+  }
 })
 
 onBeforeUnmount(() => {
   if (chartInstance) {
     chartInstance.destroy()
+  }
+  if (intersectionObserver) {
+    intersectionObserver.disconnect()
   }
 })
 </script>
@@ -230,5 +318,22 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   min-height: 200px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.interactive-chart.chart-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .interactive-chart {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 </style>

@@ -78,14 +78,20 @@
       <section class="card cases-card">
         <div class="card-header">
           <h3 class="card-title">Aktif Davalar</h3>
-          <button class="btn-link" @click="navigateTo('/cases')">Tümünü Gör</button>
+          <button v-ripple class="btn-link" @click="navigateTo('/cases')" aria-label="View all cases">Tümünü Gör</button>
         </div>
         <div class="cases-list">
           <div 
             v-for="caseItem in activeCases" 
             :key="caseItem.id"
+            v-ripple
             class="case-item"
             @click="handleCaseClick(caseItem)"
+            role="button"
+            tabindex="0"
+            :aria-label="`View case ${caseItem.caseNumber}`"
+            @keydown.enter="handleCaseClick(caseItem)"
+            @keydown.space.prevent="handleCaseClick(caseItem)"
           >
             <div class="case-header">
               <div class="case-number">{{ caseItem.caseNumber }}</div>
@@ -129,7 +135,7 @@
               <p class="hearing-court">{{ hearing.court }}</p>
               <p class="hearing-time">{{ hearing.time }}</p>
             </div>
-            <button class="btn-reminder" @click="setReminder(hearing)">
+            <button v-ripple class="btn-reminder" @click="setReminder(hearing)" :aria-label="`Set reminder for ${hearing.caseNumber}`">
               <Bell :size="16" />
             </button>
           </div>
@@ -182,11 +188,12 @@ import {
   Scale, Briefcase, Calendar, FileText, DollarSign, Clock,
   CalendarDays, Bell, TrendingUp, AlertCircle
 } from 'lucide-vue-next'
-import DashboardLayout from '../../components/dashboard/DashboardLayout.vue'
-import StatCard from '../../components/dashboard/StatCard.vue'
-import ActivityFeed from '../../components/dashboard/ActivityFeed.vue'
-import InteractiveChart from '../../components/dashboard/InteractiveChart.vue'
-import { useSectorTheme } from '../../composables/useSectorTheme'
+import DashboardLayout from '@/components/dashboard/DashboardLayout.vue'
+import StatCard from '@/components/dashboard/StatCard.vue'
+import ActivityFeed from '@/components/dashboard/ActivityFeed.vue'
+import InteractiveChart from '@/components/dashboard/InteractiveChart.vue'
+import { useSectorTheme } from '@/composables/useSectorTheme'
+import { vRipple } from '@/composables/useRipple'
 
 const router = useRouter()
 const { theme } = useSectorTheme('legal')
@@ -348,6 +355,13 @@ const setReminder = (hearing) => {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
   padding: 24px;
+  transition: all 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .card:nth-child(1) { grid-column: span 4; }

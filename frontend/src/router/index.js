@@ -121,20 +121,90 @@ const routes = [
         meta: { requiresAuth: true, sector: 'legal' }
     },
 
-    // Beauty Sector
+    // Beauty Sector (Güzellik Merkezi)
     {
         path: '/sectors/beauty/dashboard',
         name: 'BeautyDashboard',
         component: () => import('../views/sectors/beauty/BeautyDashboard.vue'),
-        meta: { requiresAuth: true, sector: 'beauty' }
+        meta: { 
+            requiresAuth: true, 
+            sector: 'beauty',
+            title: 'Güzellik Merkezi Dashboard',
+            description: 'Beauty salon management dashboard'
+        }
+    },
+    {
+        path: '/sectors/beauty/appointments',
+        name: 'BeautyAppointments',
+        component: () => import('../views/sectors/beauty/BeautyDashboard.vue'),
+        meta: { 
+            requiresAuth: true, 
+            sector: 'beauty',
+            title: 'Randevular'
+        }
+    },
+    {
+        path: '/sectors/beauty/services',
+        name: 'BeautyServices',
+        component: () => import('../views/sectors/beauty/BeautyDashboard.vue'),
+        meta: { 
+            requiresAuth: true, 
+            sector: 'beauty',
+            title: 'Hizmetler'
+        }
+    },
+    {
+        path: '/sectors/beauty/customers',
+        name: 'BeautyCustomers',
+        component: () => import('../views/sectors/beauty/BeautyDashboard.vue'),
+        meta: { 
+            requiresAuth: true, 
+            sector: 'beauty',
+            title: 'Müşteriler'
+        }
     },
 
-    // Hospitality Sector
+    // Hospitality Sector (Otel Yönetimi)
     {
         path: '/sectors/hospitality/dashboard',
         name: 'HospitalityDashboard',
         component: () => import('../views/sectors/hospitality/HospitalityDashboard.vue'),
-        meta: { requiresAuth: true, sector: 'hospitality' }
+        meta: { 
+            requiresAuth: true, 
+            sector: 'hospitality',
+            title: 'Otel Yönetimi Dashboard',
+            description: 'Hotel management dashboard'
+        }
+    },
+    {
+        path: '/sectors/hospitality/reservations',
+        name: 'HospitalityReservations',
+        component: () => import('../views/sectors/hospitality/HospitalityDashboard.vue'),
+        meta: { 
+            requiresAuth: true, 
+            sector: 'hospitality',
+            title: 'Rezervasyonlar'
+        }
+    },
+    {
+        path: '/sectors/hospitality/rooms',
+        name: 'HospitalityRooms',
+        component: () => import('../views/sectors/hospitality/HospitalityDashboard.vue'),
+        meta: { 
+            requiresAuth: true, 
+            sector: 'hospitality',
+            title: 'Oda Yönetimi'
+        }
+    },
+    {
+        path: '/sectors/hospitality/guests',
+        name: 'HospitalityGuests',
+        component: () => import('../views/sectors/hospitality/HospitalityDashboard.vue'),
+        meta: { 
+            requiresAuth: true, 
+            sector: 'hospitality',
+            title: 'Misafirler'
+        }
     },
 
     // Real Estate Sector

@@ -1,5 +1,6 @@
 <template>
   <div 
+    ref="cardRef"
     class="stat-card" 
     @click="handleClick"
     :class="{ clickable: clickable }"
@@ -9,7 +10,7 @@
     </div>
     <div class="stat-content">
       <p class="stat-label">{{ label }}</p>
-      <h3 class="stat-value">{{ displayValue }}</h3>
+      <h3 ref="valueRef" class="stat-value">{{ formattedValue }}</h3>
       <div v-if="change" class="stat-change" :class="changeType">
         <component :is="changeType === 'positive' ? TrendingUp : TrendingDown" :size="16" />
         <span>{{ change }}</span>
@@ -19,9 +20,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { TrendingUp, TrendingDown } from 'lucide-vue-next'
 import gsap from 'gsap'
+import { useRipple } from '../../composables/useRipple'
 
 const props = defineProps({
   icon: {
@@ -56,12 +58,50 @@ const props = defineProps({
   animated: {
     type: Boolean,
     default: true
+  },
+  format: {
+    type: String,
+    default: 'number', // 'number', 'currency', 'percentage'
+    validator: (value) => ['number', 'currency', 'percentage'].includes(value)
   }
 })
 
 const emit = defineEmits(['click'])
 
 const displayValue = ref(0)
+const cardRef = ref(null)
+const valueRef = ref(null)
+const previousValue = ref(0)
+const valueColor = ref('#ffffff')
+
+// Add ripple effect
+useRipple(cardRef, {
+  color: 'rgba(255, 255, 255, 0.25)',
+  duration: 0.6
+})
+
+// Format value based on prop
+const formattedValue = computed(() => {
+  const val = displayValue.value
+  
+  if (typeof val !== 'number') {
+    return val
+  }
+  
+  switch (props.format) {
+    case 'currency':
+      return new Intl.NumberFormat('tr-TR', {
+        style: 'currency',
+        currency: 'TRY',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(val)
+    case 'percentage':
+      return `${val.toFixed(1)}%`
+    default:
+      return new Intl.NumberFormat('tr-TR').format(val)
+  }
+})
 
 const handleClick = () => {
   if (props.clickable) {
@@ -69,16 +109,122 @@ const handleClick = () => {
   }
 }
 
-onMounted(() => {
-  if (props.animated && typeof props.value === 'number') {
-    gsap.to(displayValue, {
-      value: props.value,
-      duration: 1.5,
+// Animate value changes with color transitions
+const animateValue = (from, to, options = {}) => {
+  const {
+    duration = 1.5,
+    ease = 'power2.out',
+    showParticles = false
+  } = options
+
+  // Calculate percentage change
+  const percentChange = from > 0 ? ((to - from) / from) * 100 : 100
+  const isSignificantChange = Math.abs(percentChange) > 10
+
+  // Color transition based on change direction
+  const targetColor = to > from ? '#10b981' : to < from ? '#ef4444' : '#ffffff'
+  
+  // Animate color
+  gsap.to(valueRef.value, {
+    color: targetColor,
+    duration: 0.3,
+    ease: 'power2.inOut',
+    onComplete: () => {
+      // Fade back to white
+      gsap.to(valueRef.value, {
+        color: '#ffffff',
+        duration: 0.5,
+        delay: 0.3
+      })
+    }
+  })
+
+  // Odometer-style animation with easing
+  const tempValue = { value: from }
+  gsap.to(tempValue, {
+    value: to,
+    duration,
+    ease,
+    onUpdate: () => {
+      displayValue.value = tempValue.value
+    },
+    onComplete: () => {
+      displayValue.value = to
+    }
+  })
+
+  // Add particle effect for significant changes
+  if (isSignificantChange && showParticles && valueRef.value) {
+    createParticleEffect(valueRef.value, to > from)
+  }
+
+  // Slight bounce effect on the value
+  if (valueRef.value) {
+    gsap.fromTo(valueRef.value, 
+      { scale: 1 },
+      { 
+        scale: 1.1, 
+        duration: 0.2, 
+        ease: 'power2.out',
+        yoyo: true,
+        repeat: 1
+      }
+    )
+  }
+
+  previousValue.value = to
+}
+
+// Create particle effect for significant changes
+const createParticleEffect = (element, isPositive) => {
+  const rect = element.getBoundingClientRect()
+  const particleCount = 6
+  
+  for (let i = 0; i < particleCount; i++) {
+    const particle = document.createElement('div')
+    particle.className = 'stat-particle'
+    particle.style.cssText = `
+      position: fixed;
+      left: ${rect.left + rect.width / 2}px;
+      top: ${rect.top + rect.height / 2}px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: ${isPositive ? '#10b981' : '#ef4444'};
+      pointer-events: none;
+      z-index: 1000;
+    `
+    document.body.appendChild(particle)
+    
+    const angle = (Math.PI * 2 * i) / particleCount
+    const distance = 30 + Math.random() * 20
+    
+    gsap.to(particle, {
+      x: Math.cos(angle) * distance,
+      y: Math.sin(angle) * distance - 20,
+      opacity: 0,
+      duration: 0.8,
       ease: 'power2.out',
-      onUpdate: () => {
-        displayValue.value = Math.round(displayValue.value)
+      onComplete: () => {
+        document.body.removeChild(particle)
       }
     })
+  }
+}
+
+// Watch for value changes
+watch(() => props.value, (newValue) => {
+  if (props.animated && typeof newValue === 'number') {
+    const from = displayValue.value
+    animateValue(from, newValue, { showParticles: true })
+  } else {
+    displayValue.value = newValue
+  }
+})
+
+onMounted(() => {
+  if (props.animated && typeof props.value === 'number') {
+    animateValue(0, props.value, { showParticles: false })
   } else {
     displayValue.value = props.value
   }
@@ -163,6 +309,8 @@ onMounted(() => {
   color: white;
   margin: 0 0 8px 0;
   letter-spacing: -0.02em;
+  transition: color 0.3s ease;
+  will-change: transform, color;
 }
 
 .stat-change {
