@@ -117,8 +117,8 @@ class CustomerFactory(BaseFactory):
         codes = {
             "medical": "MED", "legal": "LEG", "real_estate": "EST",
             "manufacturing": "MFG", "ecommerce": "ECM", "education": "EDU",
-            "finance": "FIN", "hospitality": "HTL", "automotive": "AUTO",
-            "retail": "RTL"
+            "finance": "FIN", "hospitality": "HOS", "automotive": "AUT",
+            "retail": "RTL", "beauty": "BEA"
         }
         return codes.get(sector, "GEN")
     

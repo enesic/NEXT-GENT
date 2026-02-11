@@ -1,6 +1,6 @@
 # Backend Dockerfile for NextGent
-# Python 3.10 Slim Image for optimal size/performance
-FROM python:3.10-slim
+# Python 3.11 Slim Image for optimal size/performance/compatibility
+FROM python:3.11-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -20,7 +20,8 @@ RUN apt-get update \
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .

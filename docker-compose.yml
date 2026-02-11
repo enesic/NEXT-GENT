@@ -73,6 +73,28 @@ services:
         condition: service_healthy
     networks:
       - nextgent_network
+    command: >
+      sh -c " echo '🔄 Waiting for database...' && python -c ' import asyncio import asyncpg import time
+
+      async def wait_for_db():
+          max_retries = 30
+          retry_count = 0
+          while retry_count < max_retries:
+              try:
+                  conn = await asyncpg.connect(
+                      host=\"db\", port=5432, user=\"postgres\",
+                      password=\"postgres\", database=\"nextgent\", timeout=5
+                  )
+                  await conn.close()
+                  print(\"✅ Database ready!\")
+                  return True
+              except Exception:
+                  retry_count += 1
+                  print(f\"⏳ Attempt {retry_count}/{max_retries}...\")
+                  time.sleep(2)
+          return False
+
+      asyncio.run(wait_for_db()) ' && echo '🗄️  Initializing database...' && python init_db.py && echo '🌱 Seeding data (Beauty, Hospitality, Medical, etc.)...' && python comprehensive_seed.py && echo '✅ Initialization complete!' && echo '' && echo '📊 Sample Logins:' && echo '  Beauty: BEA-000001 / PIN: 1234' && echo '  Hotel: HOS-000001 / PIN: 1234' && echo '  Medical: MED-000001 / PIN: 1234' && echo '' && echo '🚀 Starting API server...' && uvicorn main:app --host 0.0.0.0 --port 8000 --reload "
 
   # ==========================================
   # FRONTEND (Vue/Nginx - Port 80)

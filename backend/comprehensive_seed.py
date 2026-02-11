@@ -60,6 +60,11 @@ class SeedConfig:
             "slug": "nextgent-saglik",
             "domain": "hospital.com",
         },
+        "beauty": {
+            "name": "NextGent Güzellik",
+            "slug": "nextgent-guzellik",
+            "domain": "beauty.com",
+        },
         "legal": {
             "name": "NextGent Hukuk",
             "slug": "nextgent-hukuk",

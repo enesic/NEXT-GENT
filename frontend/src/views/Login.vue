@@ -111,6 +111,7 @@ const handleLogin = async () => {
     // Set auth data
     authStore.setToken(response.data.token)
     authStore.setUser(response.data.user)
+    authStore.setTenant(response.data.tenant_id)
     
     // Set sector (auto-detected from customer's tenant)
     sectorStore.setSector(response.data.sector)

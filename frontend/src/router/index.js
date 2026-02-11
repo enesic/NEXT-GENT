@@ -100,8 +100,98 @@ const routes = [
         component: () => import('../views/legal/TechnicalRequirements.vue'),
         meta: { requiresAuth: false }
     },
-    // Routes for Support and Contact are now sections in LandingPage
-    // Admin Routes
+
+    // ==========================================
+    // SECTOR DASHBOARD ROUTES (11 Sectors)
+    // ==========================================
+
+    // Medical Sector
+    {
+        path: '/sectors/medical/dashboard',
+        name: 'MedicalDashboard',
+        component: () => import('../views/sectors/medical/MedicalDashboard.vue'),
+        meta: { requiresAuth: true, sector: 'medical' }
+    },
+
+    // Legal Sector
+    {
+        path: '/sectors/legal/dashboard',
+        name: 'LegalDashboard',
+        component: () => import('../views/sectors/legal/LegalDashboard.vue'),
+        meta: { requiresAuth: true, sector: 'legal' }
+    },
+
+    // Beauty Sector
+    {
+        path: '/sectors/beauty/dashboard',
+        name: 'BeautyDashboard',
+        component: () => import('../views/sectors/beauty/BeautyDashboard.vue'),
+        meta: { requiresAuth: true, sector: 'beauty' }
+    },
+
+    // Hospitality Sector
+    {
+        path: '/sectors/hospitality/dashboard',
+        name: 'HospitalityDashboard',
+        component: () => import('../views/sectors/hospitality/HospitalityDashboard.vue'),
+        meta: { requiresAuth: true, sector: 'hospitality' }
+    },
+
+    // Real Estate Sector
+    {
+        path: '/sectors/real_estate/dashboard',
+        name: 'RealEstateDashboard',
+        component: () => import('../views/sectors/real_estate/RealEstateDashboard.vue'),
+        meta: { requiresAuth: true, sector: 'real_estate' }
+    },
+
+    // Manufacturing Sector
+    {
+        path: '/sectors/manufacturing/dashboard',
+        name: 'ManufacturingDashboard',
+        component: () => import('../views/sectors/manufacturing/ManufacturingDashboard.vue'),
+        meta: { requiresAuth: true, sector: 'manufacturing' }
+    },
+
+    // E-commerce Sector
+    {
+        path: '/sectors/ecommerce/dashboard',
+        name: 'EcommerceDashboard',
+        component: () => import('../views/sectors/ecommerce/EcommerceDashboard.vue'),
+        meta: { requiresAuth: true, sector: 'ecommerce' }
+    },
+
+    // Education Sector
+    {
+        path: '/sectors/education/dashboard',
+        name: 'EducationDashboard',
+        component: () => import('../views/sectors/education/EducationDashboard.vue'),
+        meta: { requiresAuth: true, sector: 'education' }
+    },
+
+    // Finance Sector
+    {
+        path: '/sectors/finance/dashboard',
+        name: 'FinanceDashboard',
+        component: () => import('../views/sectors/finance/FinanceDashboard.vue'),
+        meta: { requiresAuth: true, sector: 'finance' }
+    },
+
+    // Automotive Sector
+    {
+        path: '/sectors/automotive/dashboard',
+        name: 'AutomotiveDashboard',
+        component: () => import('../views/sectors/automotive/AutomotiveDashboard.vue'),
+        meta: { requiresAuth: true, sector: 'automotive' }
+    },
+
+    // Retail Sector
+    {
+        path: '/sectors/retail/dashboard',
+        name: 'RetailDashboard',
+        component: () => import('../views/sectors/retail/RetailDashboard.vue'),
+        meta: { requiresAuth: true, sector: 'retail' }
+    }
 ]
 
 const router = createRouter({
