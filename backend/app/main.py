@@ -182,3 +182,7 @@ async def health_check() -> JSONResponse:
 # Include API router
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
+# Vercel serverless function export
+# This makes the app compatible with Vercel's Python runtime
+handler = app
+

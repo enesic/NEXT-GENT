@@ -2,14 +2,14 @@
   <div class="landing-container">
     <nav class="landing-nav">
       <div class="logo">
-        <div class="logo-icon"></div>
+        <img src="/logo.svg" alt="NextGent Logo" class="logo-image" />
         <span class="logo-text">NextGent</span>
       </div>
       <div class="nav-links">
         <a href="#features">Özellikler</a>
         <a href="#security">Güvenlik</a>
         <a href="#sectors">Sektörler</a>
-        <a href="#pricing">Fiyatlandırma</a>
+        <a href="#contact">İletişim</a>
         <a href="#support" class="nav-link">Destek</a>
         <a href="#contact" class="nav-link">İletişim</a>
         <button class="login-btn" @click="$router.push('/login')">Giriş Yap</button>
@@ -153,7 +153,7 @@
             akışlarını tek ekrandan görün.
           </p>
           <div class="demo-buttons">
-            <a href="mailto:sales@nextgent.co?subject=Demo%20Talebi" class="demo-btn primary">
+            <a href="mailto:info@nextgent.co?subject=Demo%20Talebi" class="demo-btn primary">
               Demo Planla
             </a>
             <a href="#teknik-gereksinimler" class="demo-btn secondary">
@@ -301,48 +301,20 @@
       </div>
     </section>
 
-    <!-- Pricing Section -->
-    <section id="pricing" class="pricing-section">
+    <!-- Contact CTA Section -->
+    <section id="pricing" class="contact-cta-section">
       <div class="section-header">
-        <h2>Planlama ve Fiyatlandırma</h2>
-        <p>İşletmenizin büyüklüğüne uygun esnek paketler.</p>
+        <h2>Bizimle İletişime Geçin</h2>
+        <p>İşletmenizin ihtiyaçlarına özel çözümler için ekibimizle görüşün.</p>
       </div>
-      <div class="pricing-grid">
-        <div class="pricing-card">
-          <h3>Başlangıç</h3>
-          <div class="price">₺2.999<span>/ay</span></div>
-          <ul class="features-list">
-            <li><Check :size="16" /> 1 AI Asistan</li>
-            <li><Check :size="16" /> 1.000 Dakika Konuşma</li>
-            <li><Check :size="16" /> Temel Raporlama</li>
-            <li><Check :size="16" /> E-posta Desteği</li>
-          </ul>
-          <a href="mailto:sales@nextgent.com?subject=Başlangıç Paketi Talebi" class="pricing-btn outline">İletişime Geçin</a>
-        </div>
-        <div class="pricing-card featured">
-          <div class="badge">En Popüler</div>
-          <h3>Profesyonel</h3>
-          <div class="price">₺5.999<span>/ay</span></div>
-          <ul class="features-list">
-            <li><Check :size="16" /> 3 AI Asistan</li>
-            <li><Check :size="16" /> 5.000 Dakika Konuşma</li>
-            <li><Check :size="16" /> Gelişmiş Analitik</li>
-            <li><Check :size="16" /> CRM Entegrasyonu</li>
-            <li><Check :size="16" /> Öncelikli Destek</li>
-          </ul>
-          <a href="mailto:sales@nextgent.com?subject=Profesyonel Paket Talebi" class="pricing-btn primary">İletişime Geçin</a>
-        </div>
-        <div class="pricing-card">
-          <h3>Enterprise</h3>
-          <div class="price">Özel<span>/teklif</span></div>
-          <ul class="features-list">
-            <li><Check :size="16" /> Sınırsız Asistan</li>
-            <li><Check :size="16" /> Özel Entegrasyonlar</li>
-            <li><Check :size="16" /> Dedicated Server</li>
-            <li><Check :size="16" /> 7/24 Canlı Destek</li>
-          </ul>
-          <a href="mailto:sales@nextgent.com?subject=Enterprise Paket Talebi" class="pricing-btn outline">İletişime Geç</a>
-        </div>
+      <div class="cta-buttons">
+        <a href="mailto:info@nextgent.co?subject=Bilgi Talebi" class="cta-btn primary">
+          <Mail :size="20" />
+          İletişime Geç
+        </a>
+        <a href="#contact" class="cta-btn secondary">
+          İletişim Formu
+        </a>
       </div>
     </section>
 
@@ -369,7 +341,7 @@
           <h4>Ürün</h4>
           <a href="#features">Özellikler</a>
           <a href="#security">Güvenlik</a>
-          <a href="#pricing">Fiyatlandırma</a>
+          <a href="#contact">İletişim</a>
           <router-link to="/teknik-gereksinimler">Teknik Gereksinimler</router-link>
         </div>
         
@@ -383,8 +355,7 @@
         
         <div class="footer-section">
           <h4>İletişim</h4>
-          <a href="mailto:info@nextgent.com">info@nextgent.com</a>
-          <a href="mailto:sales@nextgent.com">sales@nextgent.com</a>
+          <a href="mailto:info@nextgent.co">info@nextgent.co</a>
           <a href="tel:+905XXXXXXXXX">+90 (5XX) XXX XX XX</a>
         </div>
       </div>
@@ -399,7 +370,7 @@
 </template>
 
 <script setup>
-import { ArrowRight, ShieldCheck, Zap, Cpu, Activity, MessageSquare, Scale, Building2, Check } from 'lucide-vue-next'
+import { ArrowRight, ShieldCheck, Zap, Cpu, Activity, MessageSquare, Scale, Building2, Check, Mail } from 'lucide-vue-next'
 import { onMounted } from 'vue'
 import gsap from 'gsap'
 import HelpdeskChatbot from '../components/HelpdeskChatbot.vue'
@@ -473,11 +444,10 @@ onMounted(() => {
   gap: 12px;
 }
 
-.logo-icon {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, #6366f1, #a855f7);
-  border-radius: 8px;
+.logo-image {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
 }
 
 .logo-text {
@@ -973,103 +943,101 @@ a.pricing-btn.outline:hover {
 .sector-card h3 { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
 .sector-card p { color: #9ca3af; font-size: 15px; }
 
-/* Pricing */
-.pricing-section {
+/* Contact CTA Section */
+.contact-cta-section {
   padding: 100px 48px;
-  background: #0f172a;
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.05), rgba(124, 58, 237, 0.05));
+  border-top: 1px solid rgba(99, 102, 241, 0.2);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.2);
 }
 
-.pricing-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 32px;
-  max-width: 1200px;
+.contact-cta-section .section-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.contact-cta-section .section-header h2 {
+  font-size: 42px;
+  font-weight: 800;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #ffffff, #cbd5e1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.contact-cta-section .section-header p {
+  color: #9ca3af;
+  font-size: 18px;
+  max-width: 600px;
   margin: 0 auto;
 }
 
-.pricing-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 40px;
-  border-radius: 24px;
-  position: relative;
+.cta-buttons {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
 }
 
-.pricing-card.featured {
-  background: rgba(79, 70, 229, 0.1);
-  border-color: #4f46e5;
-  transform: scale(1.05);
-}
-
-.badge {
-  position: absolute;
-  top: -12px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #4f46e5;
-  color: white;
-  padding: 4px 12px;
-  border-radius: 99px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.price {
-  font-size: 48px;
-  font-weight: 800;
-  margin: 24px 0;
-  color: white;
-}
-
-.price span { font-size: 16px; color: #9ca3af; font-weight: 500; }
-
-.features-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 32px;
-  flex: 1;
-}
-
-.features-list li {
-  display: flex;
+.cta-btn {
+  display: inline-flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
-  color: #d1d5db;
-  font-size: 15px;
-}
-
-.pricing-btn {
-  width: 100%;
-  padding: 16px;
-  border-radius: 12px;
+  padding: 18px 40px;
+  border-radius: 16px;
   font-weight: 600;
+  font-size: 16px;
+  text-decoration: none;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.pricing-btn.primary {
-  background: #4f46e5;
+.cta-btn.primary {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
   color: white;
   border: none;
+  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.3);
 }
 
-.pricing-btn.outline {
-  background: transparent;
+.cta-btn.primary:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(79, 70, 229, 0.5);
+}
+
+.cta-btn.secondary {
+  background: rgba(255, 255, 255, 0.05);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.pricing-btn:hover { transform: translateY(-2px); }
-.pricing-btn.primary:hover { box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.5); }
-.pricing-btn.outline:hover { background: rgba(255, 255, 255, 0.05); }
+.cta-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
 
 @media (max-width: 768px) {
-  .pricing-card.featured { transform: scale(1); }
-   .sectors-section, .pricing-section { padding: 60px 24px; }
+  .contact-cta-section {
+    padding: 60px 24px;
+  }
+  
+  .contact-cta-section .section-header h2 {
+    font-size: 32px;
+  }
+  
+  .cta-buttons {
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  
+  .cta-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
+
 
 /* Security Section */
 .security-section {

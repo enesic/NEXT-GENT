@@ -6,7 +6,7 @@
           <h2>Bize Ulaşın</h2>
           <p>Potansiyelinizi birlikte keşfedelim.</p>
           <div class="action-buttons">
-            <a href="mailto:iletisim@nextgent.com" class="action-btn primary">
+            <a href="mailto:info@nextgent.co" class="action-btn primary">
               <Mail :size="20" />
               E-posta Gönder
             </a>

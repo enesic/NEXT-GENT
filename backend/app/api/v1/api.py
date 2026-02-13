@@ -9,7 +9,7 @@ from app.api.v1.endpoints import (
     satisfaction,
     vapi,
     webhooks,
-    websocket,
+    # websocket,  # WebSocket is now a separate service on Railway
     metrics,
     callcenter,
     admin_endpoints,
@@ -28,7 +28,8 @@ api_router.include_router(interactions.router, prefix="/interactions", tags=["In
 api_router.include_router(customers.router, prefix="/customers", tags=["Customers"])
 api_router.include_router(webhooks.router, prefix="/webhooks", tags=["webhooks"])
 api_router.include_router(analytics.router, prefix="/analytics", tags=["Analytics"])
-api_router.include_router(websocket.router, prefix="/ws", tags=["websocket"])
+# WebSocket endpoint removed - now running as separate service on Railway
+# api_router.include_router(websocket.router, prefix="/ws", tags=["websocket"])
 api_router.include_router(metrics.router, prefix="/metrics", tags=["metrics"])
 api_router.include_router(helpdesk.router, prefix="/helpdesk", tags=["Helpdesk"])
 api_router.include_router(satisfaction.router, prefix="/satisfaction", tags=["Satisfaction"])

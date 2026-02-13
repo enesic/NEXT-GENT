@@ -49,9 +49,10 @@ class Settings(BaseSettings):
             path=f"{info.data.get('POSTGRES_DB') or ''}",
         )
 
-    # Redis
-    REDIS_HOST: str
-    REDIS_PORT: int
+    # Redis (Optional - system works without it, just slower)
+    REDIS_HOST: str = ""
+    REDIS_PORT: int = 6379
+    REDIS_PASSWORD: str = ""
     
     REDIS_URL: Union[RedisDsn, str, None] = None
     
@@ -64,10 +65,14 @@ class Settings(BaseSettings):
     def assemble_redis_connection(cls, v: Union[str, None], info) -> Any:
         if isinstance(v, str):
             return v
+        
+        redis_host = info.data.get("REDIS_HOST")
+        if not redis_host:
+            return None
             
         return RedisDsn.build(
             scheme="redis",
-            host=info.data.get("REDIS_HOST"),
+            host=redis_host,
             port=info.data.get("REDIS_PORT"),
         )
 

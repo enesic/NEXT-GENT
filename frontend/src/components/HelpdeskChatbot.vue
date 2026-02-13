@@ -209,7 +209,7 @@ const sendMessage = async () => {
     console.error('Helpdesk error:', error)
     messages.value.push({
       role: 'assistant',
-      content: 'Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin veya bizimle iletişime geçin: support@nextgent.com',
+      content: 'Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin veya bizimle iletişime geçin: info@nextgent.co',
       timestamp: new Date()
     })
     isTyping.value = false

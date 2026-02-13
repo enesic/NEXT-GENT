@@ -9,7 +9,7 @@
     <div v-if="!isInitializing" class="login-card" ref="loginCard">
       <div class="brand-header">
         <div class="logo-icon">
-          <Activity :size="32" />
+          <img src="/logo.svg" alt="NextGent Logo" class="brand-logo-image" />
         </div>
         <h1 class="brand-name">NextGent</h1>
       </div>
@@ -306,6 +306,14 @@ onMounted(() => {
   justify-content: center;
   color: white;
   box-shadow: 0 0 20px rgba(79, 70, 229, 0.4);
+  padding: 8px;
+}
+
+.brand-logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 
 .brand-name {

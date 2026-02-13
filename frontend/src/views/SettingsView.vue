@@ -22,7 +22,7 @@
           </div>
           <div class="input-group">
             <label>Email Adresi</label>
-            <input type="email" value="medical@nextgent.com" disabled />
+            <input type="email" value="info@nextgent.co" disabled />
           </div>
           <div class="input-group">
             <label>Telefon</label>

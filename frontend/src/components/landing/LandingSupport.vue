@@ -19,7 +19,7 @@
           <Mail :size="32" class="icon" />
           <div class="content">
             <h3>E-posta Desteği</h3>
-            <p>destek@nextgent.com</p>
+            <p>info@nextgent.co</p>
           </div>
         </div>
 
