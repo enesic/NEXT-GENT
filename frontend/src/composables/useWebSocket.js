@@ -62,14 +62,29 @@ export function useWebSocket() {
 
         try {
             // Build WebSocket URL
-            // Replace http/https with ws/wss
-            let baseUrl = API_CONFIG.BASE_URL.replace(/^http/, 'ws')
-            // Remove /api/v1 if it exists in base URL as usually WS endpoints are parallel or specific
-            // In our case we defined it under /api/v1/ws so we append /ws
-            // The FastAPI router prefix is /ws, and we included it in api router
-            // So path is BASE_URL + /ws/{tenant_id}
-
-            const wsUrl = `${baseUrl}/ws/${authStore.tenant_id}`
+            let wsUrl
+            
+            // Check if we have a dedicated WebSocket URL (HYBRID deployment)
+            const wsBaseUrl = import.meta.env.VITE_WS_URL
+            
+            if (wsBaseUrl) {
+                // Production HYBRID: Separate WebSocket service
+                // wss://nextgent-ws.railway.app + /ws/{tenant_id}
+                wsUrl = `${wsBaseUrl}/ws/${authStore.tenant_id}`
+            } else if (API_CONFIG.BASE_URL.startsWith('http://') || API_CONFIG.BASE_URL.startsWith('https://')) {
+                // Fallback: Convert REST API URL to WebSocket
+                // https://backend.railway.app/api/v1 -> wss://backend.railway.app/api/v1/ws/{tenant_id}
+                const baseUrl = API_CONFIG.BASE_URL.replace(/^http/, 'ws')
+                wsUrl = `${baseUrl}/ws/${authStore.tenant_id}`
+            } else {
+                // Development: Local development setup
+                // /api/v1 -> ws://localhost:8001/api/v1/ws/{tenant_id}
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+                const host = window.location.hostname
+                const port = import.meta.env.DEV ? '8001' : window.location.port
+                const portSuffix = port ? `:${port}` : ''
+                wsUrl = `${protocol}//${host}${portSuffix}${API_CONFIG.BASE_URL}/ws/${authStore.tenant_id}`
+            }
 
             console.log(`🔌 Connecting to WebSocket: ${wsUrl}`)
             ws.value = new WebSocket(wsUrl)

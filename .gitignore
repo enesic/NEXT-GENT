@@ -9,6 +9,7 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+.env.vercel
 *.key
 *.pem
 
@@ -51,5 +52,11 @@ yarn-error.log*
 .docker/
 docker-volume-data/
 
+# Database Backups
+backups/
+*.dump
+*.backup
+
 # OS specific files
 desktop.ini
+.vercel
