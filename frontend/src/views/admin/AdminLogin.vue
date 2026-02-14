@@ -11,7 +11,7 @@
         <div class="login-header">
           <div class="logo-container">
             <div class="logo-icon">
-              <Shield :size="40" :stroke-width="2" />
+              <img src="/logo.svg" alt="NextGent Logo" class="admin-logo-image" />
             </div>
             <h1>NextGent Admin</h1>
           </div>
@@ -236,6 +236,13 @@ async function handleLogin() {
   justify-content: center;
   color: white;
   box-shadow: 0 0 40px rgba(99, 102, 241, 0.4);
+}
+
+.admin-logo-image {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 
 .login-header h1 {

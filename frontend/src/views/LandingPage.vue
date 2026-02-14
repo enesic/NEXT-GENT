@@ -333,7 +333,10 @@
     <footer class="landing-footer">
       <div class="footer-content">
         <div class="footer-section">
-          <div class="footer-logo">NextGent</div>
+          <div class="footer-logo">
+            <img src="/logo.svg" alt="NextGent Logo" class="footer-logo-image" />
+            <span>NextGent</span>
+          </div>
           <p class="footer-description">Yeni nesil AI operasyon sistemi ile işletmenizi geleceğe taşıyın.</p>
         </div>
         
@@ -869,8 +872,17 @@ a.pricing-btn.outline:hover {
 }
 
 .footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-weight: 700;
   font-size: 18px;
+}
+
+.footer-logo-image {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 
 .copyright {

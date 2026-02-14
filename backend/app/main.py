@@ -61,6 +61,8 @@ allowed_origins = [
     "http://localhost",            # Local dev (Docker)
     "http://127.0.0.1",
     "http://localhost:80",
+    "https://nextgent.co",         # Production
+    "https://www.nextgent.co",     # Production (www)
 ]
 
 # Add configured origins from environment

@@ -3,7 +3,7 @@
     <div class="sidebar-header">
       <div class="logo">
         <div class="logo-icon">
-          <Layers :size="20" :stroke-width="2" />
+          <img src="/logo.svg" alt="NextGent Logo" class="logo-image" />
         </div>
         <span class="logo-text">NextGent</span>
       </div>
@@ -150,6 +150,13 @@ const userInitials = computed(() => {
   justify-content: center;
   box-shadow: 0 0 24px var(--indigo-glow-strong);
   animation: glow 3s ease-in-out infinite;
+}
+
+.logo-image {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  color: white;
 }
 
 .logo-text {
