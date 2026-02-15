@@ -12,7 +12,8 @@ start_api() {
 # Production path: never block startup with long init/seed loops.
 # Railway edge returns 502 if app does not become healthy quickly.
 if [ "${ENVIRONMENT}" = "production" ]; then
-    echo "✅ Production mode detected: skipping init/seed bootstrap."
+    echo "✅ Production mode detected: running lightweight bootstrap."
+    python bootstrap_production.py || echo "⚠️ Bootstrap failed; continuing startup."
     start_api
 fi
 
