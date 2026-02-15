@@ -1,4 +1,5 @@
 from typing import AsyncGenerator
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.pool import NullPool
 from fastapi import HTTPException, status
@@ -24,6 +25,16 @@ if settings.SQLALCHEMY_DATABASE_URI:
         connect_args["ssl"] = "require"
 
     uses_pgbouncer_pooler = ("pooler.supabase.com" in database_uri) or (":6543/" in database_uri)
+    if uses_pgbouncer_pooler:
+        # SQLAlchemy asyncpg dialect caches prepared statements by default.
+        # PgBouncer transaction mode cannot reliably support that cache.
+        # Force-disable at URL-level for the dialect itself.
+        parts = urlsplit(database_uri)
+        query = dict(parse_qsl(parts.query, keep_blank_values=True))
+        query["prepared_statement_cache_size"] = "0"
+        database_uri = urlunsplit(
+            (parts.scheme, parts.netloc, parts.path, urlencode(query), parts.fragment)
+        )
 
     if uses_pgbouncer_pooler:
         # With external PgBouncer poolers, disable SQLAlchemy connection pooling
