@@ -2,6 +2,7 @@ from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from typing import Dict, Any
+from sqlalchemy import text
 
 from app.core.config import settings
 from app.core.exceptions import (
@@ -141,7 +142,7 @@ async def health_check() -> JSONResponse:
     try:
         from app.core.database import engine
         async with engine.connect() as conn:
-            await conn.execute("SELECT 1")
+            await conn.execute(text("SELECT 1"))
         health_status["checks"]["database"] = {
             "status": "healthy",
             "message": "PostgreSQL connection successful"
@@ -157,16 +158,21 @@ async def health_check() -> JSONResponse:
     try:
         from app.core.redis import redis_manager
         redis_client = await redis_manager.get_client()
-        await redis_client.ping()
-        health_status["checks"]["redis"] = {
-            "status": "healthy",
-            "message": "Redis connection successful"
-        }
+        if redis_client is None:
+            health_status["checks"]["redis"] = {
+                "status": "optional",
+                "message": "Redis not configured; continuing without cache"
+            }
+        else:
+            await redis_client.ping()
+            health_status["checks"]["redis"] = {
+                "status": "healthy",
+                "message": "Redis connection successful"
+            }
     except Exception as e:
-        overall_healthy = False
         health_status["checks"]["redis"] = {
-            "status": "unhealthy",
-            "message": f"Redis connection failed: {str(e)}"
+            "status": "optional_error",
+            "message": f"Redis unavailable; continuing without cache: {str(e)}"
         }
     
     # Set overall status
@@ -187,4 +193,3 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 # Vercel serverless function export
 # This makes the app compatible with Vercel's Python runtime
 handler = app
-
