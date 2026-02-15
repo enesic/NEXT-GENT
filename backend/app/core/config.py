@@ -3,13 +3,13 @@ from pydantic import AnyHttpUrl, PostgresDsn, RedisDsn, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str
+    PROJECT_NAME: str = "NextGent"
     API_V1_STR: str = "/api/v1"
-    SECRET_KEY: str
+    SECRET_KEY: str = "change-me-in-production"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
     
     # Encryption for PII (KVKK/GDPR Compliance)
-    ENCRYPTION_KEY: str  # Fernet key for encrypting sensitive data
+    ENCRYPTION_KEY: str = "fXACJ43AmGdLJSumrunA2mUtLpD12RTqaAMsu5CEzsU="  # Fernet key for encrypting sensitive data
     
     ENVIRONMENT: str = "local"
     DEBUG: bool = True
@@ -26,11 +26,11 @@ class Settings(BaseSettings):
         raise ValueError(v)
 
     # Database
-    POSTGRES_SERVER: str
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_DB: str
-    POSTGRES_PORT: int
+    POSTGRES_SERVER: str = ""
+    POSTGRES_USER: str = ""
+    POSTGRES_PASSWORD: str = ""
+    POSTGRES_DB: str = ""
+    POSTGRES_PORT: int = 5432
 
     SQLALCHEMY_DATABASE_URI: Union[PostgresDsn, str, None] = None
 
@@ -38,15 +38,25 @@ class Settings(BaseSettings):
     def assemble_db_connection(cls, v: Union[str, None], info) -> Any:
         if isinstance(v, str):
             return v
+        if info.data.get("DATABASE_URL"):
+            return info.data.get("DATABASE_URL")
+
+        postgres_server = info.data.get("POSTGRES_SERVER")
+        postgres_user = info.data.get("POSTGRES_USER")
+        postgres_password = info.data.get("POSTGRES_PASSWORD")
+        postgres_db = info.data.get("POSTGRES_DB")
+        postgres_port = info.data.get("POSTGRES_PORT")
+        if not all([postgres_server, postgres_user, postgres_password, postgres_db, postgres_port]):
+            return None
         
         # Build async connection string
         return PostgresDsn.build(
             scheme="postgresql+asyncpg",
-            username=info.data.get("POSTGRES_USER"),
-            password=info.data.get("POSTGRES_PASSWORD"),
-            host=info.data.get("POSTGRES_SERVER"),
-            port=info.data.get("POSTGRES_PORT"),
-            path=f"{info.data.get('POSTGRES_DB') or ''}",
+            username=postgres_user,
+            password=postgres_password,
+            host=postgres_server,
+            port=postgres_port,
+            path=f"{postgres_db or ''}",
         )
 
     # Redis (Optional - system works without it, just slower)

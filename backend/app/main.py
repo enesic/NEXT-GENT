@@ -141,12 +141,19 @@ async def health_check() -> JSONResponse:
     # Check Database Connection
     try:
         from app.core.database import engine
-        async with engine.connect() as conn:
-            await conn.execute(text("SELECT 1"))
-        health_status["checks"]["database"] = {
-            "status": "healthy",
-            "message": "PostgreSQL connection successful"
-        }
+        if engine is None:
+            overall_healthy = False
+            health_status["checks"]["database"] = {
+                "status": "unhealthy",
+                "message": "Database is not configured"
+            }
+        else:
+            async with engine.connect() as conn:
+                await conn.execute(text("SELECT 1"))
+            health_status["checks"]["database"] = {
+                "status": "healthy",
+                "message": "PostgreSQL connection successful"
+            }
     except Exception as e:
         overall_healthy = False
         health_status["checks"]["database"] = {
