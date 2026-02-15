@@ -67,8 +67,8 @@ allowed_origins = [
 ]
 
 # Add configured origins from environment
-if settings.BACKEND_CORS_ORIGINS:
-    allowed_origins.extend([str(origin) for origin in settings.BACKEND_CORS_ORIGINS])
+if settings.cors_origins_list:
+    allowed_origins.extend(settings.cors_origins_list)
 
 app.add_middleware(
     CORSMiddleware,

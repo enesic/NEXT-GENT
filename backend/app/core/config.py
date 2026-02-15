@@ -14,16 +14,8 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "local"
     DEBUG: bool = True
     
-    # CORS
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
-
-    @field_validator("BACKEND_CORS_ORIGINS", mode="before")
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
-        if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
-            return v
-        raise ValueError(v)
+    # CORS (comma-separated string for deployment compatibility)
+    BACKEND_CORS_ORIGINS: str = ""
 
     # Database
     POSTGRES_SERVER: str = ""
@@ -87,5 +79,11 @@ class Settings(BaseSettings):
         )
 
     model_config = SettingsConfigDict(case_sensitive=True, env_file=".env", extra="ignore")
+
+    @property
+    def cors_origins_list(self) -> List[str]:
+        if not self.BACKEND_CORS_ORIGINS:
+            return []
+        return [origin.strip() for origin in self.BACKEND_CORS_ORIGINS.split(",") if origin.strip()]
 
 settings = Settings()
