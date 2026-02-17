@@ -16,14 +16,15 @@ export const useAdminStore = defineStore('admin', () => {
                 password
             })
 
-            const { access_token, admin_user } = response.data
+            // API returns 'token' and 'admin', not 'access_token' and 'admin_user'
+            const { token, admin } = response.data
 
-            accessToken.value = access_token
-            adminUser.value = admin_user
+            accessToken.value = token
+            adminUser.value = admin
 
             // Store token in localStorage
-            localStorage.setItem('admin_token', access_token)
-            localStorage.setItem('admin_user', JSON.stringify(admin_user))
+            localStorage.setItem('admin_token', token)
+            localStorage.setItem('admin_user', JSON.stringify(admin))
 
             return true
         } catch (error) {

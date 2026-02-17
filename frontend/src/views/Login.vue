@@ -108,13 +108,14 @@ const handleLogin = async () => {
       pin: form.value.pin
     })
     
-    // Set auth data
+    // Set auth data from API response
     authStore.setToken(response.data.token)
-    authStore.setUser(response.data.user)
-    authStore.setTenant(response.data.tenant_id)
+    authStore.setUser(response.data.customer) // API returns 'customer', not 'user'
+    authStore.setTenant(response.data.customer.tenant_id) // tenant_id is inside customer object
     
-    // Set sector (auto-detected from customer's tenant)
-    sectorStore.setSector(response.data.sector)
+    // Set sector from tenant config
+    const tenantConfig = JSON.parse(response.data.customer.tenant_config || '{}')
+    sectorStore.setSector(tenantConfig.sector || 'beauty')
     
     // Success - proceed to dashboard
     proceedToDashboard()
