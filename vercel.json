@@ -46,6 +46,26 @@
       "destination": "/api/tenants_me.py"
     },
     {
+      "source": "/api/v1/calendar/events",
+      "destination": "/api/calendar_events.py"
+    },
+    {
+      "source": "/api/v1/documents",
+      "destination": "/api/documents.py"
+    },
+    {
+      "source": "/api/v1/messages",
+      "destination": "/api/messages.py"
+    },
+    {
+      "source": "/api/v1/calls",
+      "destination": "/api/calls.py"
+    },
+    {
+      "source": "/api/v1/dashboard/config",
+      "destination": "/api/dashboard_config.py"
+    },
+    {
       "source": "/api/:path*",
       "destination": "/api/main.py"
     },
