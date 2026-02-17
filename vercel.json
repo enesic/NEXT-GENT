@@ -34,6 +34,18 @@
   ],
   "rewrites": [
     {
+      "source": "/api/test",
+      "destination": "/api/test.py"
+    },
+    {
+      "source": "/api/v1/auth/login",
+      "destination": "/api/auth_login.py"
+    },
+    {
+      "source": "/api/v1/tenants/me",
+      "destination": "/api/tenants_me.py"
+    },
+    {
       "source": "/api/:path*",
       "destination": "/api/main.py"
     },
