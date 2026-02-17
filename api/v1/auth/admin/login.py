@@ -1,6 +1,6 @@
 """
-Vercel Serverless Function for Auth Login
-Endpoint: /api/v1/auth/login
+Vercel Serverless Function for Admin Login
+Endpoint: /api/v1/auth/admin/login
 """
 import os
 import json
@@ -18,44 +18,50 @@ os.environ["ENCRYPTION_KEY"] = "fXACJ43AmGdLJSumrunA2mUtLpD12RTqaAMsu5CEzsU="
 os.environ["BACKEND_CORS_ORIGINS"] = "https://www.nextgent.co,https://nextgent.co,http://localhost:5173"
 os.environ["REDIS_HOST"] = ""
 
-async def authenticate_customer(customer_id: str, pin: str):
-    """Authenticate customer against Neon database"""
+async def authenticate_admin(username: str, password: str):
+    """Authenticate admin against Neon database"""
     try:
         conn = await asyncpg.connect(os.environ["DATABASE_URL"])
         
-        # Get customer with hashed PIN
-        customer = await conn.fetchrow("""
-            SELECT c.id, c.customer_id, c.first_name, c.last_name, c.email, 
-                   c.pin_hash, c.segment, c.status, c.tenant_id,
-                   t.slug as tenant_slug, t.name as tenant_name, t.config as tenant_config
-            FROM customers c
-            JOIN tenants t ON c.tenant_id = t.id
-            WHERE c.customer_id = $1 AND c.status = 'active'
-        """, customer_id)
+        # Get admin user
+        admin = await conn.fetchrow("""
+            SELECT id, username, email, password_hash, role, is_active, 
+                   is_super_admin, permissions, login_count
+            FROM admin_users
+            WHERE username = $1 AND is_active = true
+        """, username)
         
-        if not customer:
-            return None, "Customer not found or inactive"
+        if not admin:
+            await conn.close()
+            return None, "Admin user not found or inactive"
         
-        # Verify PIN
-        if not bcrypt.checkpw(pin.encode('utf-8'), customer['pin_hash'].encode('utf-8')):
-            return None, "Invalid PIN"
+        # Verify password
+        if not bcrypt.checkpw(password.encode('utf-8'), admin['password_hash'].encode('utf-8')):
+            await conn.close()
+            return None, "Invalid password"
         
-        # Generate simple token (in production, use JWT)
-        token = f"customer_{customer['id']}_{customer_id}"
+        # Update login count and last login
+        await conn.execute("""
+            UPDATE admin_users 
+            SET login_count = login_count + 1, last_login_at = NOW()
+            WHERE id = $1
+        """, admin['id'])
         
-        customer_data = {
-            "id": customer['customer_id'],
-            "name": f"{customer['first_name']} {customer['last_name']}",
-            "email": customer['email'],
-            "segment": customer['segment'],
-            "tenant_id": customer['tenant_id'],
-            "tenant_slug": customer['tenant_slug'],
-            "tenant_name": customer['tenant_name'],
-            "tenant_config": customer['tenant_config']
+        # Generate simple token
+        token = f"admin_{admin['id']}_{username}"
+        
+        admin_data = {
+            "id": admin['id'],
+            "username": admin['username'],
+            "email": admin['email'],
+            "role": admin['role'],
+            "is_super_admin": admin['is_super_admin'],
+            "permissions": admin['permissions'] or {},
+            "login_count": admin['login_count'] + 1
         }
         
         await conn.close()
-        return customer_data, token
+        return admin_data, token
         
     except Exception as e:
         print(f"Database error: {e}")
@@ -80,10 +86,10 @@ class handler(BaseHTTPRequestHandler):
                 self.wfile.write(json.dumps(error_data).encode())
                 return
             
-            customer_id = data.get('customer_id', '').strip()
-            pin = data.get('pin', '').strip()
+            username = data.get('username', '').strip()
+            password = data.get('password', '').strip()
             
-            if not customer_id or not pin:
+            if not username or not password:
                 self.send_response(400)
                 self.send_header('Content-Type', 'application/json')
                 self.send_header('Access-Control-Allow-Origin', '*')
@@ -91,7 +97,7 @@ class handler(BaseHTTPRequestHandler):
                 
                 error_data = {
                     "status": "error",
-                    "message": "Missing customer_id or pin"
+                    "message": "Missing username or password"
                 }
                 self.wfile.write(json.dumps(error_data).encode())
                 return
@@ -99,15 +105,15 @@ class handler(BaseHTTPRequestHandler):
             # Run async authentication
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            customer, result = loop.run_until_complete(authenticate_customer(customer_id, pin))
+            admin, result = loop.run_until_complete(authenticate_admin(username, password))
             loop.close()
             
-            if customer:
+            if admin:
                 response_data = {
                     "status": "success",
-                    "message": "Login successful",
+                    "message": "Admin login successful",
                     "token": result,
-                    "customer": customer
+                    "admin": admin
                 }
                 self.send_response(200)
             else:
@@ -131,7 +137,7 @@ class handler(BaseHTTPRequestHandler):
             
             error_data = {
                 "status": "error",
-                "message": f"Login failed: {str(e)}"
+                "message": f"Admin login failed: {str(e)}"
             }
             self.wfile.write(json.dumps(error_data).encode())
 
