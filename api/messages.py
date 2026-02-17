@@ -87,40 +87,45 @@ class handler(BaseHTTPRequestHandler):
                 await conn.close()
                 return [], 0
             
-            # Generate realistic sectoral messages with pagination
-            all_messages = []
+            # Generate realistic sectoral messages with deterministic pagination
             sector_messages = self.get_sector_messages(tenant_slug)
             
             base_date = datetime.now()
-            message_id = offset + 1
-            
-            # Generate enough messages for pagination
-            total_messages = 50  # Fixed total for performance
+            total_messages = 20  # Reduced to 20 messages total (not 50!)
             
             import random
+            # Use tenant ID as seed for consistency
+            random.seed(tenant['id'] * 1000)
+            
+            # Generate messages with consistent IDs
+            all_messages = []
             for i in range(total_messages):
-                if len(all_messages) >= limit and i >= offset + limit:
+                # Skip items before offset (for pagination)
+                if i < offset:
+                    continue
+                
+                # Stop when we have enough for this page
+                if len(all_messages) >= limit:
                     break
-                    
-                customer = random.choice(customers)
-                message_template = random.choice(sector_messages)
-                message_date = base_date - timedelta(hours=i * 2)
+                
+                customer = customers[i % len(customers)]  # Rotate through customers
+                message_template = sector_messages[i % len(sector_messages)]  # Rotate through messages
+                message_date = base_date - timedelta(hours=i * 3)  # Spread over time
                 
                 message = {
-                    "id": offset + len(all_messages) + 1,
+                    "id": i + 1,  # Consistent ID
                     "customer_id": customer['customer_id'],
                     "customer_name": f"{customer['first_name']} {customer['last_name']}",
                     "message": message_template["message"],
                     "type": message_template["type"],
                     "priority": message_template["priority"],
-                    "status": random.choice(["read", "unread", "replied"]),
+                    "status": ["read", "unread", "replied"][i % 3],  # Deterministic status
                     "created_at": message_date.isoformat(),
-                    "channel": random.choice(["whatsapp", "phone", "email", "web"]),
+                    "channel": ["whatsapp", "phone", "email", "web"][i % 4],  # Deterministic channel
                     "tenant_id": tenant['id']
                 }
                 
-                if i >= offset:  # Only add messages for current page
-                    all_messages.append(message)
+                all_messages.append(message)
             
             await conn.close()
             return all_messages, total_messages
