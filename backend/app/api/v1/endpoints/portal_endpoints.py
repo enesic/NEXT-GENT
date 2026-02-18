@@ -34,17 +34,23 @@ class AppointmentResponse(BaseModel):
 
 class MessageResponse(BaseModel):
     id: str
+    customer_name: Optional[str] = None
     message: str
     direction: str  # inbound, outbound
     channel: str  # whatsapp, sms, email
+    status: str = "read"
     created_at: datetime
 
 
 class CallResponse(BaseModel):
     id: str
+    customer_name: Optional[str] = None
+    phone: Optional[str] = None
     duration: int
+    duration_formatted: Optional[str] = None
     status: str
     summary: Optional[str]
+    timestamp: Optional[datetime] = None
     created_at: datetime
 
 
@@ -119,7 +125,7 @@ async def get_customer_appointments(
 @router.get("/messages", response_model=List[MessageResponse])
 async def get_customer_messages(
     channel: Optional[str] = None,
-    limit: int = 100,
+    limit: int = 10,
     db: AsyncSession = Depends(get_db),
     current_tenant: Optional[Tenant] = Depends(get_current_tenant)
 ):
@@ -133,7 +139,12 @@ async def get_customer_messages(
                 detail="Giriş yapmanız gerekiyor"
             )
         
-        query = select(Interaction).where(
+        # Cap limit to prevent excessive data
+        limit = min(limit, 20)
+        
+        query = select(Interaction, Customer).join(
+            Customer, Interaction.customer_id == Customer.id, isouter=True
+        ).where(
             and_(
                 Interaction.tenant_id == current_tenant.id,
                 Interaction.type.in_(["whatsapp", "sms", "email"])
@@ -146,16 +157,21 @@ async def get_customer_messages(
         query = query.order_by(desc(Interaction.created_at)).limit(limit)
         
         result = await db.execute(query)
-        interactions = result.scalars().all()
+        rows = result.all()
         
         messages = []
-        for interaction in interactions:
+        for interaction, customer in rows:
             metadata = interaction.meta_data or {}
+            customer_name = None
+            if customer:
+                customer_name = f"{customer.first_name or ''} {customer.last_name or ''}".strip() or None
             messages.append(MessageResponse(
                 id=str(interaction.id),
+                customer_name=customer_name or metadata.get("customer_name", "Müşteri"),
                 message=metadata.get("message", interaction.summary or ""),
                 direction=metadata.get("direction", "inbound"),
                 channel=interaction.type,
+                status=metadata.get("status", "read"),
                 created_at=interaction.created_at
             ))
         
@@ -173,7 +189,7 @@ async def get_customer_messages(
 
 @router.get("/calls", response_model=List[CallResponse])
 async def get_customer_calls(
-    limit: int = 50,
+    limit: int = 10,
     db: AsyncSession = Depends(get_db),
     current_tenant: Optional[Tenant] = Depends(get_current_tenant)
 ):
@@ -187,6 +203,9 @@ async def get_customer_calls(
                 detail="Giriş yapmanız gerekiyor"
             )
         
+        # Cap limit to prevent excessive data
+        limit = min(limit, 20)
+        
         result = await db.execute(
             select(VAPICall)
             .where(VAPICall.tenant_id == current_tenant.id)
@@ -195,16 +214,24 @@ async def get_customer_calls(
         )
         calls = result.scalars().all()
         
-        return [
-            CallResponse(
+        call_responses = []
+        for call in calls:
+            dur_sec = call.call_duration_seconds or 0
+            dur_min = dur_sec // 60
+            dur_rem = dur_sec % 60
+            call_responses.append(CallResponse(
                 id=str(call.id),
-                duration=call.call_duration_seconds or 0,
-                status=call.call_status,
+                customer_name=getattr(call, 'customer_name', None) or 'Müşteri',
+                phone=None,  # KVKK: do not expose phone
+                duration=dur_sec,
+                duration_formatted=f"{dur_min}m {dur_rem}s",
+                status=call.call_status or 'completed',
                 summary=call.summary,
+                timestamp=call.created_at,
                 created_at=call.created_at
-            )
-            for call in calls
-        ]
+            ))
+        
+        return call_responses
         
     except HTTPException:
         raise
