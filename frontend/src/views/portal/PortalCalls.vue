@@ -1,7 +1,7 @@
 <template>
   <div class="portal-page">
     <div class="page-header">
-      <h1 :style="{ color: colors.primary }">Aramalar</h1>
+      <h1>Aramalar</h1>
       <p class="subtitle">Çağrı geçmişi ve detayları</p>
     </div>
 
@@ -10,6 +10,12 @@
         Yükleniyor...
       </div>
       
+      <div v-else-if="errorMsg" class="empty-state">
+        <component :is="sectorStore.getIcon('AlertCircle')" :size="48" color="#ef4444" />
+        <p>{{ errorMsg }}</p>
+        <button class="retry-btn" @click="loadCalls">Tekrar Dene</button>
+      </div>
+
       <div v-else-if="calls.length === 0" class="empty-state">
         <component :is="sectorStore.getIcon('Phone')" :size="48" :color="colors.secondary" />
         <p>Henüz bir arama kaydı bulunmuyor.</p>
@@ -27,16 +33,26 @@
             </div>
             <div class="item-content">
                 <div class="item-header">
-                    <span class="item-title">{{ call.caller_number || 'Bilinmiyor' }}</span>
-                    <span class="item-date">{{ formatTime(call.created_at) }}</span>
+                    <span class="item-title">{{ call.customer_name || 'Müşteri' }}</span>
+                    <span class="item-phone" v-if="call.phone">{{ call.phone }}</span>
+                    <span class="item-date">{{ formatTime(call.timestamp || call.created_at) }}</span>
                 </div>
                 <p class="item-desc">
-                    <span class="status-badge" :style="{ background: call.status === 'missed' ? '#fee2e2' : '#dcfce7', color: call.status === 'missed' ? '#991b1b' : '#166534' }">
-                        {{ call.status === 'missed' ? 'Cevapsız' : 'Tamamlandı' }}
+                    <span class="status-badge" :class="statusClass(call.status)">
+                        {{ statusLabel(call.status) }}
                     </span>
-                    {{ call.duration ? ` • ${call.duration} sn` : '' }}
+                    <span v-if="call.duration" class="call-duration">{{ call.duration }}</span>
+                    <span v-if="call.agent" class="call-agent">{{ call.agent }}</span>
                 </p>
+                <p v-if="call.summary" class="item-summary">{{ call.summary }}</p>
             </div>
+        </div>
+
+        <!-- Pagination -->
+        <div v-if="totalCalls > pageSize" class="pagination">
+          <button :disabled="currentPage <= 1" @click="goToPage(currentPage - 1)" class="page-btn">← Önceki</button>
+          <span class="page-info">Sayfa {{ currentPage }} / {{ totalPages }}</span>
+          <button :disabled="currentPage >= totalPages" @click="goToPage(currentPage + 1)" class="page-btn">Sonraki →</button>
         </div>
       </div>
     </div>
@@ -46,37 +62,88 @@
 <script setup>
 import { ref, onMounted, computed, inject } from 'vue'
 import { useSectorStore } from '../../stores/sector'
+import { useAuthStore } from '../../stores/auth'
 
 const sectorStore = useSectorStore()
+const authStore = useAuthStore()
 const axios = inject('axios')
 
 const calls = ref([])
 const loading = ref(true)
+const errorMsg = ref(null)
+const currentPage = ref(1)
+const totalCalls = ref(0)
+const pageSize = 10
+
+const totalPages = computed(() => Math.ceil(totalCalls.value / pageSize))
 
 const colors = computed(() => sectorStore.theme || {
     primary: '#0ea5e9',
     secondary: '#0f766e',
     accent: '#38bdf8',
-    text: '#0f172a'
+    text: '#e2e8f0'
 })
 
 const getColor = (name) => (sectorStore.theme || {})[name] || colors.value.primary
 const getGlowColor = (name) => getColor(name) + '1A'
+
+const statusLabel = (status) => {
+    const labels = {
+        resolved: 'Çözüldü',
+        closed: 'Kapatıldı',
+        pending: 'Beklemede',
+        missed: 'Cevapsız',
+        completed: 'Tamamlandı',
+        open: 'Açık'
+    }
+    return labels[status] || status || 'Tamamlandı'
+}
+
+const statusClass = (status) => {
+    if (['resolved', 'closed', 'completed'].includes(status)) return 'success'
+    if (['missed', 'open'].includes(status)) return 'danger'
+    return 'warning'
+}
 
 const formatTime = (d) => {
     if (!d) return ''
     return new Date(d).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
 }
 
-onMounted(async () => {
+const loadCalls = async () => {
     try {
-        const res = await axios.get('/portal/calls?limit=50')
-        calls.value = res.data || []
+        loading.value = true
+        errorMsg.value = null
+        const tenant = sectorStore.currentSectorId || 'beauty'
+        const offset = (currentPage.value - 1) * pageSize
+        const res = await axios.get(`/calls?tenant=${tenant}&limit=${pageSize}&offset=${offset}`)
+        
+        // Handle both paginated and flat responses
+        if (res.data && res.data.data) {
+            calls.value = res.data.data
+            totalCalls.value = res.data.total || res.data.data.length
+        } else if (Array.isArray(res.data)) {
+            calls.value = res.data
+            totalCalls.value = res.data.length
+        } else {
+            calls.value = []
+            totalCalls.value = 0
+        }
     } catch (e) {
         console.error('Failed to load calls', e)
+        errorMsg.value = 'Aramalar yüklenirken bir hata oluştu.'
     } finally {
         loading.value = false
     }
+}
+
+const goToPage = (page) => {
+    currentPage.value = page
+    loadCalls()
+}
+
+onMounted(() => {
+    loadCalls()
 })
 </script>
 
@@ -95,6 +162,7 @@ onMounted(async () => {
     font-size: 24px;
     font-weight: 700;
     margin-bottom: 4px;
+    color: var(--text-primary);
 }
 
 .subtitle {
@@ -159,7 +227,8 @@ onMounted(async () => {
 
 .item-header {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
     margin-bottom: 4px;
 }
 
@@ -168,9 +237,16 @@ onMounted(async () => {
     color: var(--text-primary);
 }
 
+.item-phone {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: monospace;
+}
+
 .item-date {
     font-size: 12px;
     color: var(--text-muted);
+    margin-left: auto;
 }
 
 .item-desc {
@@ -182,10 +258,76 @@ onMounted(async () => {
     gap: 8px;
 }
 
+.item-summary {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
 .status-badge {
     padding: 2px 8px;
     border-radius: 4px;
     font-size: 11px;
     font-weight: 600;
+}
+.status-badge.success { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+.status-badge.danger { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+.status-badge.warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+
+.call-duration {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.call-agent {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.page-btn {
+    padding: 8px 16px;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 13px;
+}
+.page-btn:hover:not(:disabled) {
+    background: var(--surface-hover);
+    border-color: var(--border-hover);
+}
+.page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.page-info {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.retry-btn {
+    padding: 8px 20px;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.retry-btn:hover {
+    background: var(--surface-hover);
 }
 </style>

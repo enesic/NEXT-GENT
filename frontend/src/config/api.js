@@ -44,14 +44,14 @@ const api = axios.create({
 // Request interceptor - add auth token if available
 api.interceptors.request.use(
     (config) => {
-        // Get token from localStorage
-        const token = localStorage.getItem('access_token')
+        // Get token from sessionStorage
+        const token = sessionStorage.getItem('access_token')
         if (token) {
             config.headers.Authorization = `Bearer ${token}`
         }
 
-        // Get tenant ID from localStorage
-        const tenantId = localStorage.getItem('tenant_id')
+        // Get tenant ID from sessionStorage
+        const tenantId = sessionStorage.getItem('tenant_id')
         if (tenantId) {
             config.headers['X-Tenant-ID'] = tenantId
         }
@@ -72,8 +72,8 @@ api.interceptors.response.use(
         // Handle 401 Unauthorized
         if (error.response?.status === 401) {
             // Clear auth data
-            localStorage.removeItem('access_token')
-            localStorage.removeItem('tenant_id')
+            sessionStorage.removeItem('access_token')
+            sessionStorage.removeItem('tenant_id')
 
             // Redirect to login
             if (window.location.pathname !== '/login') {

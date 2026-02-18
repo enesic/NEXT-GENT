@@ -164,7 +164,7 @@ const fetchEvents = async () => {
   try {
     // Check if user is customer (crudely via sectorStore or let api handle it)
     // Better: Helper to check role
-    const isCustomer = !localStorage.getItem('user')?.includes('admin') // Simple check
+    const isCustomer = !sessionStorage.getItem('user')?.includes('admin') // Simple check
     
     const endpoint = isCustomer ? '/portal/appointments' : '/interactions'
     

@@ -1,7 +1,7 @@
 <template>
   <div class="portal-dashboard">
     <div class="welcome-section">
-      <h1 :style="{ color: colors.primary }">{{ t('welcome_message') }}</h1>
+      <h1>{{ t('welcome_message') }}</h1>
       <p class="subtitle">{{ t('dashboard_subtitle') }}</p>
     </div>
 
@@ -20,7 +20,7 @@
             </div>
         </div>
         <div class="stat-body">
-            <span class="stat-value" :style="{ color: colors.text }">{{ stat.value }}</span>
+            <span class="stat-value" >{{ stat.value }}</span>
             <span v-if="stat.change" class="stat-change" :class="stat.change > 0 ? 'positive' : 'negative'">
               {{ stat.change > 0 ? '↑' : '↓' }} {{ Math.abs(stat.change) }}%
             </span>
@@ -32,7 +32,7 @@
         <!-- MAIN DRAFT: Large Chart Section -->
         <div class="chart-section glass-panel">
             <div class="section-header">
-                <h3 :style="{ color: colors.text }">{{ chartConfig?.title || 'Hasta Trafiği' }}</h3>
+                <h3 >{{ chartConfig?.title || 'Hasta Trafiği' }}</h3>
                 <span class="section-subtitle">{{ chartConfig?.subtitle || 'Yıllık Veriler' }}</span>
             </div>
              <LuxuryChart 
@@ -50,7 +50,7 @@
         <!-- MAIN DRAFT: Right Side Quick Actions -->
         <div class="side-panel">
             <div class="quick-actions-card">
-                <h3 :style="{ color: colors.text }">Hızlı İşlemler</h3>
+                <h3 >Hızlı İşlemler</h3>
                 <div class="actions-list">
                     <button 
                         v-for="(action, index) in displayActions" 
@@ -70,12 +70,12 @@
 
             <!-- MAIN DRAFT: Recent Activity Widget -->
              <div class="activity-card">
-                <h3 :style="{ color: colors.text }">Son Aktiviteler</h3>
+                <h3 >Son Aktiviteler</h3>
                 <div class="activity-list">
                     <div v-for="i in 3" :key="i" class="activity-row">
                         <div class="dot" :style="{ background: i === 1 ? colors.primary : colors.secondary }"></div>
                         <div class="activity-text">
-                            <strong :style="{ color: colors.text }">{{ getDummyActivity(i).title }}</strong>
+                            <strong >{{ getDummyActivity(i).title }}</strong>
                             <span class="time">2 saat önce</span>
                         </div>
                     </div>
@@ -92,6 +92,7 @@ import { useSectorStore } from '../../stores/sector'
 import LuxuryChart from '../../components/LuxuryChart.vue'
 import dashboardAPI from '../../config/dashboardAPI'
 
+const emit = defineEmits(['navigate'])
 const sectorStore = useSectorStore()
 
 // Data state
@@ -227,32 +228,11 @@ const getDummyActivity = (i) => {
     return { title: (messages[sector] || messages.medical)[i-1] || 'İşlem tamamlandı' }
 }
 
-// Button click handler
+// Button click handler - navigate via parent shell
 const handleActionClick = (action) => {
-    console.log('Action clicked:', action)
-    
-    // Map action labels to routes
-    const routeMap = {
-        'Randevu Ekle': '/portal/appointments',
-        'Hasta Kaydı': '/portal/customers',
-        'Reçete Yaz': '/portal/documents',
-        'Lab Sonuçları': '/portal/documents',
-        'Dava Aç': '/portal/cases',
-        'Müvekkil Ekle': '/portal/customers',
-        'Dosya Yükle': '/portal/documents',
-        'Takvim': '/portal/calendar',
-        'Mülk Ekle': '/portal/properties',
-        'Müşteri Ekle': '/portal/customers',
-        'Görüşme Planla': '/portal/appointments',
-        'Rapor': '/portal/analytics'
-    }
-    
-    // Fallback: try to navigate based on label
-    const route = routeMap[action.label] || '/portal/dashboard'
-    
-    // For now, show alert (you can replace with router.push(route) when routes are ready)
-    console.log(`Navigating to: ${route}`)
-    alert(`"${action.label}" özelliği yakında eklenecek!\nHedef sayfa: ${route}`)
+    // Use nav property from sectorThemes quickActions
+    const target = action.nav || 'dashboard'
+    emit('navigate', target)
 }
 
 </script>

@@ -40,13 +40,18 @@
       </nav>
 
       <div class="sidebar-footer">
-        <div class="user-profile">
-          <div class="user-avatar" ref="userAvatar">AY</div>
+        <div class="user-profile" @click="toggleUserMenu">
+          <div class="user-avatar" ref="userAvatar">{{ userInitials }}</div>
           <div class="user-info">
-            <div class="user-name">Ahmet Yılmaz</div>
-            <div class="user-role">Executive Director</div>
+            <div class="user-name">{{ userName }}</div>
+            <div class="user-role">{{ userRole }}</div>
           </div>
           <MoreVertical :size="16" :stroke-width="2" />
+        </div>
+        <div v-if="showUserMenu" class="user-menu">
+          <button class="menu-item" @click="handleLogout">
+            Çıkış Yap
+          </button>
         </div>
       </div>
     </aside>
@@ -94,6 +99,7 @@
                 :is="activeComponent" 
                 v-bind="activeComponentProps"
                 :key="activeNav"
+                @navigate="handleNavigate"
             />
         </Transition>
       </div>
@@ -106,6 +112,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick, onMounted, inject } from 'vue'
+import { useRouter } from 'vue-router'
 import { 
   Activity, Stethoscope, Scale, Building2, Home, Gavel,
   LayoutDashboard, TrendingUp, FolderKanban, Users, 
@@ -143,6 +150,36 @@ const sectorStore = useSectorStore()
 const notificationStore = useNotificationStore()
 const authStore = useAuthStore()
 const axios = inject('axios')
+const router = useRouter()
+
+// Dynamic user info
+const userName = computed(() => {
+    const u = authStore.user
+    if (!u) return 'Kullanıcı'
+    return u.first_name && u.last_name ? `${u.first_name} ${u.last_name}` : u.name || u.customer_id || 'Kullanıcı'
+})
+
+const userInitials = computed(() => {
+    const name = userName.value
+    const parts = name.split(' ')
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
+    return name.substring(0, 2).toUpperCase()
+})
+
+const userRole = computed(() => {
+    const u = authStore.user
+    if (!u) return 'Müşteri'
+    return u.role === 'admin' ? 'Yönetici' : sectorStore.currentSector?.label || 'Müşteri'
+})
+
+const showUserMenu = ref(false)
+const toggleUserMenu = () => { showUserMenu.value = !showUserMenu.value }
+
+const handleLogout = () => {
+    authStore.logout()
+    showUserMenu.value = false
+    router.push('/login')
+}
 
 // State
 const activeNav = ref('dashboard')
@@ -700,5 +737,29 @@ const handleSearchBlur = () => {
     flex-wrap: wrap;
     gap: 12px;
   }
+}
+
+.user-menu {
+  padding: 8px;
+  margin-top: 4px;
+}
+
+.user-menu .menu-item {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--surface-hover);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  color: #f87171;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.user-menu .menu-item:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
 }
 </style>

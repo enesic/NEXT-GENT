@@ -10,11 +10,11 @@ export const sectorThemes = {
             primary: '#0ea5e9', // Sky 500
             secondary: '#0f766e', // Teal 700
             accent: '#38bdf8', // Sky 400
-            background: '#f0f9ff', // Sky 50
-            surface: '#ffffff',
-            text: '#0f172a',
+            background: '#030303',
+            surface: 'rgba(255, 255, 255, 0.03)',
+            text: '#e2e8f0', // Light slate for dark bg
             gradient: 'linear-gradient(135deg, #0ea5e9 0%, #0f766e 100%)',
-            sidebar: 'linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%)',
+            sidebar: 'linear-gradient(180deg, #030303 0%, #0a0a0a 100%)',
             cardShadow: '0 4px 6px -1px rgba(14, 165, 233, 0.1), 0 2px 4px -1px rgba(14, 165, 233, 0.06)'
         },
         stats: [
@@ -24,10 +24,10 @@ export const sectorThemes = {
             { label: 'Müşteri Memnuniyeti', value: '98%', change: 1.2, icon: 'Heart', color: 'secondary' }
         ],
         quickActions: [
-            { label: 'Randevu Ekle', icon: 'CalendarPlus' },
-            { label: 'Hasta Kaydı', icon: 'UserPlus' },
-            { label: 'Reçete Yaz', icon: 'FileText' },
-            { label: 'Lab Sonuçları', icon: 'Activity' }
+            { label: 'Randevu Ekle', icon: 'CalendarPlus', nav: 'appointments' },
+            { label: 'Hasta Kaydı', icon: 'UserPlus', nav: 'dashboard' },
+            { label: 'Reçete Yaz', icon: 'FileText', nav: 'documents' },
+            { label: 'Lab Sonuçları', icon: 'Activity', nav: 'documents' }
         ],
         chart: {
             title: 'Hasta Trafiği',
@@ -43,15 +43,15 @@ export const sectorThemes = {
         id: 'legal',
         label: 'Hukuk',
         colors: {
-            primary: '#1e3a8a', // Blue 900
-            secondary: '#b45309', // Amber 700
+            primary: '#818cf8', // Indigo 400 (lighter for dark bg)
+            secondary: '#fbbf24', // Amber 400
             accent: '#d97706', // Amber 600
-            background: '#f8fafc', // Slate 50
-            surface: '#ffffff',
-            text: '#1e293b',
-            gradient: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)',
-            sidebar: 'linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%)',
-            cardShadow: '0 4px 6px -1px rgba(30, 58, 138, 0.1), 0 2px 4px -1px rgba(30, 58, 138, 0.06)'
+            background: '#030303',
+            surface: 'rgba(255, 255, 255, 0.03)',
+            text: '#e2e8f0', // Light slate for dark bg
+            gradient: 'linear-gradient(135deg, #818cf8 0%, #6366f1 100%)',
+            sidebar: 'linear-gradient(180deg, #030303 0%, #0a0a0a 100%)',
+            cardShadow: '0 4px 6px -1px rgba(129, 140, 248, 0.1), 0 2px 4px -1px rgba(129, 140, 248, 0.06)'
         },
         stats: [
             { label: 'Aktif Davalar', value: '42', change: 1.5, icon: 'Briefcase', color: 'primary' },
@@ -60,10 +60,10 @@ export const sectorThemes = {
             { label: 'Faturalandırılan Saat', value: '145s', change: 12.3, icon: 'Clock', color: 'green' }
         ],
         quickActions: [
-            { label: 'Dava Aç', icon: 'Gavel' },
-            { label: 'Müvekkil Ekle', icon: 'UserPlus' },
-            { label: 'Belge Yükle', icon: 'Upload' },
-            { label: 'Zaman Gir', icon: 'Clock' }
+            { label: 'Dava Aç', icon: 'Gavel', nav: 'documents' },
+            { label: 'Müvekkil Ekle', icon: 'UserPlus', nav: 'dashboard' },
+            { label: 'Belge Yükle', icon: 'Upload', nav: 'documents' },
+            { label: 'Zaman Gir', icon: 'Clock', nav: 'calendar' }
         ],
         chart: {
             title: 'Dava Yükü',
@@ -79,14 +79,14 @@ export const sectorThemes = {
         id: 'real_estate',
         label: 'Emlak',
         colors: {
-            primary: '#047857', // Emerald 700
-            secondary: '#a16207', // Yellow 700
-            accent: '#10b981', // Emerald 500
-            background: '#f0fdf4', // Emerald 50
-            surface: '#ffffff',
-            text: '#064e3b',
+            primary: '#10b981', // Emerald 500
+            secondary: '#fbbf24', // Yellow 400
+            accent: '#34d399', // Emerald 400
+            background: '#030303',
+            surface: 'rgba(255, 255, 255, 0.03)',
+            text: '#e2e8f0', // Light slate for dark bg
             gradient: 'linear-gradient(135deg, #047857 0%, #059669 100%)',
-            sidebar: 'linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%)',
+            sidebar: 'linear-gradient(180deg, #030303 0%, #0a0a0a 100%)',
             cardShadow: '0 4px 6px -1px rgba(4, 120, 87, 0.1), 0 2px 4px -1px rgba(4, 120, 87, 0.06)'
         },
         stats: [
@@ -96,10 +96,10 @@ export const sectorThemes = {
             { label: 'Yeni Talepler', value: '45', change: 15.6, icon: 'MessageCircle', color: 'green' }
         ],
         quickActions: [
-            { label: 'İlan Ekle', icon: 'PlusCircle' },
-            { label: 'Randevu Oluştur', icon: 'Calendar' },
-            { label: 'Sözleşme Hazırla', icon: 'FileText' },
-            { label: 'Müşteri Ekle', icon: 'UserPlus' }
+            { label: 'İlan Ekle', icon: 'PlusCircle', nav: 'documents' },
+            { label: 'Randevu Oluştur', icon: 'Calendar', nav: 'appointments' },
+            { label: 'Sözleşme Hazırla', icon: 'FileText', nav: 'documents' },
+            { label: 'Müşteri Ekle', icon: 'UserPlus', nav: 'dashboard' }
         ],
         chart: {
             title: 'Satış Performansı',
@@ -115,15 +115,15 @@ export const sectorThemes = {
         id: 'finance',
         label: 'Finans',
         colors: {
-            primary: '#111827', // Gray 900
-            secondary: '#059669', // Emerald 600
-            accent: '#34d399', // Emerald 400
-            background: '#f9fafb', // Gray 50
-            surface: '#ffffff',
-            text: '#111827',
-            gradient: 'linear-gradient(135deg, #111827 0%, #374151 100%)',
-            sidebar: 'linear-gradient(180deg, #f9fafb 0%, #e5e7eb 100%)',
-            cardShadow: '0 4px 6px -1px rgba(17, 24, 39, 0.1), 0 2px 4px -1px rgba(17, 24, 39, 0.06)'
+            primary: '#a78bfa', // Violet 400
+            secondary: '#34d399', // Emerald 400
+            accent: '#6ee7b7', // Emerald 300
+            background: '#030303',
+            surface: 'rgba(255, 255, 255, 0.03)',
+            text: '#e2e8f0', // Light slate for dark bg
+            gradient: 'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)',
+            sidebar: 'linear-gradient(180deg, #030303 0%, #0a0a0a 100%)',
+            cardShadow: '0 4px 6px -1px rgba(167, 139, 250, 0.1), 0 2px 4px -1px rgba(167, 139, 250, 0.06)'
         },
         stats: [
             { label: 'Toplam Varlık', value: '₺8.4M', change: 12.5, icon: 'Wallet', color: 'primary' },
@@ -132,10 +132,10 @@ export const sectorThemes = {
             { label: 'Net Kar', value: '₺330K', change: 15.4, icon: 'PieChart', color: 'green' }
         ],
         quickActions: [
-            { label: 'Transfer Yap', icon: 'ArrowRight' },
-            { label: 'Fatura Kes', icon: 'FileText' },
-            { label: 'Rapor Al', icon: 'BarChart3' },
-            { label: 'Kur Ekle', icon: 'DollarSign' }
+            { label: 'Transfer Yap', icon: 'ArrowRight', nav: 'documents' },
+            { label: 'Fatura Kes', icon: 'FileText', nav: 'documents' },
+            { label: 'Rapor Al', icon: 'BarChart3', nav: 'analytics' },
+            { label: 'Kur Ekle', icon: 'DollarSign', nav: 'dashboard' }
         ],
         chart: {
             title: 'Nakit Akışı',
@@ -151,15 +151,15 @@ export const sectorThemes = {
         id: 'technology',
         label: 'Teknoloji',
         colors: {
-            primary: '#6366f1', // Indigo 500
-            secondary: '#8b5cf6', // Violet 500
-            accent: '#a855f7', // Purple 500
-            background: '#faf5ff', // Purple 50
-            surface: '#ffffff',
-            text: '#4c1d95',
-            gradient: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-            sidebar: 'linear-gradient(180deg, #faf5ff 0%, #f3e8ff 100%)',
-            cardShadow: '0 4px 6px -1px rgba(99, 102, 241, 0.1), 0 2px 4px -1px rgba(99, 102, 241, 0.06)'
+            primary: '#818cf8', // Indigo 400
+            secondary: '#a78bfa', // Violet 400
+            accent: '#c084fc', // Purple 400
+            background: '#030303',
+            surface: 'rgba(255, 255, 255, 0.03)',
+            text: '#e2e8f0', // Light slate for dark bg
+            gradient: 'linear-gradient(135deg, #818cf8 0%, #a78bfa 100%)',
+            sidebar: 'linear-gradient(180deg, #030303 0%, #0a0a0a 100%)',
+            cardShadow: '0 4px 6px -1px rgba(129, 140, 248, 0.1), 0 2px 4px -1px rgba(129, 140, 248, 0.06)'
         },
         stats: [
             { label: 'Aktif Kullanıcı', value: '25.4K', change: 18.2, icon: 'Users', color: 'primary' },
@@ -168,10 +168,10 @@ export const sectorThemes = {
             { label: 'Uptime', value: '99.9%', change: 0, icon: 'Server', color: 'green' }
         ],
         quickActions: [
-            { label: 'Dağıtım Yap', icon: 'Rocket' },
-            { label: 'Logları İncele', icon: 'FileCode' },
-            { label: 'Kullanıcı Yönet', icon: 'UserCog' },
-            { label: 'Yedekle', icon: 'Database' }
+            { label: 'Dağıtım Yap', icon: 'Rocket', nav: 'dashboard' },
+            { label: 'Logları İncele', icon: 'FileCode', nav: 'documents' },
+            { label: 'Kullanıcı Yönet', icon: 'UserCog', nav: 'settings' },
+            { label: 'Yedekle', icon: 'Database', nav: 'settings' }
         ],
         chart: {
             title: 'Sistem Yükü',
@@ -180,6 +180,42 @@ export const sectorThemes = {
             datasets: [
                 { label: 'CPU', data: [20, 25, 45, 60, 55, 30] },
                 { label: 'Memory', data: [40, 42, 45, 50, 48, 45] }
+            ]
+        }
+    },
+    beauty: {
+        id: 'beauty',
+        label: 'Güzellik',
+        colors: {
+            primary: '#f472b6', // Pink 400
+            secondary: '#fb923c', // Orange 400
+            accent: '#e879f9', // Fuchsia 400
+            background: '#030303',
+            surface: 'rgba(255, 255, 255, 0.03)',
+            text: '#e2e8f0',
+            gradient: 'linear-gradient(135deg, #f472b6 0%, #e879f9 100%)',
+            sidebar: 'linear-gradient(180deg, #030303 0%, #0a0a0a 100%)',
+            cardShadow: '0 4px 6px -1px rgba(244, 114, 182, 0.1), 0 2px 4px -1px rgba(244, 114, 182, 0.06)'
+        },
+        stats: [
+            { label: 'Bugünkü Randevular', value: '28', change: 12.5, icon: 'Calendar', color: 'primary' },
+            { label: 'Aktif Müşteriler', value: '856', change: 5.3, icon: 'Users', color: 'accent' },
+            { label: 'Memnuniyet', value: '96%', change: 2.1, icon: 'Heart', color: 'secondary' },
+            { label: 'Aylık Gelir', value: '₺145K', change: 8.7, icon: 'TrendingUp', color: 'green' }
+        ],
+        quickActions: [
+            { label: 'Randevu Ekle', icon: 'CalendarPlus', nav: 'appointments' },
+            { label: 'Müşteri Kaydı', icon: 'UserPlus', nav: 'dashboard' },
+            { label: 'Hizmet Listesi', icon: 'FileText', nav: 'documents' },
+            { label: 'Mesajlar', icon: 'MessageSquare', nav: 'messages' }
+        ],
+        chart: {
+            title: 'Randevu Trafiği',
+            subtitle: 'Haftalık doluluk oranı',
+            labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+            datasets: [
+                { label: 'Randevu', data: [18, 22, 25, 30, 35, 40, 10] },
+                { label: 'İptal', data: [2, 3, 1, 4, 2, 5, 1] }
             ]
         }
     }

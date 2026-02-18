@@ -5,7 +5,7 @@ import { axios } from '@/plugins/axios'
 export const useAdminStore = defineStore('admin', () => {
     // State
     const adminUser = ref(null)
-    const accessToken = ref(localStorage.getItem('admin_token') || null)
+    const accessToken = ref(sessionStorage.getItem('admin_token') || null)
     const isAuthenticated = computed(() => !!accessToken.value && !!adminUser.value)
 
     // Actions
@@ -22,9 +22,9 @@ export const useAdminStore = defineStore('admin', () => {
             accessToken.value = token
             adminUser.value = admin
 
-            // Store token in localStorage
-            localStorage.setItem('admin_token', token)
-            localStorage.setItem('admin_user', JSON.stringify(admin))
+            // Store token in sessionStorage
+            sessionStorage.setItem('admin_token', token)
+            sessionStorage.setItem('admin_user', JSON.stringify(admin))
 
             return true
         } catch (error) {
@@ -47,8 +47,8 @@ export const useAdminStore = defineStore('admin', () => {
             // Clear state regardless of API call success
             accessToken.value = null
             adminUser.value = null
-            localStorage.removeItem('admin_token')
-            localStorage.removeItem('admin_user')
+            sessionStorage.removeItem('admin_token')
+            sessionStorage.removeItem('admin_user')
         }
     }
 
@@ -62,7 +62,7 @@ export const useAdminStore = defineStore('admin', () => {
 
             const { access_token } = response.data
             accessToken.value = access_token
-            localStorage.setItem('admin_token', access_token)
+            sessionStorage.setItem('admin_token', access_token)
 
             return true
         } catch (error) {
@@ -73,8 +73,8 @@ export const useAdminStore = defineStore('admin', () => {
     }
 
     function initializeFromStorage() {
-        const storedToken = localStorage.getItem('admin_token')
-        const storedUser = localStorage.getItem('admin_user')
+        const storedToken = sessionStorage.getItem('admin_token')
+        const storedUser = sessionStorage.getItem('admin_user')
 
         if (storedToken && storedUser) {
             accessToken.value = storedToken

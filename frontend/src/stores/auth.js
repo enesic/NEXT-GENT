@@ -8,9 +8,9 @@ import axios from 'axios'
  */
 export const useAuthStore = defineStore('auth', () => {
     // State
-    const user = ref(JSON.parse(localStorage.getItem('user')) || null)
-    const tenant_id = ref(localStorage.getItem('tenant_id') || null)
-    const token = ref(localStorage.getItem('auth_token') || null)
+    const user = ref(JSON.parse(sessionStorage.getItem('user')) || null)
+    const tenant_id = ref(sessionStorage.getItem('tenant_id') || null)
+    const token = ref(sessionStorage.getItem('auth_token') || null)
 
     // Initialize Axios Header
     if (token.value) {
@@ -25,19 +25,19 @@ export const useAuthStore = defineStore('auth', () => {
     const setUser = (userData) => {
         user.value = userData
         if (userData) {
-            localStorage.setItem('user', JSON.stringify(userData))
+            sessionStorage.setItem('user', JSON.stringify(userData))
         } else {
-            localStorage.removeItem('user')
+            sessionStorage.removeItem('user')
         }
     }
 
     const setToken = (authToken) => {
         token.value = authToken
         if (authToken) {
-            localStorage.setItem('auth_token', authToken)
+            sessionStorage.setItem('auth_token', authToken)
             axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`
         } else {
-            localStorage.removeItem('auth_token')
+            sessionStorage.removeItem('auth_token')
             delete axios.defaults.headers.common['Authorization']
         }
     }
@@ -45,10 +45,10 @@ export const useAuthStore = defineStore('auth', () => {
     const setTenant = (tenantId) => {
         tenant_id.value = tenantId
         if (tenantId) {
-            localStorage.setItem('tenant_id', tenantId)
+            sessionStorage.setItem('tenant_id', tenantId)
             axios.defaults.headers.common['X-Tenant-ID'] = tenantId
         } else {
-            localStorage.removeItem('tenant_id')
+            sessionStorage.removeItem('tenant_id')
             delete axios.defaults.headers.common['X-Tenant-ID']
         }
     }
@@ -67,8 +67,8 @@ export const useAuthStore = defineStore('auth', () => {
     const logout = () => {
         user.value = null
         token.value = null
-        localStorage.removeItem('auth_token')
-        localStorage.removeItem('user')
+        sessionStorage.removeItem('auth_token')
+        sessionStorage.removeItem('user')
         delete axios.defaults.headers.common['Authorization']
 
         // Optional: Clear tenant on logout? Usually kept for convenience.
