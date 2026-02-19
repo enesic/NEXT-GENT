@@ -61,7 +61,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, inject } from 'vue'
+import { ref, onMounted, onUnmounted, computed, inject } from 'vue'
 import { useSectorStore } from '../../stores/sector'
 import { useAuthStore } from '../../stores/auth'
 
@@ -75,6 +75,8 @@ const errorMsg = ref(null)
 const currentPage = ref(1)
 const totalCalls = ref(0)
 const pageSize = 10
+const isFetching = ref(false)  // Prevent concurrent fetch spam
+let destroyed = false           // Prevent state updates after unmount
 
 const totalPages = computed(() => Math.ceil(totalCalls.value / pageSize))
 
@@ -120,18 +122,18 @@ const formatTime = (d) => {
 }
 
 const loadCalls = async () => {
-    // Guard against concurrent fetches
-    if (loading.value && calls.value.length > 0) return
+    if (isFetching.value || destroyed) return  // guard against spam & stale updates
+    isFetching.value = true
     try {
         loading.value = true
         errorMsg.value = null
-        const tenant = sectorStore.currentSectorId || 'beauty'
-        const res = await axios.get(`/calls?tenant=${tenant}&limit=${pageSize}&page=${currentPage.value}`)
-        
-        // Handle paginated response from backend
+        // ✅ Correct endpoint: /portal/calls (not /calls)
+        const res = await axios.get(`/portal/calls?limit=${pageSize}&page=${currentPage.value}`)
+        if (destroyed) return   // component was unmounted while awaiting
+
         if (res.data && res.data.data) {
             calls.value = res.data.data
-            totalCalls.value = res.data.pagination?.total || res.data.total || res.data.data.length
+            totalCalls.value = res.data.pagination?.total ?? res.data.data.length
         } else if (Array.isArray(res.data)) {
             calls.value = res.data
             totalCalls.value = res.data.length
@@ -140,21 +142,26 @@ const loadCalls = async () => {
             totalCalls.value = 0
         }
     } catch (e) {
-        console.error('Failed to load calls', e)
-        errorMsg.value = 'Aramalar yüklenirken bir hata oluştu.'
+        if (!destroyed) {
+            console.error('Failed to load calls', e)
+            errorMsg.value = 'Aramalar yüklenirken bir hata oluştu.'
+        }
     } finally {
-        loading.value = false
+        if (!destroyed) {
+            loading.value = false
+            isFetching.value = false
+        }
     }
 }
 
 const goToPage = (page) => {
+    if (page < 1 || page > totalPages.value) return
     currentPage.value = page
     loadCalls()
 }
 
-onMounted(() => {
-    loadCalls()
-})
+onMounted(() => { loadCalls() })
+onUnmounted(() => { destroyed = true; isFetching.value = false })
 </script>
 
 <style scoped>

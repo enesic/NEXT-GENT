@@ -83,6 +83,73 @@
             </div>
         </div>
     </div>
+
+    <!-- Quick Entry Overlay Panel -->
+    <Transition name="fade">
+      <div v-if="showQuickEntry" class="quick-entry-overlay" @click.self="closeQuickEntry">
+        <div class="quick-entry-panel glass-panel">
+          <div class="panel-header">
+            <h3>{{ entryType === 'appointment' ? 'Hızlı Randevu Ekle' : 'Hızlı Müşteri Kaydı' }}</h3>
+            <button class="close-btn" @click="closeQuickEntry">×</button>
+          </div>
+          
+          <div class="panel-body">
+            <template v-if="entryType === 'appointment'">
+              <div class="form-group">
+                <label>Müşteri Adı</label>
+                <input v-model="formData.client_name" type="text" placeholder="Ad Soyad" />
+              </div>
+              <div class="form-group">
+                <label>Email</label>
+                <input v-model="formData.client_email" type="email" placeholder="ornek@mail.com" />
+              </div>
+              <div class="form-group">
+                <label>Başlık</label>
+                <input v-model="formData.title" type="text" placeholder="Randevu Başlığı" />
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Başlangıç</label>
+                  <input v-model="formData.start_time" type="datetime-local" />
+                </div>
+                <div class="form-group">
+                  <label>Bitiş</label>
+                  <input v-model="formData.end_time" type="datetime-local" />
+                </div>
+              </div>
+            </template>
+
+            <template v-else>
+              <div class="form-group">
+                <label>Ad</label>
+                <input v-model="formData.first_name" type="text" placeholder="Ad" />
+              </div>
+              <div class="form-group">
+                <label>Soyad</label>
+                <input v-model="formData.last_name" type="text" placeholder="Soyad" />
+              </div>
+              <div class="form-group">
+                <label>Email</label>
+                <input v-model="formData.email" type="email" placeholder="ornek@mail.com" />
+              </div>
+              <div class="form-group">
+                <label>Telefon</label>
+                <input v-model="formData.phone" type="tel" placeholder="05xx..." />
+              </div>
+            </template>
+
+            <div v-if="submitError" class="error-msg">{{ submitError }}</div>
+          </div>
+
+          <div class="panel-footer">
+            <button class="cancel-btn" @click="closeQuickEntry">İptal</button>
+            <button class="save-btn" :disabled="submitting" @click="saveEntry">
+              {{ submitting ? 'Kaydediliyor...' : 'Kaydet' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -101,6 +168,33 @@ const error = ref(null)
 const stats = ref([])
 const satisfactionData = ref(null)
 const quickStatsData = ref(null)
+
+// Quick Entry State
+const showQuickEntry = ref(false)
+const entryType = ref('appointment') // 'appointment' or 'customer'
+const submitting = ref(false)
+const submitError = ref(null)
+const formData = ref({})
+
+const resetForm = () => {
+    formData.value = {
+        client_name: '',
+        client_email: '',
+        title: '',
+        start_time: '',
+        end_time: '',
+        first_name: '',
+        last_name: '',
+        email: '',
+        phone: ''
+    }
+    submitError.value = null
+}
+
+const closeQuickEntry = () => {
+    showQuickEntry.value = false
+    resetForm()
+}
 
 // Dynamic Theme Colors
 const colors = computed(() => sectorStore.theme || {
@@ -236,9 +330,56 @@ const getDummyActivity = (i) => {
 
 // Button click handler - navigate via parent shell
 const handleActionClick = (action) => {
+    if (action.label === 'Randevu Ekle') {
+        entryType.value = 'appointment'
+        resetForm()
+        showQuickEntry.value = true
+        return
+    }
+    if (action.label === 'Hasta Kaydı' || action.label === 'Müşteri Kaydı') {
+        entryType.value = 'customer'
+        resetForm()
+        showQuickEntry.value = true
+        return
+    }
+    
     // Use nav property from sectorThemes quickActions
     const target = action.nav || 'dashboard'
     emit('navigate', target)
+}
+
+const saveEntry = async () => {
+    try {
+        submitting.value = true
+        submitError.value = null
+        
+        let endpoint = entryType.value === 'appointment' ? '/portal/appointments' : '/portal/customers'
+        
+        // Basic validation
+        if (entryType.value === 'appointment') {
+            if (!formData.value.client_name || !formData.value.start_time || !formData.value.end_time) {
+                throw new Error('Lütfen zorunlu alanları doldurun.')
+            }
+        } else {
+            if (!formData.value.first_name || !formData.value.last_name || !formData.value.phone || !formData.value.email) {
+                throw new Error('Lütfen zorunlu alanları doldurun.')
+            }
+        }
+
+        const axios = inject('axios')
+        const response = await axios.post(endpoint, formData.value)
+        
+        if (response.data.status === 'success') {
+            closeQuickEntry()
+            // Optional: trigger a success message or refresh
+            fetchDashboardData()
+        }
+    } catch (err) {
+        console.error('Save error:', err)
+        submitError.value = err.response?.data?.detail || err.message || 'Kayıt sırasında bir hata oluştu.'
+    } finally {
+        submitting.value = false
+    }
 }
 
 </script>
@@ -469,6 +610,141 @@ const handleActionClick = (action) => {
 .time {
     font-size: 11px;
     color: var(--text-secondary);
+}
+
+/* Quick Entry Styles */
+.quick-entry-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.quick-entry-panel {
+    width: 100%;
+    max-width: 500px;
+    background: var(--surface-elevated);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-subtle);
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.panel-header h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 28px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.form-group input {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--current-accent, #0ea5e9);
+    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+}
+
+.error-msg {
+    color: #ef4444;
+    font-size: 13px;
+    margin-top: -8px;
+    margin-bottom: 16px;
+}
+
+.panel-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.cancel-btn {
+    padding: 10px 20px;
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.save-btn {
+    padding: 10px 24px;
+    background: var(--current-accent, #0ea5e9);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.save-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.save-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.fade-enter-active, .fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.fade-enter-from, .fade-leave-to {
+    opacity: 0;
 }
 
 @media (max-width: 1200px) {
