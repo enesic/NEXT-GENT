@@ -3,7 +3,9 @@
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
   "framework": "vite",
-  "regions": ["fra1"],
+  "regions": [
+    "fra1"
+  ],
   "headers": [
     {
       "source": "/assets/(.*)",
@@ -70,8 +72,24 @@
       "destination": "/api/calls.py"
     },
     {
+      "source": "/api/v1/analytics/:path*",
+      "destination": "/api/analytics.py"
+    },
+    {
+      "source": "/api/v1/satisfaction/:path*",
+      "destination": "/api/satisfaction.py"
+    },
+    {
+      "source": "/api/v1/interactions",
+      "destination": "/api/interactions.py"
+    },
+    {
       "source": "/api/v1/dashboard/config",
       "destination": "/api/dashboard_config.py"
+    },
+    {
+      "source": "/api/v1/health",
+      "destination": "/api/analytics.py"
     },
     {
       "source": "/api/:path*",

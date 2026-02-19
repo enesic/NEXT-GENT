@@ -154,8 +154,13 @@ const fetchDashboardData = async () => {
             dashboardAPI.getQuickStats(30).catch(() => null)
         ])
 
+        console.log('✅ Dashboard data loaded:', { kpis, satisfaction, quickStats })
+
+        // Guard: if API returns HTML string instead of JSON, skip it
+        const isValidJSON = (data) => data && typeof data !== 'string' && !String(data).startsWith('<!DOCTYPE')
+
         // Map KPIs to stat cards format
-        if (kpis && Array.isArray(kpis)) {
+        if (isValidJSON(kpis) && Array.isArray(kpis)) {
             stats.value = kpis.map((kpi, index) => ({
                 label: kpi.label,
                 value: kpi.value,
@@ -164,12 +169,13 @@ const fetchDashboardData = async () => {
                 color: kpi.positive ? 'primary' : 'red',
                 description: kpi.description
             }))
+        } else if (kpis && typeof kpis === 'string') {
+            console.warn('⚠️ KPIs returned HTML instead of JSON, using defaults')
         }
 
-        satisfactionData.value = satisfaction
-        quickStatsData.value = quickStats
+        satisfactionData.value = isValidJSON(satisfaction) ? satisfaction : null
+        quickStatsData.value = isValidJSON(quickStats) ? quickStats : null
 
-        console.log('✅ Dashboard data loaded:', { kpis, satisfaction, quickStats })
     } catch (err) {
         console.error('❌ Error fetching dashboard data:', err)
         error.value = err.message || 'Veri yüklenirken hata oluştu'
