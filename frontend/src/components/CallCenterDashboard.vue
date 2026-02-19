@@ -159,6 +159,8 @@ let refreshInterval = null
 
 // Methods
 const fetchData = async () => {
+  // Guard against concurrent fetches
+  if (isRefreshing.value) return
   isRefreshing.value = true
   try {
     // Fetch active calls
@@ -212,7 +214,7 @@ const getInitials = (name) => {
 onMounted(() => {
   fetchData()
   // Auto-refresh every 5 seconds
-  refreshInterval = setInterval(fetchData, 5000)
+  refreshInterval = setInterval(fetchData, 30000)
 })
 
 onUnmounted(() => {

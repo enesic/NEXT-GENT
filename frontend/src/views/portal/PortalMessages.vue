@@ -91,17 +91,18 @@ const formatTime = (d) => {
 }
 
 const loadMessages = async () => {
+    // Guard against concurrent fetches
+    if (loading.value && messages.value.length > 0) return
     try {
         loading.value = true
         errorMsg.value = null
         const tenant = sectorStore.currentSectorId || 'beauty'
-        const offset = (currentPage.value - 1) * pageSize
-        const res = await axios.get(`/messages?tenant=${tenant}&limit=${pageSize}&offset=${offset}`)
+        const res = await axios.get(`/messages?tenant=${tenant}&limit=${pageSize}&page=${currentPage.value}`)
         
-        // Handle both paginated and flat responses
+        // Handle paginated response from backend
         if (res.data && res.data.data) {
             messages.value = res.data.data
-            totalMessages.value = res.data.total || res.data.data.length
+            totalMessages.value = res.data.pagination?.total || res.data.total || res.data.data.length
         } else if (Array.isArray(res.data)) {
             messages.value = res.data
             totalMessages.value = res.data.length

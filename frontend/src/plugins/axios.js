@@ -81,10 +81,9 @@ axiosInstance.interceptors.response.use(
             const method = response.config.method.toUpperCase()
             const url = response.config.url
 
-            if (duration > 200) {
+            // Only log genuinely slow requests in development
+            if (import.meta.env.DEV && duration > 1000) {
                 console.warn(`⚠️ Slow Request [${duration}ms]: ${method} ${url}`)
-            } else {
-                console.debug(`🚀 Request [${duration}ms]: ${method} ${url}`)
             }
         }
 

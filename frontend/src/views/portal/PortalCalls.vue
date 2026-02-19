@@ -111,17 +111,18 @@ const formatTime = (d) => {
 }
 
 const loadCalls = async () => {
+    // Guard against concurrent fetches
+    if (loading.value && calls.value.length > 0) return
     try {
         loading.value = true
         errorMsg.value = null
         const tenant = sectorStore.currentSectorId || 'beauty'
-        const offset = (currentPage.value - 1) * pageSize
-        const res = await axios.get(`/calls?tenant=${tenant}&limit=${pageSize}&offset=${offset}`)
+        const res = await axios.get(`/calls?tenant=${tenant}&limit=${pageSize}&page=${currentPage.value}`)
         
-        // Handle both paginated and flat responses
+        // Handle paginated response from backend
         if (res.data && res.data.data) {
             calls.value = res.data.data
-            totalCalls.value = res.data.total || res.data.data.length
+            totalCalls.value = res.data.pagination?.total || res.data.total || res.data.data.length
         } else if (Array.isArray(res.data)) {
             calls.value = res.data
             totalCalls.value = res.data.length

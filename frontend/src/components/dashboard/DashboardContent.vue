@@ -230,7 +230,7 @@ const getStatusText = (status) => {
   return statusMap[status] || status
 }
 
-watch(() => sectorStore.currentSector, fetchDashboardData)
+watch(() => sectorStore.currentSectorId, fetchDashboardData)
 
 onMounted(fetchDashboardData)
 </script>
