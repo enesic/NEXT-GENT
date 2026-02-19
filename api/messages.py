@@ -80,8 +80,24 @@ class handler(BaseHTTPRequestHandler):
                 await conn.close()
                 return [], 0
             
-            # Get customers for this tenant
-            customers = await conn.fetch("SELECT id, customer_id, first_name, last_name FROM customers WHERE tenant_id = $1 LIMIT 3", tenant['id'])
+            # Get real customers for this tenant - exclude system/admin accounts
+            customers = await conn.fetch(
+                """SELECT id, customer_id, first_name, last_name 
+                   FROM customers 
+                   WHERE tenant_id = $1 
+                     AND LOWER(first_name) NOT IN ('sistem', 'system', 'admin', 'test')
+                     AND first_name IS NOT NULL 
+                     AND first_name != ''
+                   LIMIT 20""", 
+                tenant['id']
+            )
+            
+            if not customers:
+                # Fallback: get any customers if all were filtered
+                customers = await conn.fetch(
+                    "SELECT id, customer_id, first_name, last_name FROM customers WHERE tenant_id = $1 LIMIT 5", 
+                    tenant['id']
+                )
             
             if not customers:
                 await conn.close()
@@ -91,7 +107,7 @@ class handler(BaseHTTPRequestHandler):
             sector_messages = self.get_sector_messages(tenant_slug)
             
             base_date = datetime.now()
-            total_messages = 20  # Reduced to 20 messages total (not 50!)
+            total_messages = min(len(customers) * len(sector_messages), 20)  # Dynamic total, max 20
             
             import random
             # Use tenant ID as seed for consistency
@@ -112,10 +128,17 @@ class handler(BaseHTTPRequestHandler):
                 message_template = sector_messages[i % len(sector_messages)]  # Rotate through messages
                 message_date = base_date - timedelta(hours=i * 3)  # Spread over time
                 
+                # Build clean customer name, skip 'Sistem' variants
+                first = (customer['first_name'] or '').strip()
+                last = (customer['last_name'] or '').strip()
+                cust_name = f"{first} {last}".strip()
+                if not cust_name or cust_name.lower() in ('sistem', 'system', 'admin'):
+                    cust_name = "Müşteri"
+                
                 message = {
                     "id": i + 1,  # Consistent ID
                     "customer_id": customer['customer_id'],
-                    "customer_name": f"{customer['first_name']} {customer['last_name']}",
+                    "customer_name": cust_name,
                     "message": message_template["message"],
                     "type": message_template["type"],
                     "priority": message_template["priority"],

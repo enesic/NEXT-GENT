@@ -119,10 +119,17 @@ class handler(BaseHTTPRequestHandler):
                 # Get masked phone (show only last 4 chars of hash for demo)
                 masked_phone = f"****{call_data['phone_hash'][-4:]}" if call_data['phone_hash'] else "****"
                 
+                # Build clean customer name, skip 'Sistem' variants
+                first = (call_data['first_name'] or '').strip()
+                last = (call_data['last_name'] or '').strip()
+                cust_name = f"{first} {last}".strip()
+                if not cust_name or cust_name.lower() in ('sistem', 'system', 'admin'):
+                    cust_name = "Müşteri"
+                
                 call = {
                     "id": call_data['id'],
                     "customer_id": call_data['customer_id'],
-                    "customer_name": f"{call_data['first_name']} {call_data['last_name']}",
+                    "customer_name": cust_name,
                     "phone": masked_phone,  # KVKK compliant
                     "type": call_data['interaction_type'],
                     "duration": duration_formatted,

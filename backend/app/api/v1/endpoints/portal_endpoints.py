@@ -122,15 +122,16 @@ async def get_customer_appointments(
         )
 
 
-@router.get("/messages", response_model=List[MessageResponse])
+@router.get("/messages")
 async def get_customer_messages(
     channel: Optional[str] = None,
+    page: int = 1,
     limit: int = 10,
     db: AsyncSession = Depends(get_db),
     current_tenant: Optional[Tenant] = Depends(get_current_tenant)
 ):
     """
-    Get customer's message history.
+    Get customer's message history with pagination.
     """
     try:
         if not current_tenant:
@@ -141,6 +142,7 @@ async def get_customer_messages(
         
         # Cap limit to prevent excessive data
         limit = min(limit, 20)
+        offset = (page - 1) * limit
         
         query = select(Interaction, Customer).join(
             Customer, Interaction.customer_id == Customer.id, isouter=True
@@ -154,7 +156,18 @@ async def get_customer_messages(
         if channel:
             query = query.where(Interaction.type == channel)
         
-        query = query.order_by(desc(Interaction.created_at)).limit(limit)
+        # Count total for pagination
+        from sqlalchemy import func
+        count_query = select(func.count(Interaction.id)).where(
+            and_(
+                Interaction.tenant_id == current_tenant.id,
+                Interaction.type.in_(["whatsapp", "sms", "email"])
+            )
+        )
+        count_result = await db.execute(count_query)
+        total = count_result.scalar() or 0
+        
+        query = query.order_by(desc(Interaction.created_at)).offset(offset).limit(limit)
         
         result = await db.execute(query)
         rows = result.all()
@@ -164,7 +177,12 @@ async def get_customer_messages(
             metadata = interaction.meta_data or {}
             customer_name = None
             if customer:
-                customer_name = f"{customer.first_name or ''} {customer.last_name or ''}".strip() or None
+                first = (customer.first_name or '').strip()
+                last = (customer.last_name or '').strip()
+                customer_name = f"{first} {last}".strip() or None
+            # Filter out Sistem names
+            if customer_name and customer_name.lower() in ('sistem', 'system', 'admin'):
+                customer_name = None
             messages.append(MessageResponse(
                 id=str(interaction.id),
                 customer_name=customer_name or metadata.get("customer_name", "Müşteri"),
@@ -175,7 +193,15 @@ async def get_customer_messages(
                 created_at=interaction.created_at
             ))
         
-        return messages
+        return {
+            "status": "success",
+            "data": messages,
+            "pagination": {
+                "page": page,
+                "limit": limit,
+                "total": total
+            }
+        }
         
     except HTTPException:
         raise
@@ -187,8 +213,9 @@ async def get_customer_messages(
         )
 
 
-@router.get("/calls", response_model=List[CallResponse])
+@router.get("/calls")
 async def get_customer_calls(
+    page: int = 1,
     limit: int = 10,
     db: AsyncSession = Depends(get_db),
     current_tenant: Optional[Tenant] = Depends(get_current_tenant)
@@ -205,11 +232,21 @@ async def get_customer_calls(
         
         # Cap limit to prevent excessive data
         limit = min(limit, 20)
+        offset = (page - 1) * limit
+        
+        # Count total for pagination
+        from sqlalchemy import func
+        count_query = select(func.count(VAPICall.id)).where(
+            VAPICall.tenant_id == current_tenant.id
+        )
+        count_result = await db.execute(count_query)
+        total = count_result.scalar() or 0
         
         result = await db.execute(
             select(VAPICall)
             .where(VAPICall.tenant_id == current_tenant.id)
             .order_by(desc(VAPICall.created_at))
+            .offset(offset)
             .limit(limit)
         )
         calls = result.scalars().all()
@@ -219,19 +256,33 @@ async def get_customer_calls(
             dur_sec = call.call_duration_seconds or 0
             dur_min = dur_sec // 60
             dur_rem = dur_sec % 60
+            
+            # Try to get customer name, filter Sistem
+            cust_name = getattr(call, 'customer_name', None)
+            if cust_name and cust_name.lower() in ('sistem', 'system', 'admin'):
+                cust_name = None
+            
             call_responses.append(CallResponse(
                 id=str(call.id),
-                customer_name=getattr(call, 'customer_name', None) or 'Müşteri',
+                customer_name=cust_name or 'Müşteri',
                 phone=None,  # KVKK: do not expose phone
                 duration=dur_sec,
                 duration_formatted=f"{dur_min}m {dur_rem}s",
                 status=call.call_status or 'completed',
-                summary=call.summary,
+                summary=None,  # VAPICall has no summary field
                 timestamp=call.created_at,
                 created_at=call.created_at
             ))
         
-        return call_responses
+        return {
+            "status": "success",
+            "data": call_responses,
+            "pagination": {
+                "page": page,
+                "limit": limit,
+                "total": total
+            }
+        }
         
     except HTTPException:
         raise

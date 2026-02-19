@@ -2,12 +2,13 @@
   <div class="portal-page">
     <div class="page-header">
       <h1>Aramalar</h1>
-      <p class="subtitle">Çağrı geçmişi ve detayları</p>
+      <p class="subtitle">Çağrı geçmişi ve detayları <span v-if="totalCalls > 0" class="call-count">({{ totalCalls }} arama)</span></p>
     </div>
 
     <div class="content-card">
       <div v-if="loading" class="loading-state">
-        Yükleniyor...
+        <div class="spinner"></div>
+        <span>Aramalar yükleniyor...</span>
       </div>
       
       <div v-else-if="errorMsg" class="empty-state">
@@ -33,7 +34,7 @@
             </div>
             <div class="item-content">
                 <div class="item-header">
-                    <span class="item-title">{{ call.customer_name || 'Müşteri' }}</span>
+                    <span class="item-title">{{ cleanName(call.customer_name) }}</span>
                     <span class="item-phone" v-if="call.phone">{{ call.phone }}</span>
                     <span class="item-date">{{ formatTime(call.timestamp || call.created_at) }}</span>
                 </div>
@@ -86,6 +87,14 @@ const colors = computed(() => sectorStore.theme || {
 
 const getColor = (name) => (sectorStore.theme || {})[name] || colors.value.primary
 const getGlowColor = (name) => getColor(name) + '1A'
+
+// Filter out 'Sistem' and similar system names
+const cleanName = (name) => {
+    if (!name) return 'Müşteri'
+    const lower = name.trim().toLowerCase()
+    if (['sistem', 'system', 'admin', 'test', ''].includes(lower)) return 'Müşteri'
+    return name.trim()
+}
 
 const statusLabel = (status) => {
     const labels = {
@@ -178,16 +187,36 @@ onMounted(() => {
     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
 }
 
+.call-count {
+    color: var(--text-muted);
+    font-weight: 400;
+    font-size: 13px;
+}
+
 .loading-state, .empty-state {
     text-align: center;
     padding: 48px;
     color: var(--text-secondary);
-}
-
-.empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 16px;
+}
+
+.spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--border-subtle);
+    border-top-color: var(--text-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.empty-state {
     gap: 16px;
 }
 
@@ -271,9 +300,9 @@ onMounted(() => {
     font-size: 11px;
     font-weight: 600;
 }
-.status-badge.success { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-.status-badge.danger { background: rgba(239, 68, 68, 0.15); color: #f87171; }
-.status-badge.warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+.status-badge.success { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+.status-badge.danger { background: rgba(239, 68, 68, 0.2); color: #f87171; font-weight: 700; box-shadow: 0 0 6px rgba(239, 68, 68, 0.25); }
+.status-badge.warning { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
 
 .call-duration {
     font-size: 12px;
