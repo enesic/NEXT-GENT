@@ -4,6 +4,9 @@
     <header class="dashboard-header">
       <div class="header-content">
         <div class="brand-section">
+          <div class="logo-container">
+            <img src="/logo.svg" alt="NextGent Logo" class="header-logo" />
+          </div>
           <div class="sector-icon-wrapper">
             <component :is="sectorIcon" :size="28" :stroke-width="2" />
           </div>
@@ -197,12 +200,29 @@ onMounted(() => {
   font-weight: 700;
   margin: 0;
   letter-spacing: -0.02em;
+  color: var(--text-primary);
 }
 
 .subtitle {
   font-size: 13px;
   color: #9ca3af;
   margin: 4px 0 0 0;
+}
+
+.logo-container {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
 }
 
 .header-actions {

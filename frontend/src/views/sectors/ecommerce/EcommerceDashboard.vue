@@ -288,6 +288,7 @@ const topProducts = ref([
 
 // Methods
 const navigateTo = (path) => {
+  // Navigation within the SPA — use notification since no router pages exist yet
   console.log('Navigate to:', path)
 }
 
