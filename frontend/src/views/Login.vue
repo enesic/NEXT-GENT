@@ -9,7 +9,7 @@
     <div v-if="!isInitializing" class="login-card" ref="loginCard">
       <div class="brand-header">
         <div class="logo-icon">
-          <img src="/logo.svg" alt="NextGent Logo" class="brand-logo-image" />
+          <img src="/logo netleştirme kopya (1).png" alt="NextGent Logo" class="brand-logo-image" style="width: 48px; height: 48px;" />
         </div>
         <h1 class="brand-name">NextGent</h1>
       </div>
@@ -109,13 +109,13 @@ const handleLogin = async () => {
     })
     
     // Set auth data from API response
+    // Backend returns: { token, user, tenant_id, sector, tenant_name, customer_id }
     authStore.setToken(response.data.token)
-    authStore.setUser(response.data.customer) // API returns 'customer', not 'user'
-    authStore.setTenant(response.data.customer.tenant_id) // tenant_id is inside customer object
+    authStore.setUser(response.data.user)         // API returns 'user', not 'customer'
+    authStore.setTenant(response.data.tenant_id)  // tenant_id is at top level
     
-    // Set sector from tenant config
-    const tenantConfig = JSON.parse(response.data.customer.tenant_config || '{}')
-    sectorStore.setSector(tenantConfig.sector || 'beauty')
+    // Set sector directly from API response (no need to parse tenant_config)
+    sectorStore.setSector(response.data.sector || 'beauty')
     
     // Success - proceed to dashboard
     proceedToDashboard()
