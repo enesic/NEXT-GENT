@@ -4,8 +4,8 @@
     <aside class="shell-sidebar">
       <div class="sidebar-header">
         <div class="logo">
-          <div class="logo-icon" ref="logoIcon">
-            <component :is="currentLogoIcon" :size="20" :stroke-width="2" />
+          <div class="logo-icon">
+            <img src="/logo netleştirme kopya (1).png" alt="NextGent Logo" class="logo-image" />
           </div>
           <span class="logo-text">NextGent</span>
         </div>
@@ -39,8 +39,8 @@
         </div>
       </nav>
 
-      <div class="sidebar-footer">
-        <div class="user-profile" @click="toggleUserMenu">
+      <div class="sidebar-footer" ref="footerRef">
+        <div class="user-profile" @click.stop="toggleUserMenu">
           <div class="user-avatar" ref="userAvatar">{{ userInitials }}</div>
           <div class="user-info">
             <div class="user-name">{{ userName }}</div>
@@ -85,6 +85,23 @@
             </button>
           </div>
         </div>
+        <Transition name="menu-slide">
+          <div v-if="showUserMenu" class="user-menu" @click.stop>
+            <button class="menu-item profile-item" @click="handleNavigate('settings'); showUserMenu = false">
+              <User :size="15" :stroke-width="2" />
+              Profil
+            </button>
+            <button class="menu-item settings-item" @click="handleNavigate('settings'); showUserMenu = false">
+              <Settings :size="15" :stroke-width="2" />
+              Ayarlar
+            </button>
+            <div class="menu-divider"></div>
+            <button class="menu-item logout-item" @click="handleLogout">
+              <LogOut :size="15" :stroke-width="2" />
+              Çıkış Yap
+            </button>
+          </div>
+        </Transition>
       </div>
     </aside>
 
@@ -124,9 +141,9 @@
         </div>
       </header>
 
-      <!-- Content Area with Transition -->
+      <!-- Content Area - NO mode='out-in' (causes stuck transitions on rapid clicks) -->
       <div class="shell-content">
-        <Transition name="fade-slide" mode="out-in">
+        <Transition name="fade-slide">
              <component 
                 :is="activeComponent" 
                 v-bind="activeComponentProps"
@@ -143,7 +160,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onMounted, inject } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { 
   Activity, Stethoscope, Scale, Building2, Home, Gavel,
@@ -205,12 +222,21 @@ const userRole = computed(() => {
 })
 
 const showUserMenu = ref(false)
+const footerRef = ref(null)
+
 const toggleUserMenu = () => { showUserMenu.value = !showUserMenu.value }
 
 const handleLogout = () => {
     authStore.logout()
     showUserMenu.value = false
     router.push('/login')
+}
+
+// Click outside to close user menu
+const handleClickOutside = (e) => {
+    if (footerRef.value && !footerRef.value.contains(e.target)) {
+        showUserMenu.value = false
+    }
 }
 
 // State
@@ -326,8 +352,8 @@ const activeComponent = computed(() => {
         if (activeNav.value === 'analytics') return AnalyticsView
     }
 
-    // Default Fallback
-    return PlaceholderView
+    // Default Fallback — always return a valid component, never undefined
+    return PlaceholderView ?? DashboardContent
 })
 
 // Props passed to the active component
@@ -347,9 +373,16 @@ const logoIcon = ref(null)
 const userAvatar = ref(null)
 const sectorBadge = ref(null)
 
-// Methods
+// Methods — with navigation guard to prevent rapid-switch black screen
+const isNavigating = ref(false)
 const handleNavigate = (navId) => {
-  activeNav.value = navId
+    // Prevent rapid tab switching from breaking transitions
+    if (isNavigating.value) return
+    if (activeNav.value === navId) return  // Same tab, no-op
+    isNavigating.value = true
+    activeNav.value = navId
+    // Release lock after transition completes (200ms is enough for simple fade)
+    setTimeout(() => { isNavigating.value = false }, 250)
 }
 
 // Search Logic
@@ -404,6 +437,14 @@ const handleSearchBlur = () => {
 }
 
 // Sector is auto-set from login, no manual switching needed
+
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <style scoped>
@@ -453,26 +494,25 @@ const handleSearchBlur = () => {
 }
 
 .logo-icon {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, var(--current-accent), var(--current-accent));
-  border-radius: 12px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 24px var(--current-glow-strong);
   transition: all var(--transition-slow);
-  color: #ffffff;
+}
+
+.logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .logo-text {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: var(--letter-spacing-tight);
-  background: linear-gradient(135deg, #ffffff, #a1a1aa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #ffffff;
 }
 
 .sidebar-nav {
@@ -538,6 +578,8 @@ const handleSearchBlur = () => {
 .sidebar-footer {
   padding: 16px 12px;
   border-top: 1px solid var(--border-subtle);
+  position: relative;
+  z-index: 1001; /* Ensure user menu is on top */
 }
 
 .user-profile {
@@ -548,6 +590,7 @@ const handleSearchBlur = () => {
   border-radius: 12px;
   cursor: pointer;
   transition: all var(--transition-fast);
+  background: var(--surface-elevated);
 }
 
 .user-profile:hover {
@@ -570,17 +613,33 @@ const handleSearchBlur = () => {
 
 .user-info {
   flex: 1;
+  min-width: 0;
 }
 
 .user-name {
   font-size: 14px;
   font-weight: 600;
   line-height: 1.2;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .user-role {
   font-size: 12px;
   color: var(--text-muted);
+}
+
+.more-icon {
+  color: var(--text-muted);
+  transition: transform var(--transition-fast), color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.more-icon.menu-open {
+  transform: rotate(90deg);
+  color: var(--current-accent);
 }
 
 /* Main Content */
@@ -701,6 +760,11 @@ const handleSearchBlur = () => {
   width: 100%;
   display: flex;
   flex-direction: column;
+}
+
+/* Global Heading Fixes for Dashboard Items */
+:deep(h3) {
+  color: var(--text-primary) !important;
 }
 
 /* Transitions */

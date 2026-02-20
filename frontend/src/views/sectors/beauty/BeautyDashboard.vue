@@ -1,5 +1,18 @@
 <template>
   <DashboardLayout sector="beauty" :sector-icon="Sparkles">
+    <!-- Quick Action Bar -->
+    <div class="quick-actions">
+      <button class="quick-btn appointment-btn" @click="showAppointmentModal = true">
+        <CalendarPlus :size="18" :stroke-width="2" />
+        Yeni Randevu Oluştur
+      </button>
+      <div class="quick-stats">
+        <span class="quick-stat">
+          <span class="qs-dot confirmed"></span>
+          {{ stats.todayAppointments }} randevu bugün
+        </span>
+      </div>
+    </div>
     <!-- Stats Overview -->
     <section class="stats-grid">
       <StatCard
@@ -173,6 +186,12 @@
         </div>
       </section>
     </div>
+
+    <!-- Appointment Modal -->
+    <AppointmentModal
+      v-model="showAppointmentModal"
+      :service-options="beautyServices"
+    />
   </DashboardLayout>
 </template>
 
@@ -181,16 +200,31 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { 
   Sparkles, Calendar, DollarSign, Users, Star,
-  Clock, Trophy
+  Clock, Trophy, CalendarPlus
 } from 'lucide-vue-next'
 import DashboardLayout from '@/components/dashboard/DashboardLayout.vue'
 import StatCard from '@/components/dashboard/StatCard.vue'
 import InteractiveChart from '@/components/dashboard/InteractiveChart.vue'
 import { useSectorTheme } from '@/composables/useSectorTheme'
 import { vRipple } from '@/composables/useRipple'
+import AppointmentModal from '@/components/common/AppointmentModal.vue'
 
 const router = useRouter()
 const { theme } = useSectorTheme('beauty')
+const showAppointmentModal = ref(false)
+
+const beautyServices = [
+  'Cilt Bakımı',
+  'Saç Kesim',
+  'Saç Boyama',
+  'Masaj Terapisi',
+  'Manikür & Pedikür',
+  'Kalıcı Makyaj',
+  'Kaş & Kirpik',
+  'Epilasyon',
+  'Dolgu & Botoks Danışma',
+  'Diğer'
+]
 
 // Stats
 const stats = ref({
@@ -343,6 +377,67 @@ const handleStaffClick = (staff) => {
 </script>
 
 <style scoped>
+/* Quick Actions */
+.quick-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.quick-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.appointment-btn {
+  background: linear-gradient(135deg, #ec4899, #a855f7);
+  color: white;
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.35);
+}
+
+.appointment-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(236, 72, 153, 0.45);
+}
+
+.quick-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.quick-stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.qs-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.qs-dot.confirmed { background: #10b981; box-shadow: 0 0 6px #10b981; }
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));

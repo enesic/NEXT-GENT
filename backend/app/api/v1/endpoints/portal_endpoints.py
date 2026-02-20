@@ -17,6 +17,8 @@ from app.models.customer import Customer
 from app.models.interaction import Interaction
 from app.models.vapi_call import VAPICall
 from app.models.subscription_plan import SubscriptionPlan
+from app.schemas.customer import CustomerCreate
+from app.schemas.interaction import InteractionCreate
 
 router = APIRouter()
 logger = get_logger(__name__)
@@ -131,7 +133,9 @@ async def get_customer_messages(
     current_tenant: Optional[Tenant] = Depends(get_current_tenant)
 ):
     """
-    Get customer's message history with pagination.
+    Get customer's message/interaction history with pagination.
+    Uses the real Interaction schema: title, client_name, meta_data, type.
+    Returns all interaction types except voice calls.
     """
     try:
         if not current_tenant:
@@ -140,67 +144,70 @@ async def get_customer_messages(
                 detail="Giriş yapmanız gerekiyor"
             )
         
-        # Cap limit to prevent excessive data
         limit = min(limit, 20)
         offset = (page - 1) * limit
         
-        query = select(Interaction, Customer).join(
-            Customer, Interaction.customer_id == Customer.id, isouter=True
-        ).where(
-            and_(
-                Interaction.tenant_id == current_tenant.id,
-                Interaction.type.in_(["whatsapp", "sms", "email"])
-            )
-        )
-        
+        # Show all interaction types (they are all message/appointment communications)
+        base_filter = Interaction.tenant_id == current_tenant.id
         if channel:
-            query = query.where(Interaction.type == channel)
+            base_filter = and_(base_filter, Interaction.type == channel)
         
-        # Count total for pagination
         from sqlalchemy import func
-        count_query = select(func.count(Interaction.id)).where(
-            and_(
-                Interaction.tenant_id == current_tenant.id,
-                Interaction.type.in_(["whatsapp", "sms", "email"])
-            )
+        count_result = await db.execute(
+            select(func.count(Interaction.id)).where(base_filter)
         )
-        count_result = await db.execute(count_query)
         total = count_result.scalar() or 0
         
-        query = query.order_by(desc(Interaction.created_at)).offset(offset).limit(limit)
+        result = await db.execute(
+            select(Interaction)
+            .where(base_filter)
+            .order_by(desc(Interaction.created_at))
+            .offset(offset)
+            .limit(limit)
+        )
+        interactions = result.scalars().all()
         
-        result = await db.execute(query)
-        rows = result.all()
+        channel_map = {
+            "whatsapp": "WhatsApp",
+            "sms": "SMS",
+            "email": "E-posta",
+            "chat": "Canlı Chat",
+            "appointment": "Randevu",
+            "inquiry": "Sorgu",
+            "complaint": "Şikayet",
+            "feedback": "Geri Bildirim",
+        }
         
-        messages = []
-        for interaction, customer in rows:
-            metadata = interaction.meta_data or {}
-            customer_name = None
-            if customer:
-                first = (customer.first_name or '').strip()
-                last = (customer.last_name or '').strip()
-                customer_name = f"{first} {last}".strip() or None
-            # Filter out Sistem names
-            if customer_name and customer_name.lower() in ('sistem', 'system', 'admin'):
-                customer_name = None
-            messages.append(MessageResponse(
+        messages_out = []
+        for interaction in interactions:
+            meta = interaction.meta_data or {}
+            # Use client_name from model (real schema field)
+            raw_name = getattr(interaction, 'client_name', None) or meta.get('customer_name', 'Müşteri')
+            if raw_name and raw_name.lower() in ('sistem', 'system', 'admin'):
+                raw_name = 'Müşteri'
+            
+            channel_label = channel_map.get(interaction.type, interaction.type or "Mesaj")
+            msg_text = (
+                meta.get('message') or
+                getattr(interaction, 'title', None) or
+                getattr(interaction, 'description', None) or
+                interaction.type or ""
+            )
+            
+            messages_out.append(MessageResponse(
                 id=str(interaction.id),
-                customer_name=customer_name or metadata.get("customer_name", "Müşteri"),
-                message=metadata.get("message", interaction.summary or ""),
-                direction=metadata.get("direction", "inbound"),
-                channel=interaction.type,
-                status=metadata.get("status", "read"),
+                customer_name=raw_name,
+                message=msg_text,
+                direction=meta.get('direction', 'inbound'),
+                channel=channel_label,
+                status=meta.get('status', 'read'),
                 created_at=interaction.created_at
             ))
         
         return {
             "status": "success",
-            "data": messages,
-            "pagination": {
-                "page": page,
-                "limit": limit,
-                "total": total
-            }
+            "data": messages_out,
+            "pagination": {"page": page, "limit": limit, "total": total}
         }
         
     except HTTPException:
@@ -436,4 +443,91 @@ async def get_customer_reports(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Raporlar alınamadı"
+        )
+
+
+@router.post("/customers")
+async def create_portal_customer(
+    customer_in: CustomerCreate,
+    db: AsyncSession = Depends(get_db),
+    current_tenant: Optional[Tenant] = Depends(get_current_tenant)
+):
+    """
+    Hızlı müşteri kaydı oluşturur.
+    """
+    try:
+        if not current_tenant:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Giriş yapmanız gerekiyor"
+            )
+        
+        # Telefon numarasını hashle
+        customer = Customer(
+            **customer_in.model_dump(exclude={"phone"}),
+            tenant_id=current_tenant.id,
+            status="active",
+            segment="regular"
+        )
+        customer.set_phone(customer_in.phone)
+        
+        db.add(customer)
+        await db.commit()
+        await db.refresh(customer)
+        
+        return {"status": "success", "id": str(customer.id)}
+        
+    except Exception as e:
+        logger.error("create_customer_error", error=str(e))
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Müşteri kaydedilemedi"
+        )
+
+
+@router.post("/appointments")
+async def create_portal_appointment(
+    interaction_in: InteractionCreate,
+    db: AsyncSession = Depends(get_db),
+    current_tenant: Optional[Tenant] = Depends(get_current_tenant)
+):
+    """
+    Yeni randevu (interaction) oluşturur.
+    """
+    try:
+        if not current_tenant:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Giriş yapmanız gerekiyor"
+            )
+        
+        interaction = Interaction(
+            **interaction_in.model_dump(exclude={"meta_data"}),
+            tenant_id=current_tenant.id,
+            status="PENDING",
+            version=1
+        )
+        
+        if interaction_in.metadata:
+            interaction.meta_data = interaction_in.metadata
+        else:
+            interaction.meta_data = {
+                "title": interaction_in.title,
+                "customer_name": interaction_in.client_name,
+                "status": "pending"
+            }
+        
+        db.add(interaction)
+        await db.commit()
+        await db.refresh(interaction)
+        
+        return {"status": "success", "id": str(interaction.id)}
+        
+    except Exception as e:
+        logger.error("create_appointment_error", error=str(e))
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Randevu kaydedilemedi"
         )

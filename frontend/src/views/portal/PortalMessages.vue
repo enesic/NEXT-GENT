@@ -55,7 +55,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, inject } from 'vue'
+import { ref, onMounted, onUnmounted, computed, inject } from 'vue'
 import { useSectorStore } from '../../stores/sector'
 import { useAuthStore } from '../../stores/auth'
 
@@ -69,6 +69,8 @@ const errorMsg = ref(null)
 const currentPage = ref(1)
 const totalMessages = ref(0)
 const pageSize = 10
+const isFetching = ref(false)  // Prevent concurrent fetch spam
+let destroyed = false           // Prevent state updates after unmount
 
 const totalPages = computed(() => Math.ceil(totalMessages.value / pageSize))
 
@@ -100,18 +102,19 @@ const formatTime = (d) => {
 }
 
 const loadMessages = async () => {
-    // Guard against concurrent fetches
-    if (loading.value && messages.value.length > 0) return
+    if (isFetching.value || destroyed) return  // guard against spam & stale updates
+    isFetching.value = true
     try {
         loading.value = true
         errorMsg.value = null
-        const tenant = sectorStore.currentSectorId || 'beauty'
-        const res = await axios.get(`/messages?tenant=${tenant}&limit=${pageSize}&page=${currentPage.value}`)
+        // ✅ Correct endpoint: /portal/messages (not /messages)
+        const res = await axios.get(`/portal/messages?limit=${pageSize}&page=${currentPage.value}`)
+        if (destroyed) return   // component was unmounted while awaiting
         
         // Handle paginated response from backend
         if (res.data && res.data.data) {
             messages.value = res.data.data
-            totalMessages.value = res.data.pagination?.total || res.data.total || res.data.data.length
+            totalMessages.value = res.data.pagination?.total ?? res.data.data.length
         } else if (Array.isArray(res.data)) {
             messages.value = res.data
             totalMessages.value = res.data.length
@@ -120,21 +123,26 @@ const loadMessages = async () => {
             totalMessages.value = 0
         }
     } catch (e) {
-        console.error('Failed to load messages', e)
-        errorMsg.value = 'Mesajlar yüklenirken bir hata oluştu.'
+        if (!destroyed) {
+            console.error('Failed to load messages', e)
+            errorMsg.value = 'Mesajlar yüklenirken bir hata oluştu.'
+        }
     } finally {
-        loading.value = false
+        if (!destroyed) {
+            loading.value = false
+            isFetching.value = false
+        }
     }
 }
 
 const goToPage = (page) => {
+    if (page < 1 || page > totalPages.value) return
     currentPage.value = page
     loadMessages()
 }
 
-onMounted(() => {
-    loadMessages()
-})
+onMounted(() => { loadMessages() })
+onUnmounted(() => { destroyed = true; isFetching.value = false })
 </script>
 
 <style scoped>
