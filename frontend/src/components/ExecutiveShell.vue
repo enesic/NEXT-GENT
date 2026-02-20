@@ -5,7 +5,7 @@
       <div class="sidebar-header">
         <div class="logo">
           <div class="logo-icon">
-            <img src="/logo netleştirme kopya (1).png" alt="NextGent Logo" class="logo-image" />
+            <img src="/logo.svg" alt="NextGent Logo" class="logo-image" />
           </div>
           <span class="logo-text">NextGent</span>
         </div>

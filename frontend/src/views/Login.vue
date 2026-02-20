@@ -9,7 +9,7 @@
     <div v-if="!isInitializing" class="login-card" ref="loginCard">
       <div class="brand-header">
         <div class="logo-icon">
-          <img src="/logo netleştirme kopya (1).png" alt="NextGent Logo" class="brand-logo-image" style="width: 48px; height: 48px;" />
+          <img src="/logo.svg" alt="NextGent Logo" class="brand-logo-image" style="width: 48px; height: 48px;" />
         </div>
         <h1 class="brand-name">NextGent</h1>
       </div>
