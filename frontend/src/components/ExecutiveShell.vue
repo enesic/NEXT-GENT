@@ -48,10 +48,42 @@
           </div>
           <MoreVertical :size="16" :stroke-width="2" />
         </div>
-        <div v-if="showUserMenu" class="user-menu">
-          <button class="menu-item" @click="handleLogout">
-            Çıkış Yap
-          </button>
+        <div v-if="showUserMenu" class="user-menu-panel" @click.stop>
+          <div class="profile-header">
+            <div class="profile-avatar" :style="{ background: `linear-gradient(135deg, var(--current-accent), var(--current-accent))` }">{{ userInitials }}</div>
+            <div class="profile-info">
+              <div class="profile-name">{{ userName }}</div>
+              <div class="profile-role">{{ userRole }}</div>
+            </div>
+          </div>
+          <div class="profile-details">
+            <div class="detail-row">
+              <span class="detail-label">Müşteri ID</span>
+              <span class="detail-value">{{ authStore.user?.customer_id || '-' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Sektör</span>
+              <span class="detail-value">{{ sectorStore.currentSector?.label || 'Genel' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Segment</span>
+              <span class="detail-value">{{ authStore.user?.segment || 'Standart' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">E-posta</span>
+              <span class="detail-value">{{ authStore.user?.email || '-' }}</span>
+            </div>
+          </div>
+          <div class="profile-actions">
+            <button class="profile-action-btn" @click="handleNavigate('settings'); showUserMenu = false">
+              <Settings :size="16" :stroke-width="2" />
+              <span>Ayarlar</span>
+            </button>
+            <button class="profile-action-btn logout" @click="handleLogout">
+              <LogOut :size="16" :stroke-width="2" />
+              <span>Çıkış Yap</span>
+            </button>
+          </div>
         </div>
       </div>
     </aside>
@@ -119,7 +151,7 @@ import {
   FileText, Calendar, Settings, MoreVertical, Bell, Search,
   Briefcase, Target, ArrowRight, CalendarCheck, User, UserCheck,
   Phone, Heart, ShoppingBag, Factory, GraduationCap, Car,
-  Landmark, Coffee, ShoppingCart
+  Landmark, Coffee, ShoppingCart, LogOut
 } from 'lucide-vue-next'
 import { useSectorStore } from '../stores/sector'
 import { useNotificationStore } from '../stores/notification'
@@ -739,27 +771,124 @@ const handleSearchBlur = () => {
   }
 }
 
-.user-menu {
-  padding: 8px;
-  margin-top: 4px;
+.user-menu-panel {
+  position: absolute;
+  bottom: 100%;
+  left: 12px;
+  right: 12px;
+  margin-bottom: 8px;
+  background: rgba(24, 24, 27, 0.97);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  overflow: hidden;
+  z-index: 100;
 }
 
-.user-menu .menu-item {
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.profile-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  color: #fff;
+  box-shadow: 0 0 20px var(--current-glow);
+  flex-shrink: 0;
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.profile-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f4f4f5;
+}
+
+.profile-role {
+  font-size: 12px;
+  color: var(--current-accent);
+  font-weight: 500;
+}
+
+.profile-details {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail-label {
+  font-size: 12px;
+  color: #71717a;
+  font-weight: 500;
+}
+
+.detail-value {
+  font-size: 12px;
+  color: #d4d4d8;
+  font-weight: 500;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-actions {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   width: 100%;
   padding: 10px 12px;
-  background: var(--surface-hover);
-  border: 1px solid var(--border-subtle);
+  background: transparent;
+  border: none;
   border-radius: 8px;
-  color: #f87171;
-  cursor: pointer;
+  color: #d4d4d8;
   font-size: 13px;
   font-weight: 500;
-  text-align: left;
+  cursor: pointer;
   transition: all 0.2s;
+  text-align: left;
 }
 
-.user-menu .menu-item:hover {
+.profile-action-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #f4f4f5;
+}
+
+.profile-action-btn.logout {
+  color: #f87171;
+}
+
+.profile-action-btn.logout:hover {
   background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
 }
 </style>

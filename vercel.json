@@ -72,6 +72,14 @@
       "destination": "/api/calls.py"
     },
     {
+      "source": "/api/v1/analytics/pulse",
+      "destination": "/api/analytics_pulse.py"
+    },
+    {
+      "source": "/api/v1/helpdesk/chat",
+      "destination": "/api/helpdesk_chat.py"
+    },
+    {
       "source": "/api/v1/analytics/:path*",
       "destination": "/api/analytics.py"
     },

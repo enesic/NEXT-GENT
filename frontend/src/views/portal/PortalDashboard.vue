@@ -83,6 +83,19 @@
             </div>
         </div>
     </div>
+
+    <!-- Quick Action Modal -->
+    <QuickActionModal
+      :visible="showActionModal"
+      :title="activeAction.label"
+      :icon="activeAction.icon"
+      :fields="activeAction.fields"
+      :submitLabel="activeAction.submitLabel || 'Kaydet'"
+      :successMessage="activeAction.successMessage || 'İşlem başarıyla kaydedildi!'"
+      :accentColor="colors.primary"
+      @close="showActionModal = false"
+      @submit="handleActionSubmit"
+    />
   </div>
 </template>
 
@@ -90,6 +103,7 @@
 import { ref, computed, inject, onMounted } from 'vue'
 import { useSectorStore } from '../../stores/sector'
 import LuxuryChart from '../../components/LuxuryChart.vue'
+import QuickActionModal from '../../components/QuickActionModal.vue'
 import dashboardAPI from '../../config/dashboardAPI'
 
 const emit = defineEmits(['navigate'])
@@ -234,11 +248,154 @@ const getDummyActivity = (i) => {
     return { title: (messages[sector] || messages.medical)[i-1] || 'İşlem tamamlandı' }
 }
 
-// Button click handler - navigate via parent shell
+// Quick Action Modal State
+const showActionModal = ref(false)
+const activeAction = ref({
+  label: '',
+  icon: 'CalendarPlus',
+  fields: [],
+  submitLabel: 'Kaydet',
+  successMessage: 'İşlem başarıyla kaydedildi!'
+})
+
+// Sector-specific Quick Action form definitions
+const actionForms = {
+  beauty: {
+    'Randevu Ekle': {
+      icon: 'CalendarPlus',
+      submitLabel: 'Randevu Oluştur',
+      successMessage: 'Randevu başarıyla oluşturuldu!',
+      fields: [
+        { key: 'customerName', label: 'Müşteri Adı', type: 'text', placeholder: 'Müşteri adını girin' },
+        { key: 'service', label: 'Hizmet', type: 'select', placeholder: 'Hizmet seçin', options: [
+          { value: 'ciltBakimi', label: 'Cilt Bakımı' },
+          { value: 'lazerEpilasyon', label: 'Lazer Epilasyon' },
+          { value: 'sacBakimi', label: 'Saç Bakımı' },
+          { value: 'tirnak', label: 'Tırnak Bakımı' },
+          { value: 'masaj', label: 'Masaj' }
+        ]},
+        { key: 'date', label: 'Tarih ve Saat', type: 'datetime-local' },
+        { key: 'notes', label: 'Notlar', type: 'textarea', placeholder: 'Ek notlar...' }
+      ]
+    },
+    'Müşteri Kaydı': {
+      icon: 'UserPlus',
+      submitLabel: 'Müşteri Ekle',
+      successMessage: 'Müşteri başarıyla kaydedildi!',
+      fields: [
+        { key: 'firstName', label: 'Ad', type: 'text', placeholder: 'Ad' },
+        { key: 'lastName', label: 'Soyad', type: 'text', placeholder: 'Soyad' },
+        { key: 'phone', label: 'Telefon', type: 'tel', placeholder: '+90 5XX XXX XX XX' },
+        { key: 'email', label: 'E-posta', type: 'email', placeholder: 'ornek@email.com' },
+        { key: 'skinType', label: 'Cilt Tipi', type: 'select', placeholder: 'Cilt tipi seçin', options: [
+          { value: 'normal', label: 'Normal' },
+          { value: 'kuru', label: 'Kuru' },
+          { value: 'yagli', label: 'Yağlı' },
+          { value: 'karma', label: 'Karma' },
+          { value: 'hassas', label: 'Hassas' }
+        ]}
+      ]
+    },
+    'İşlem Notu': {
+      icon: 'FileText',
+      submitLabel: 'Notu Kaydet',
+      successMessage: 'İşlem notu kaydedildi!',
+      fields: [
+        { key: 'customerName', label: 'Müşteri', type: 'text', placeholder: 'Müşteri adı' },
+        { key: 'treatmentType', label: 'İşlem Türü', type: 'text', placeholder: 'Yapılan işlem' },
+        { key: 'notes', label: 'Detaylı Not', type: 'textarea', placeholder: 'İşlem detaylarını yazın...' }
+      ]
+    },
+    'Lab Sonuçları': {
+      icon: 'Activity',
+      submitLabel: 'Sonuç Kaydet',
+      successMessage: 'Lab sonuçları kaydedildi!',
+      fields: [
+        { key: 'customerName', label: 'Müşteri', type: 'text', placeholder: 'Müşteri adı' },
+        { key: 'testType', label: 'Test Türü', type: 'text', placeholder: 'Örn: Alerji Testi' },
+        { key: 'result', label: 'Sonuç', type: 'textarea', placeholder: 'Test sonuçlarını girin...' },
+        { key: 'date', label: 'Test Tarihi', type: 'date' }
+      ]
+    }
+  },
+  ecommerce: {
+    'Sipariş Oluştur': {
+      icon: 'ShoppingCart',
+      submitLabel: 'Sipariş Oluştur',
+      successMessage: 'Sipariş başarıyla oluşturuldu!',
+      fields: [
+        { key: 'customerName', label: 'Müşteri Adı', type: 'text', placeholder: 'Müşteri adını girin' },
+        { key: 'product', label: 'Ürün', type: 'text', placeholder: 'Ürün adı veya SKU' },
+        { key: 'quantity', label: 'Adet', type: 'number', placeholder: '1' },
+        { key: 'address', label: 'Teslimat Adresi', type: 'textarea', placeholder: 'Adres bilgilerini girin...' }
+      ]
+    },
+    'Ürün Ekle': {
+      icon: 'Package',
+      submitLabel: 'Ürün Ekle',
+      successMessage: 'Ürün başarıyla eklendi!',
+      fields: [
+        { key: 'productName', label: 'Ürün Adı', type: 'text', placeholder: 'Ürün adı' },
+        { key: 'sku', label: 'SKU', type: 'text', placeholder: 'SKU-001' },
+        { key: 'price', label: 'Fiyat (₺)', type: 'number', placeholder: '0.00' },
+        { key: 'stock', label: 'Stok Adedi', type: 'number', placeholder: '0' },
+        { key: 'description', label: 'Açıklama', type: 'textarea', placeholder: 'Ürün açıklaması...' }
+      ]
+    },
+    'Kargo Takip': {
+      icon: 'Truck',
+      submitLabel: 'Kargo Takip Sorgula',
+      successMessage: 'Kargo bilgileri yüklendi!',
+      fields: [
+        { key: 'trackingNo', label: 'Takip Numarası', type: 'text', placeholder: 'Kargo takip numarası' },
+        { key: 'carrier', label: 'Kargo Firması', type: 'select', placeholder: 'Firma seçin', options: [
+          { value: 'yurtici', label: 'Yurtiçi Kargo' },
+          { value: 'aras', label: 'Aras Kargo' },
+          { value: 'mng', label: 'MNG Kargo' },
+          { value: 'ptt', label: 'PTT Kargo' },
+          { value: 'ups', label: 'UPS' }
+        ]}
+      ]
+    },
+    'Kampanya': {
+      icon: 'Tag',
+      submitLabel: 'Kampanya Oluştur',
+      successMessage: 'Kampanya başarıyla oluşturuldu!',
+      fields: [
+        { key: 'campaignName', label: 'Kampanya Adı', type: 'text', placeholder: 'Kampanya adı' },
+        { key: 'discount', label: 'İndirim Oranı (%)', type: 'number', placeholder: '10' },
+        { key: 'startDate', label: 'Başlangıç Tarihi', type: 'date' },
+        { key: 'endDate', label: 'Bitiş Tarihi', type: 'date' },
+        { key: 'description', label: 'Açıklama', type: 'textarea', placeholder: 'Kampanya detayları...' }
+      ]
+    }
+  }
+}
+
+// Button click handler - open modal with appropriate form
 const handleActionClick = (action) => {
-    // Use nav property from sectorThemes quickActions
-    const target = action.nav || 'dashboard'
-    emit('navigate', target)
+    const sector = sectorStore.currentSectorId || 'medical'
+    const sectorForms = actionForms[sector]
+    
+    if (sectorForms && sectorForms[action.label]) {
+        const form = sectorForms[action.label]
+        activeAction.value = {
+            label: action.label,
+            icon: form.icon,
+            fields: form.fields,
+            submitLabel: form.submitLabel,
+            successMessage: form.successMessage
+        }
+        showActionModal.value = true
+    } else {
+        // Fallback: navigate for sectors without defined forms
+        const target = action.nav || 'dashboard'
+        emit('navigate', target)
+    }
+}
+
+const handleActionSubmit = (formData) => {
+    console.log('Quick Action submitted:', formData)
 }
 
 </script>
@@ -259,6 +416,7 @@ const handleActionClick = (action) => {
   font-size: 28px;
   font-weight: 700;
   margin-bottom: 4px;
+  color: var(--text-primary, #e2e8f0);
 }
 
 .subtitle {
@@ -320,6 +478,7 @@ const handleActionClick = (action) => {
     font-size: 28px;
     font-weight: 700;
     display: block;
+    color: var(--text-primary, #e2e8f0);
 }
 
 .stat-change {
@@ -355,6 +514,7 @@ const handleActionClick = (action) => {
     font-size: 18px;
     font-weight: 600;
     margin: 0;
+    color: var(--text-primary, #e2e8f0);
 }
 
 .section-subtitle {
@@ -380,6 +540,7 @@ const handleActionClick = (action) => {
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 16px;
+    color: var(--text-primary, #e2e8f0);
 }
 
 .actions-list {
@@ -464,6 +625,7 @@ const handleActionClick = (action) => {
 .activity-text strong {
     font-size: 13px;
     font-weight: 500;
+    color: var(--text-primary, #e2e8f0);
 }
 
 .time {
