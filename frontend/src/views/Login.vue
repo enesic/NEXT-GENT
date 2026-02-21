@@ -108,17 +108,22 @@ const handleLogin = async () => {
       pin: form.value.pin
     })
     
-    // Set auth data from API response
-    // Backend returns: { token, user, tenant_id, sector, tenant_name, customer_id }
-    authStore.setToken(response.data.token)
-    authStore.setUser(response.data.user)         // API returns 'user', not 'customer'
-    authStore.setTenant(response.data.tenant_id)  // tenant_id is at top level
-    
-    // Set sector directly from API response (no need to parse tenant_config)
-    sectorStore.setSector(response.data.sector || 'beauty')
-    
-    // Success - proceed to dashboard
-    proceedToDashboard()
+    // Backend returns: { status, token, customer: { id, name, email, segment, tenant_id, tenant_slug, ... } }
+    const customer = response.data.customer
+    const token = response.data.token
+
+    // Set auth state — user must be set for isAuthenticated to be true
+    authStore.setToken(token)
+    authStore.setUser(customer)
+    authStore.setTenant(customer.tenant_id)
+
+    // Determine sector from tenant_slug (e.g. 'beauty-001' → 'beauty')
+    const tenantSlug = customer.tenant_slug || ''
+    const sector = tenantSlug.split('-')[0] || 'beauty'
+    sectorStore.setSector(sector)
+
+    // Success - proceed to sector dashboard
+    proceedToDashboard(sector)
     
   } catch (error) {
     isLoading.value = false
@@ -162,7 +167,7 @@ const handleLogin = async () => {
   }
 }
 
-const proceedToDashboard = () => {
+const proceedToDashboard = (sector = 'beauty') => {
   isLoading.value = false
   
   // Start cinematic exit animation
@@ -184,9 +189,13 @@ const proceedToDashboard = () => {
         })
       })
 
-      // Wait a bit before navigating so user sees the success message
+      // Navigate to sector-specific dashboard
       setTimeout(() => {
-        router.push('/dashboard')
+        // Try sector-specific route first, fallback to generic dashboard
+        const sectorRoute = `/sectors/${sector}/dashboard`
+        router.push(sectorRoute).catch(() => {
+          router.push('/dashboard')
+        })
       }, 800)
     }
   })
