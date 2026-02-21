@@ -126,8 +126,8 @@ const routes = [
         path: '/sectors/beauty/dashboard',
         name: 'BeautyDashboard',
         component: () => import('../views/sectors/beauty/BeautyDashboard.vue'),
-        meta: { 
-            requiresAuth: true, 
+        meta: {
+            requiresAuth: true,
             sector: 'beauty',
             title: 'Güzellik Merkezi Dashboard',
             description: 'Beauty salon management dashboard'
@@ -137,8 +137,8 @@ const routes = [
         path: '/sectors/beauty/appointments',
         name: 'BeautyAppointments',
         component: () => import('../views/sectors/beauty/BeautyDashboard.vue'),
-        meta: { 
-            requiresAuth: true, 
+        meta: {
+            requiresAuth: true,
             sector: 'beauty',
             title: 'Randevular'
         }
@@ -147,8 +147,8 @@ const routes = [
         path: '/sectors/beauty/services',
         name: 'BeautyServices',
         component: () => import('../views/sectors/beauty/BeautyDashboard.vue'),
-        meta: { 
-            requiresAuth: true, 
+        meta: {
+            requiresAuth: true,
             sector: 'beauty',
             title: 'Hizmetler'
         }
@@ -157,8 +157,8 @@ const routes = [
         path: '/sectors/beauty/customers',
         name: 'BeautyCustomers',
         component: () => import('../views/sectors/beauty/BeautyDashboard.vue'),
-        meta: { 
-            requiresAuth: true, 
+        meta: {
+            requiresAuth: true,
             sector: 'beauty',
             title: 'Müşteriler'
         }
@@ -169,8 +169,8 @@ const routes = [
         path: '/sectors/hospitality/dashboard',
         name: 'HospitalityDashboard',
         component: () => import('../views/sectors/hospitality/HospitalityDashboard.vue'),
-        meta: { 
-            requiresAuth: true, 
+        meta: {
+            requiresAuth: true,
             sector: 'hospitality',
             title: 'Otel Yönetimi Dashboard',
             description: 'Hotel management dashboard'
@@ -180,8 +180,8 @@ const routes = [
         path: '/sectors/hospitality/reservations',
         name: 'HospitalityReservations',
         component: () => import('../views/sectors/hospitality/HospitalityDashboard.vue'),
-        meta: { 
-            requiresAuth: true, 
+        meta: {
+            requiresAuth: true,
             sector: 'hospitality',
             title: 'Rezervasyonlar'
         }
@@ -190,8 +190,8 @@ const routes = [
         path: '/sectors/hospitality/rooms',
         name: 'HospitalityRooms',
         component: () => import('../views/sectors/hospitality/HospitalityDashboard.vue'),
-        meta: { 
-            requiresAuth: true, 
+        meta: {
+            requiresAuth: true,
             sector: 'hospitality',
             title: 'Oda Yönetimi'
         }
@@ -200,8 +200,8 @@ const routes = [
         path: '/sectors/hospitality/guests',
         name: 'HospitalityGuests',
         component: () => import('../views/sectors/hospitality/HospitalityDashboard.vue'),
-        meta: { 
-            requiresAuth: true, 
+        meta: {
+            requiresAuth: true,
             sector: 'hospitality',
             title: 'Misafirler'
         }
@@ -288,7 +288,13 @@ router.beforeEach((to, from, next) => {
 
     // Regular user routes check - only for non-admin routes
     if (to.meta.requiresAuth) {
-        if (!authStore.isAuthenticated) {
+        // Check Pinia store first, then fall back to sessionStorage directly
+        // (handles cases where reactive store hasn't fully hydrated yet)
+        const hasToken = authStore.token || sessionStorage.getItem('auth_token')
+        const hasUser = authStore.user || sessionStorage.getItem('user')
+        const isAuth = !!(hasToken && hasUser)
+
+        if (!isAuth) {
             // Redirect to login if not authenticated
             next({ name: 'Login', query: { redirect: to.fullPath } })
             return
