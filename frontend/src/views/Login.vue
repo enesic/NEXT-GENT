@@ -169,36 +169,28 @@ const handleLogin = async () => {
 
 const proceedToDashboard = (sector = 'beauty') => {
   isLoading.value = false
-  
-  // Start cinematic exit animation
-  gsap.to(loginCard.value, {
-    scale: 0.95,
-    opacity: 0,
-    y: 20,
-    duration: 0.5,
-    ease: 'power2.in',
-    onComplete: () => {
-      isInitializing.value = true
-      
-      // Animate loader entry
-      nextTick(() => {
-        gsap.from(resultLoader.value, {
-          opacity: 0,
-          scale: 0.9,
-          duration: 0.5
-        })
-      })
+  isInitializing.value = true
 
-      // Navigate to sector-specific dashboard
-      setTimeout(() => {
-        // Try sector-specific route first, fallback to generic dashboard
-        const sectorRoute = `/sectors/${sector}/dashboard`
-        router.push(sectorRoute).catch(() => {
-          router.push('/dashboard')
-        })
-      }, 800)
+  // Start cinematic fade animation (non-blocking)
+  try {
+    if (loginCard.value) {
+      gsap.to(loginCard.value, {
+        scale: 0.95,
+        opacity: 0,
+        y: 20,
+        duration: 0.4,
+        ease: 'power2.in'
+      })
     }
-  })
+  } catch (e) {
+    // GSAP failure shouldn't block navigation
+  }
+
+  // Navigate after short delay regardless of animation
+  setTimeout(() => {
+    // Route to /dashboard (ExecutiveShell handles sector internally)
+    router.push('/dashboard')
+  }, 600)
 }
 
 onMounted(() => {
