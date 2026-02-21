@@ -108,15 +108,23 @@ const handleLogin = async () => {
       pin: form.value.pin
     })
     
-    // Backend returns: { token, user: {...}, sector, tenant_id, tenant_name, customer_id }
-    const user = response.data.user
+    // Backend returns:
+    // { status, token, customer: { id, name, email, segment, tenant_id, tenant_slug, tenant_name, ... } }
+    const customer = response.data.customer
     const token = response.data.token
-    const sector = response.data.sector || 'medical'
-    const tenantId = response.data.tenant_id
+
+    if (!token || !customer) {
+      throw new Error('Sunucudan geçersiz yanıt alındı.')
+    }
+
+    // tenant_slug'dan sektörü belirle (örn: "beauty-001" → "beauty")
+    const tenantSlug = customer.tenant_slug || ''
+    const sector = tenantSlug.split('-')[0] || 'medical'
+    const tenantId = customer.tenant_id
 
     // Set auth state — user must be set for isAuthenticated to be true
     authStore.setToken(token)
-    authStore.setUser(user)
+    authStore.setUser(customer)
     authStore.setTenant(tenantId)
 
     // Set sector directly from backend response
@@ -152,14 +160,11 @@ const handleLogin = async () => {
     let errorMessage = 'Giriş başarısız. '
     
     if (error.response) {
-      // Backend returned an error response
       console.log('Error Data:', error.response.data)
-      errorMessage += `Sunucu Hatası (${error.response.status}): ${error.response.data.detail || JSON.stringify(error.response.data)}`
+      errorMessage += `Sunucu Hatası (${error.response.status}): ${error.response.data.message || error.response.data.detail || JSON.stringify(error.response.data)}`
     } else if (error.request) {
-      // Request made but no response
       errorMessage += 'Sunucuya ulaşılamıyor. Lütfen internet bağlantınızı ve backend servisini kontrol edin.'
     } else {
-      // Setup error
       errorMessage += error.message
     }
     
