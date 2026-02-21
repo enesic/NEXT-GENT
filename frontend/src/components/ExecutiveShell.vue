@@ -85,23 +85,7 @@
             </button>
           </div>
         </div>
-        <Transition name="menu-slide">
-          <div v-if="showUserMenu" class="user-menu" @click.stop>
-            <button class="menu-item profile-item" @click="handleNavigate('settings'); showUserMenu = false">
-              <User :size="15" :stroke-width="2" />
-              Profil
-            </button>
-            <button class="menu-item settings-item" @click="handleNavigate('settings'); showUserMenu = false">
-              <Settings :size="15" :stroke-width="2" />
-              Ayarlar
-            </button>
-            <div class="menu-divider"></div>
-            <button class="menu-item logout-item" @click="handleLogout">
-              <LogOut :size="15" :stroke-width="2" />
-              Çıkış Yap
-            </button>
-          </div>
-        </Transition>
+        
       </div>
     </aside>
 
