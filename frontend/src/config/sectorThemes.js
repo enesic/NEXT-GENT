@@ -187,9 +187,9 @@ export const sectorThemes = {
         id: 'beauty',
         label: 'Güzellik',
         colors: {
-            primary: '#f472b6', // Pink 400
-            secondary: '#fb923c', // Orange 400
-            accent: '#e879f9', // Fuchsia 400
+            primary: '#f472b6',
+            secondary: '#fb923c',
+            accent: '#e879f9',
             background: '#030303',
             surface: 'rgba(255, 255, 255, 0.03)',
             text: '#e2e8f0',
@@ -216,6 +216,222 @@ export const sectorThemes = {
             datasets: [
                 { label: 'Randevu', data: [18, 22, 25, 30, 35, 40, 10] },
                 { label: 'İptal', data: [2, 3, 1, 4, 2, 5, 1] }
+            ]
+        }
+    },
+    hospitality: {
+        id: 'hospitality',
+        label: 'Konaklama',
+        colors: {
+            primary: '#f59e0b',
+            secondary: '#d97706',
+            accent: '#fbbf24',
+            background: '#030303',
+            surface: 'rgba(255, 255, 255, 0.03)',
+            text: '#e2e8f0',
+            gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+            sidebar: 'linear-gradient(180deg, #030303 0%, #0a0a0a 100%)',
+            cardShadow: '0 4px 6px -1px rgba(245, 158, 11, 0.1), 0 2px 4px -1px rgba(245, 158, 11, 0.06)'
+        },
+        stats: [
+            { label: 'Doluluk Oranı', value: '87%', change: 5.2, icon: 'Home', color: 'primary' },
+            { label: 'Aktif Rezervasyonlar', value: '142', change: 3.1, icon: 'Calendar', color: 'accent' },
+            { label: 'Müşteri Memnuniyeti', value: '94%', change: 1.4, icon: 'Heart', color: 'secondary' },
+            { label: 'Aylık Gelir', value: '₺580K', change: 11.2, icon: 'TrendingUp', color: 'green' }
+        ],
+        quickActions: [
+            { label: 'Rezervasyon Ekle', icon: 'CalendarPlus', nav: 'appointments' },
+            { label: 'Misafir Kaydı', icon: 'UserPlus', nav: 'dashboard' },
+            { label: 'Oda Durumu', icon: 'Home', nav: 'documents' },
+            { label: 'Mesajlar', icon: 'MessageSquare', nav: 'messages' }
+        ],
+        chart: {
+            title: 'Doluluk Analizi',
+            subtitle: 'Haftalık rezervasyon oranı',
+            labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+            datasets: [
+                { label: 'Rezervasyon', data: [70, 75, 80, 85, 90, 95, 88] },
+                { label: 'İptal', data: [5, 3, 4, 2, 6, 3, 4] }
+            ]
+        }
+    },
+    automotive: {
+        id: 'automotive',
+        label: 'Otomotiv',
+        colors: {
+            primary: '#ef4444',
+            secondary: '#f97316',
+            accent: '#fb923c',
+            background: '#030303',
+            surface: 'rgba(255, 255, 255, 0.03)',
+            text: '#e2e8f0',
+            gradient: 'linear-gradient(135deg, #ef4444 0%, #f97316 100%)',
+            sidebar: 'linear-gradient(180deg, #030303 0%, #0a0a0a 100%)',
+            cardShadow: '0 4px 6px -1px rgba(239, 68, 68, 0.1), 0 2px 4px -1px rgba(239, 68, 68, 0.06)'
+        },
+        stats: [
+            { label: 'Aktif Servisler', value: '38', change: 4.2, icon: 'Activity', color: 'primary' },
+            { label: 'Araç Sayısı', value: '214', change: 2.8, icon: 'Users', color: 'accent' },
+            { label: 'Teslim Bekleyen', value: '12', change: -3.5, icon: 'AlertCircle', color: 'red' },
+            { label: 'Aylık Ciro', value: '₺320K', change: 9.1, icon: 'TrendingUp', color: 'green' }
+        ],
+        quickActions: [
+            { label: 'Servis Ekle', icon: 'CalendarPlus', nav: 'appointments' },
+            { label: 'Müşteri Kaydı', icon: 'UserPlus', nav: 'dashboard' },
+            { label: 'İş Emri', icon: 'FileText', nav: 'documents' },
+            { label: 'Mesajlar', icon: 'MessageSquare', nav: 'messages' }
+        ],
+        chart: {
+            title: 'Servis Trafiği',
+            subtitle: 'Haftalık araç girişi',
+            labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+            datasets: [
+                { label: 'Giriş', data: [12, 15, 10, 18, 20, 8, 3] },
+                { label: 'Çıkış', data: [10, 13, 12, 15, 18, 10, 2] }
+            ]
+        }
+    },
+    manufacturing: {
+        id: 'manufacturing',
+        label: 'Üretim',
+        colors: {
+            primary: '#6366f1',
+            secondary: '#8b5cf6',
+            accent: '#a78bfa',
+            background: '#030303',
+            surface: 'rgba(255, 255, 255, 0.03)',
+            text: '#e2e8f0',
+            gradient: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            sidebar: 'linear-gradient(180deg, #030303 0%, #0a0a0a 100%)',
+            cardShadow: '0 4px 6px -1px rgba(99, 102, 241, 0.1), 0 2px 4px -1px rgba(99, 102, 241, 0.06)'
+        },
+        stats: [
+            { label: 'Üretim Kapasitesi', value: '92%', change: 3.5, icon: 'Activity', color: 'primary' },
+            { label: 'Aktif Siparişler', value: '67', change: 8.2, icon: 'Users', color: 'accent' },
+            { label: 'Bekleyen Teslimat', value: '14', change: -2.1, icon: 'AlertCircle', color: 'red' },
+            { label: 'Aylık Üretim', value: '4,200', change: 6.4, icon: 'TrendingUp', color: 'green' }
+        ],
+        quickActions: [
+            { label: 'Sipariş Ekle', icon: 'CalendarPlus', nav: 'appointments' },
+            { label: 'İş Emri', icon: 'FileText', nav: 'documents' },
+            { label: 'Stok Kontrol', icon: 'Activity', nav: 'analytics' },
+            { label: 'Mesajlar', icon: 'MessageSquare', nav: 'messages' }
+        ],
+        chart: {
+            title: 'Üretim Analizi',
+            subtitle: 'Haftalık üretim miktarı',
+            labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+            datasets: [
+                { label: 'Üretilen', data: [800, 850, 900, 780, 950, 600, 200] },
+                { label: 'Hedef', data: [800, 800, 800, 800, 800, 600, 200] }
+            ]
+        }
+    },
+    education: {
+        id: 'education',
+        label: 'Eğitim',
+        colors: {
+            primary: '#3b82f6',
+            secondary: '#06b6d4',
+            accent: '#38bdf8',
+            background: '#030303',
+            surface: 'rgba(255, 255, 255, 0.03)',
+            text: '#e2e8f0',
+            gradient: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
+            sidebar: 'linear-gradient(180deg, #030303 0%, #0a0a0a 100%)',
+            cardShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06)'
+        },
+        stats: [
+            { label: 'Aktif Öğrenciler', value: '1,245', change: 12.3, icon: 'Users', color: 'primary' },
+            { label: 'Aktif Kurslar', value: '48', change: 5.1, icon: 'Calendar', color: 'accent' },
+            { label: 'Tamamlanan', value: '312', change: 8.7, icon: 'CheckCircle', color: 'green' },
+            { label: 'Memnuniyet', value: '97%', change: 1.2, icon: 'Heart', color: 'secondary' }
+        ],
+        quickActions: [
+            { label: 'Ders Ekle', icon: 'CalendarPlus', nav: 'appointments' },
+            { label: 'Öğrenci Kaydı', icon: 'UserPlus', nav: 'dashboard' },
+            { label: 'Materyal', icon: 'FileText', nav: 'documents' },
+            { label: 'Mesajlar', icon: 'MessageSquare', nav: 'messages' }
+        ],
+        chart: {
+            title: 'Katılım Analizi',
+            subtitle: 'Haftalık ders katılımı',
+            labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+            datasets: [
+                { label: 'Katılım', data: [220, 250, 230, 280, 260, 100, 50] },
+                { label: 'Hedef', data: [250, 250, 250, 250, 250, 150, 50] }
+            ]
+        }
+    },
+    retail: {
+        id: 'retail',
+        label: 'Perakende',
+        colors: {
+            primary: '#22c55e',
+            secondary: '#16a34a',
+            accent: '#4ade80',
+            background: '#030303',
+            surface: 'rgba(255, 255, 255, 0.03)',
+            text: '#e2e8f0',
+            gradient: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+            sidebar: 'linear-gradient(180deg, #030303 0%, #0a0a0a 100%)',
+            cardShadow: '0 4px 6px -1px rgba(34, 197, 94, 0.1), 0 2px 4px -1px rgba(34, 197, 94, 0.06)'
+        },
+        stats: [
+            { label: 'Günlük Satış', value: '₺85K', change: 7.3, icon: 'TrendingUp', color: 'primary' },
+            { label: 'Müşteri Sayısı', value: '324', change: 4.5, icon: 'Users', color: 'accent' },
+            { label: 'Sepet Ortalaması', value: '₺262', change: 2.8, icon: 'Activity', color: 'secondary' },
+            { label: 'Stok Uyarısı', value: '7', change: -15.0, icon: 'AlertCircle', color: 'red' }
+        ],
+        quickActions: [
+            { label: 'Ürün Ekle', icon: 'PlusCircle', nav: 'documents' },
+            { label: 'Sipariş Al', icon: 'CalendarPlus', nav: 'appointments' },
+            { label: 'Stok Kontrol', icon: 'FileText', nav: 'documents' },
+            { label: 'Mesajlar', icon: 'MessageSquare', nav: 'messages' }
+        ],
+        chart: {
+            title: 'Satış Analizi',
+            subtitle: 'Haftalık satış trendi',
+            labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+            datasets: [
+                { label: 'Satış (₺)', data: [60, 75, 65, 80, 95, 120, 85] },
+                { label: 'Hedef (₺)', data: [70, 70, 70, 70, 80, 100, 80] }
+            ]
+        }
+    },
+    ecommerce: {
+        id: 'ecommerce',
+        label: 'E-Ticaret',
+        colors: {
+            primary: '#f97316',
+            secondary: '#ea580c',
+            accent: '#fb923c',
+            background: '#030303',
+            surface: 'rgba(255, 255, 255, 0.03)',
+            text: '#e2e8f0',
+            gradient: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+            sidebar: 'linear-gradient(180deg, #030303 0%, #0a0a0a 100%)',
+            cardShadow: '0 4px 6px -1px rgba(249, 115, 22, 0.1), 0 2px 4px -1px rgba(249, 115, 22, 0.06)'
+        },
+        stats: [
+            { label: 'Günlük Sipariş', value: '1,284', change: 18.2, icon: 'TrendingUp', color: 'primary' },
+            { label: 'Aktif Müşteri', value: '25.4K', change: 5.3, icon: 'Users', color: 'accent' },
+            { label: 'Kargo Bekleyen', value: '342', change: 3.1, icon: 'Activity', color: 'secondary' },
+            { label: 'Dönüşüm Oranı', value: '3.2%', change: 0.8, icon: 'Heart', color: 'green' }
+        ],
+        quickActions: [
+            { label: 'Sipariş Oluştur', icon: 'CalendarPlus', nav: 'appointments' },
+            { label: 'Ürün Ekle', icon: 'PlusCircle', nav: 'documents' },
+            { label: 'Kargo Takip', icon: 'Activity', nav: 'analytics' },
+            { label: 'Kampanya', icon: 'Tag', nav: 'messages' }
+        ],
+        chart: {
+            title: 'Sipariş Analizi',
+            subtitle: 'Günlük sipariş trendi',
+            labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+            datasets: [
+                { label: 'Siparişler', data: [980, 1100, 1050, 1200, 1350, 1500, 1100] },
+                { label: 'İadeler', data: [45, 52, 38, 65, 74, 55, 40] }
             ]
         }
     }

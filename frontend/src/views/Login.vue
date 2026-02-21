@@ -108,18 +108,18 @@ const handleLogin = async () => {
       pin: form.value.pin
     })
     
-    // Backend returns: { status, token, customer: { id, name, email, segment, tenant_id, tenant_slug, ... } }
-    const customer = response.data.customer
+    // Backend returns: { token, user: {...}, sector, tenant_id, tenant_name, customer_id }
+    const user = response.data.user
     const token = response.data.token
+    const sector = response.data.sector || 'medical'
+    const tenantId = response.data.tenant_id
 
     // Set auth state — user must be set for isAuthenticated to be true
     authStore.setToken(token)
-    authStore.setUser(customer)
-    authStore.setTenant(customer.tenant_id)
+    authStore.setUser(user)
+    authStore.setTenant(tenantId)
 
-    // Determine sector from tenant_slug (e.g. 'beauty-001' → 'beauty')
-    const tenantSlug = customer.tenant_slug || ''
-    const sector = tenantSlug.split('-')[0] || 'beauty'
+    // Set sector directly from backend response
     sectorStore.setSector(sector)
 
     // Success - proceed to sector dashboard
