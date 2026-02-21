@@ -176,27 +176,13 @@ const proceedToDashboard = (sector = 'beauty') => {
   isLoading.value = false
   isInitializing.value = true
 
-  // Start cinematic fade animation (non-blocking)
-  try {
-    if (loginCard.value) {
-      gsap.to(loginCard.value, {
-        scale: 0.95,
-        opacity: 0,
-        y: 20,
-        duration: 0.4,
-        ease: 'power2.in'
-      })
-    }
-  } catch (e) {
-    // GSAP failure shouldn't block navigation
-  }
-
-  // Navigate after short delay regardless of animation
+  // Kısa görsel geri bildirim için 800ms bekle, sonra yönlendir
   setTimeout(() => {
-    // Route to /dashboard (ExecutiveShell handles sector internally)
-    router.push('/dashboard')
-  }, 600)
+    // window.location.replace kullan - tam sayfa yenileme + history'e kaydetme
+    window.location.replace('/dashboard')
+  }, 800)
 }
+
 
 onMounted(() => {
   // Intro Animation
