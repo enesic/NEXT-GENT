@@ -421,6 +421,30 @@ onMounted(() => {
   opacity: 0;
 }
 
+/* Güzellik Merkezi – Özel lüks layout */
+.dashboard-layout.sector-beauty {
+  background: #0c0a0a;
+}
+
+.dashboard-layout.sector-beauty .dashboard-header {
+  background: rgba(12, 10, 10, 0.9);
+  border-bottom: 1px solid rgba(236, 72, 153, 0.1);
+}
+
+.dashboard-layout.sector-beauty .title {
+  font-family: 'Playfair Display', Georgia, serif;
+  color: #fdf2f8;
+}
+
+.dashboard-layout.sector-beauty .subtitle {
+  color: rgba(249, 168, 212, 0.7);
+}
+
+.dashboard-layout.sector-beauty .sector-icon-wrapper {
+  border-radius: 16px;
+  box-shadow: 0 0 32px rgba(236, 72, 153, 0.35);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .dashboard-main {

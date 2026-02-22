@@ -16,11 +16,11 @@ const SECTOR_THEMES = {
     },
     beauty: {
         name: 'Güzellik Merkezi',
-        primaryGradient: 'linear-gradient(135deg, #ec4899, #f472b6)',
+        primaryGradient: 'linear-gradient(135deg, #ec4899 0%, #a855f7 100%)',
         accentColor: '#f9a8d4',
         iconColor: '#ec4899',
-        glowColor: 'rgba(236, 72, 153, 0.3)',
-        backgroundColor: 'rgba(236, 72, 153, 0.05)'
+        glowColor: 'rgba(236, 72, 153, 0.35)',
+        backgroundColor: 'rgba(236, 72, 153, 0.06)'
     },
     hospitality: {
         name: 'Otel Yönetimi',
