@@ -47,32 +47,35 @@ export const sectorThemes = {
         displayName: 'Güzellik Merkezi',
         colors: {
             primary: '#ec4899',      // Pink - Elegance & Beauty
-            secondary: '#f59e0b',    // Amber - Luxury & Warmth
+            secondary: '#d4a574',    // Rose Gold / Champagne - Luxury
             accent: '#a855f7',       // Purple - Premium & Sophistication
-            success: '#22c55e',      // Green - Wellness
-            warning: '#fb923c',      // Orange - Energy
+            success: '#34d399',      // Mint - Wellness & Fresh
+            warning: '#fbbf24',      // Amber - Warmth
             danger: '#f43f5e',       // Rose - Attention
-            background: '#0a0a0b',   // Pure Black - Luxury
-            surface: '#1a1a1d',      // Near Black
-            surfaceLight: '#2d2d30', // Dark Gray
-            text: '#fef3f2',         // Rose 50
-            textMuted: '#fda4af',    // Rose 300
+            background: '#0c0a0a',   // Warm Black - Luxury
+            surface: '#1a1618',      // Warm Dark
+            surfaceLight: '#2a2326', // Warm Gray
+            text: '#fdf2f8',         // Pink 50 - Soft
+            textMuted: '#f9a8d4',    // Pink 300
+            roseGold: '#d4a574',     // Champagne accent
         },
         gradients: {
             primary: 'linear-gradient(135deg, #ec4899 0%, #a855f7 100%)',
             hero: 'linear-gradient(135deg, #be185d 0%, #7e22ce 100%)',
-            card: 'linear-gradient(145deg, #1a1a1d 0%, #0a0a0b 100%)',
-            luxury: 'linear-gradient(135deg, #f59e0b 0%, #ec4899 50%, #a855f7 100%)',
+            card: 'linear-gradient(160deg, #1a1618 0%, #0c0a0a 100%)',
+            luxury: 'linear-gradient(135deg, #d4a574 0%, #ec4899 40%, #a855f7 100%)',
+            soft: 'linear-gradient(180deg, rgba(236, 72, 153, 0.08) 0%, transparent 100%)',
         },
         shadows: {
-            sm: '0 1px 2px 0 rgb(236 72 153 / 0.1)',
-            md: '0 4px 6px -1px rgb(236 72 153 / 0.15)',
-            lg: '0 10px 15px -3px rgb(236 72 153 / 0.2)',
-            glow: '0 0 25px rgb(236 72 153 / 0.4)',
+            sm: '0 2px 8px rgb(236 72 153 / 0.08)',
+            md: '0 8px 24px rgb(236 72 153 / 0.12)',
+            lg: '0 16px 40px rgb(236 72 153 / 0.15)',
+            glow: '0 0 40px rgb(236 72 153 / 0.25)',
+            card: '0 4px 20px rgb(0 0 0 / 0.3), 0 0 1px rgb(236 72 153 / 0.2)',
         },
         fonts: {
-            heading: "'Playfair Display', serif",
-            body: "'Inter', -apple-system, sans-serif",
+            heading: "'Playfair Display', Georgia, serif",
+            body: "'Cormorant Garamond', 'Inter', sans-serif",
             mono: "'JetBrains Mono', monospace",
         }
     },
