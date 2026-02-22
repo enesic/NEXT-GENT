@@ -178,8 +178,9 @@ const proceedToDashboard = (sector = 'beauty') => {
 
   // Kısa görsel geri bildirim için 800ms bekle, sonra yönlendir
   setTimeout(() => {
-    // window.location.replace kullan - tam sayfa yenileme + history'e kaydetme
-    window.location.replace('/dashboard')
+    // Sektöre özgü dashboard URL'sine yönlendir (örn: /sectors/beauty/dashboard)
+    const dashboardPath = `/sectors/${sector}/dashboard`
+    window.location.replace(dashboardPath)
   }, 800)
 }
 

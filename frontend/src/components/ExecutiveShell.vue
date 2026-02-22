@@ -97,7 +97,7 @@
           <h1 class="page-title">{{ currentPageTitle }}</h1>
           <div class="sector-badge" ref="sectorBadge" v-if="isCustomer">
             <component :is="currentSectorIcon" :size="14" :stroke-width="2.5" />
-            <span>{{ sectorStore.currentSector?.label || 'Sağlık' }}</span>
+            <span>{{ sectorStore.currentSector?.label || 'Genel Bakış' }}</span>
           </div>
         </div>
 
@@ -152,7 +152,7 @@ import {
   FileText, Calendar, Settings, MoreVertical, Bell, Search,
   Briefcase, Target, ArrowRight, CalendarCheck, User, UserCheck,
   Phone, Heart, ShoppingBag, Factory, GraduationCap, Car,
-  Landmark, Coffee, ShoppingCart, LogOut
+  Landmark, Coffee, ShoppingCart, LogOut, Sparkles
 } from 'lucide-vue-next'
 import { useSectorStore } from '../stores/sector'
 import { useNotificationStore } from '../stores/notification'
@@ -239,7 +239,8 @@ const currentSectorIcon = computed(() => {
     automotive: Car,
     finance: Landmark,
     hospitality: Coffee,
-    ecommerce: ShoppingCart
+    ecommerce: ShoppingCart,
+    beauty: Sparkles
   }
   return iconMap[sectorStore.currentSectorId] || Activity
 })
@@ -256,7 +257,8 @@ const currentLogoIcon = computed(() => {
     automotive: Car,
     finance: Landmark,
     hospitality: Coffee,
-    ecommerce: ShoppingCart
+    ecommerce: ShoppingCart,
+    beauty: Sparkles
   }
   return iconMap[sectorStore.currentSectorId] || Activity
 })

@@ -167,19 +167,19 @@ const getGlowColor = (colorName) => {
     return getColor(colorName) + '1A' // 10% opacity
 }
 
-// DEFAULT MEDICAL DATA (Fallback)
+// DEFAULT STATS (Generic Fallback)
 const defaultStats = [
-    { label: 'Bugünkü Randevular', value: '124', change: 5.2, icon: 'Calendar', color: 'primary' },
-    { label: 'Aktif Hastalar', value: '1,284', change: 2.1, icon: 'Users', color: 'accent' },
-    { label: 'Acil Durumlar', value: '3', change: -10.5, icon: 'AlertCircle', color: 'red' },
-    { label: 'Memnuniyet', value: '98%', change: 1.2, icon: 'Heart', color: 'secondary' }
+    { label: 'Günlük Randevular', value: '0', change: 0, icon: 'Calendar', color: 'primary' },
+    { label: 'Aktif Müşteriler', value: '0', change: 0, icon: 'Users', color: 'accent' },
+    { label: 'Bekleyen Talepler', value: '0', change: 0, icon: 'AlertCircle', color: 'red' },
+    { label: 'Memnuniyet', value: '100%', change: 0, icon: 'Heart', color: 'secondary' }
 ]
 
 const defaultActions = [
     { label: 'Randevu Ekle', icon: 'CalendarPlus' },
-    { label: 'Hasta Kaydı', icon: 'UserPlus' },
-    { label: 'Reçete Yaz', icon: 'FileText' },
-    { label: 'Lab Sonuçları', icon: 'Activity' }
+    { label: 'Kayıt Ekle', icon: 'UserPlus' },
+    { label: 'Belge Hazırla', icon: 'FileText' },
+    { label: 'Durum Kontrolü', icon: 'Activity' }
 ]
 
 // Fetch dashboard data from API
@@ -257,10 +257,10 @@ const displayActions = computed(() => {
 })
 
 const chartConfig = computed(() => sectorStore.chartConfig || {
-    title: 'Hasta Trafiği',
+    title: 'Aktivite Analizi',
     subtitle: 'Haftalık Veriler',
-    datasets: [{ name: 'Hasta', data: [30, 40, 35, 50, 49, 60, 70, 91, 125] }],
-    labels: [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999]
+    datasets: [{ name: 'Değer', data: [0, 0, 0, 0, 0, 0, 0] }],
+    labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz']
 })
 
 const getDummyActivity = (i) => {
