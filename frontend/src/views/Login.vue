@@ -77,6 +77,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useNotificationStore } from '../stores/notification'
 import { useSectorStore } from '../stores/sector'
+import { sectorThemes } from '../config/sectorThemes'
 import { Activity, CreditCard, Lock, Check } from 'lucide-vue-next'
 import gsap from 'gsap'
 import { inject } from 'vue'
@@ -119,7 +120,11 @@ const handleLogin = async () => {
 
     // tenant_slug'dan sektörü belirle (örn: "beauty-001" → "beauty")
     const tenantSlug = customer.tenant_slug || ''
-    const sector = tenantSlug.split('-')[0] || 'medical'
+    const extractedSector = tenantSlug.split('-')[0] || 'medical'
+    
+    // Geçerli bir sektör mü kontrol et? Değilse (örn: 'nextgent') ana dashboard'a yönlendir
+    const isValidSector = sectorThemes && sectorThemes[extractedSector]
+    const sector = isValidSector ? extractedSector : null
     const tenantId = customer.tenant_id
 
     // Set auth state — user must be set for isAuthenticated to be true
@@ -127,10 +132,12 @@ const handleLogin = async () => {
     authStore.setUser(customer)
     authStore.setTenant(tenantId)
 
-    // Set sector directly from backend response
-    sectorStore.setSector(sector)
+    // Set sector directly from backend response if valid
+    if (isValidSector) {
+      sectorStore.setSector(sector)
+    }
 
-    // Success - proceed to sector dashboard
+    // Success - proceed to dashboard
     proceedToDashboard(sector)
     
   } catch (error) {
@@ -172,14 +179,14 @@ const handleLogin = async () => {
   }
 }
 
-const proceedToDashboard = (sector = 'beauty') => {
+const proceedToDashboard = (sector = null) => {
   isLoading.value = false
   isInitializing.value = true
 
   // Kısa görsel geri bildirim için 800ms bekle, sonra yönlendir
   setTimeout(() => {
-    // Sektöre özgü dashboard URL'sine yönlendir (örn: /sectors/beauty/dashboard)
-    const dashboardPath = `/sectors/${sector}/dashboard`
+    // Sektör geçerliyse sektöre özgü dashboard'a, değilse ana dashboard'a yönlendir
+    const dashboardPath = sector ? `/sectors/${sector}/dashboard` : '/dashboard'
     window.location.replace(dashboardPath)
   }, 800)
 }

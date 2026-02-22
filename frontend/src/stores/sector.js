@@ -10,7 +10,7 @@ import * as LucideIcons from 'lucide-vue-next'
  */
 export const useSectorStore = defineStore('sector', () => {
     // State
-    const currentSectorId = ref(sessionStorage.getItem('current_sector') || 'medical')
+    const currentSectorId = ref(sessionStorage.getItem('current_sector'))
 
     // Actions
     const setSector = (sectorId) => {
@@ -22,7 +22,17 @@ export const useSectorStore = defineStore('sector', () => {
 
     // Getters
     const currentSector = computed(() => {
-        return sectorThemes[currentSectorId.value] || sectorThemes.medical
+        return sectorThemes[currentSectorId.value] || {
+            label: 'Genel',
+            colors: {
+                primary: '#0ea5e9',
+                secondary: '#0f766e',
+                accent: '#38bdf8',
+                text: '#e2e8f0'
+            },
+            stats: [],
+            quickActions: []
+        }
     })
 
     const theme = computed(() => currentSector.value.colors)

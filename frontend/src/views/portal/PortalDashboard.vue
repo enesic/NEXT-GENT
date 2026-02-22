@@ -264,15 +264,17 @@ const chartConfig = computed(() => sectorStore.chartConfig || {
 })
 
 const getDummyActivity = (i) => {
-    const sector = sectorStore.currentSector || 'medical'
+    const sectorId = sectorStore.currentSectorId || 'generic'
     const messages = {
         medical: ['Yeni randevu oluşturuldu', 'Lab sonuçları onaylandı', 'Acil servis girişi'],
         legal: ['Dava dosyası güncellendi', 'Müvekkil araması', 'Duruşma hatırlatması'],
         technology: ['Server yedeklemesi tamamlandı', 'Yeni deployment', 'CPU kullanımı arttı'],
         finance: ['Para transferi geldi', 'Fatura kesildi', 'Kur güncellemesi'],
-        real_estate: ['Yeni ilan yayında', 'Müşteri randevusu', 'Tapu işlemleri başlatıldı']
+        real_estate: ['Yeni ilan yayında', 'Müşteri randevusu', 'Tapu işlemleri başlatıldı'],
+        beauty: ['Yeni randevu oluşturuldu', 'Müşteri kaydı tamamlandı', 'Hizmet notu eklendi'],
+        generic: ['Sistem aktif', 'Aktivite girişi yapıldı', 'İşlem tamamlandı']
     }
-    return { title: (messages[sector] || messages.medical)[i-1] || 'İşlem tamamlandı' }
+    return { title: (messages[sectorId] || messages.generic)[i-1] || 'İşlem tamamlandı' }
 }
 
 // Quick Action Modal State
