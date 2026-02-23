@@ -10,8 +10,9 @@ import axios from 'axios'
 // Configure default base URL
 // Use relative URL for production (nginx proxy) or localhost for development
 axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1'
-console.log('🚀 NextGent System v3.0 - Loaded')
-console.log('✅ Dashboard Alerts Disabled')
+if (import.meta.env.DEV) {
+  console.log('🚀 NextGent System v3.0 - Loaded')
+}
 
 const app = createApp(App)
 const pinia = createPinia()

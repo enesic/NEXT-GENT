@@ -1,45 +1,30 @@
 <template>
   <div class="sector-dashboard-router">
-    <Suspense>
-      <component
-        :is="activeSectorComponent"
-        :key="sectorStore.currentSectorId || 'default'"
-        @navigate="$emit('navigate', $event)"
-      />
-      <template #fallback>
-        <div class="dashboard-loading">
-          <div class="loading-spinner"></div>
-          <p>Dashboard yükleniyor...</p>
-        </div>
-      </template>
-    </Suspense>
+    <component
+      :is="activeSectorComponent"
+      :key="sectorStore.currentSectorId || 'default'"
+      @navigate="$emit('navigate', $event)"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed, defineAsyncComponent } from 'vue'
+import { computed } from 'vue'
 import { useSectorStore } from '../../stores/sector'
 
-const createAsyncDashboard = (loader) =>
-  defineAsyncComponent({
-    loader,
-    delay: 200,
-    timeout: 15000
-  })
-
-// Sektör dashboard bileşenleri (lazy) — defineAsyncComponent ile Promise doğru işlenir
-const MedicalDashboard = createAsyncDashboard(() => import('../../views/sectors/medical/MedicalDashboard.vue'))
-const LegalDashboard = createAsyncDashboard(() => import('../../views/sectors/legal/LegalDashboard.vue'))
-const BeautyDashboard = createAsyncDashboard(() => import('../../views/sectors/beauty/BeautyDashboard.vue'))
-const HospitalityDashboard = createAsyncDashboard(() => import('../../views/sectors/hospitality/HospitalityDashboard.vue'))
-const RealEstateDashboard = createAsyncDashboard(() => import('../../views/sectors/real_estate/RealEstateDashboard.vue'))
-const ManufacturingDashboard = createAsyncDashboard(() => import('../../views/sectors/manufacturing/ManufacturingDashboard.vue'))
-const EducationDashboard = createAsyncDashboard(() => import('../../views/sectors/education/EducationDashboard.vue'))
-const FinanceDashboard = createAsyncDashboard(() => import('../../views/sectors/finance/FinanceDashboard.vue'))
-const AutomotiveDashboard = createAsyncDashboard(() => import('../../views/sectors/automotive/AutomotiveDashboard.vue'))
-const RetailDashboard = createAsyncDashboard(() => import('../../views/sectors/retail/RetailDashboard.vue'))
-const PortalDashboard = createAsyncDashboard(() => import('../../views/portal/PortalDashboard.vue'))
-const DashboardContent = createAsyncDashboard(() => import('./DashboardContent.vue'))
+// Sync import — [object Promise] hatasını önler, Vite chunk'lara ayırır
+import MedicalDashboard from '../../views/sectors/medical/MedicalDashboard.vue'
+import LegalDashboard from '../../views/sectors/legal/LegalDashboard.vue'
+import BeautyDashboard from '../../views/sectors/beauty/BeautyDashboard.vue'
+import HospitalityDashboard from '../../views/sectors/hospitality/HospitalityDashboard.vue'
+import RealEstateDashboard from '../../views/sectors/real_estate/RealEstateDashboard.vue'
+import ManufacturingDashboard from '../../views/sectors/manufacturing/ManufacturingDashboard.vue'
+import EducationDashboard from '../../views/sectors/education/EducationDashboard.vue'
+import FinanceDashboard from '../../views/sectors/finance/FinanceDashboard.vue'
+import AutomotiveDashboard from '../../views/sectors/automotive/AutomotiveDashboard.vue'
+import RetailDashboard from '../../views/sectors/retail/RetailDashboard.vue'
+import PortalDashboard from '../../views/portal/PortalDashboard.vue'
+import DashboardContent from './DashboardContent.vue'
 
 const sectorStore = useSectorStore()
 
