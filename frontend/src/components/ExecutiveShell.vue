@@ -124,16 +124,26 @@
         </div>
       </header>
 
-      <!-- Content Area - NO mode='out-in' (causes stuck transitions on rapid clicks) -->
+      <!-- Content Area - Suspense prevents [object Promise] from async component resolution -->
       <div class="shell-content">
-        <Transition name="fade-slide">
-             <component 
-                :is="activeComponent" 
+        <Suspense>
+          <template #default>
+            <Transition name="fade-slide">
+              <component
+                :is="resolvedComponent"
                 v-bind="activeComponentProps"
                 :key="activeNav"
                 @navigate="handleNavigate"
-            />
-        </Transition>
+              />
+            </Transition>
+          </template>
+          <template #fallback>
+            <div class="dashboard-loading-state">
+              <div class="loading-spinner-small"></div>
+              <p>Yükleniyor...</p>
+            </div>
+          </template>
+        </Suspense>
       </div>
     </main>
 
@@ -339,6 +349,13 @@ const activeComponent = computed(() => {
 
     // Default Fallback — always return a valid component, never undefined
     return PlaceholderView ?? SectorDashboardRouter
+})
+
+// Ensure we never pass a Promise to <component :is> — prevents [object Promise] render
+const resolvedComponent = computed(() => {
+  const c = activeComponent.value
+  if (c && typeof c.then === 'function') return SectorDashboardRouter
+  return c || SectorDashboardRouter
 })
 
 // Props passed to the active component
@@ -741,6 +758,31 @@ onUnmounted(() => {
   flex: 1;
   padding: 32px;
   overflow-y: auto;
+}
+
+.dashboard-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  gap: 16px;
+  color: var(--text-secondary);
+}
+.dashboard-loading-state p {
+  font-size: 14px;
+  font-weight: 500;
+}
+.loading-spinner-small {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-subtle);
+  border-top-color: var(--current-accent);
+  border-radius: 50%;
+  animation: shell-spin 0.8s linear infinite;
+}
+@keyframes shell-spin {
+  to { transform: rotate(360deg); }
   background: var(--obsidian-black);
   width: 100%;
   display: flex;
