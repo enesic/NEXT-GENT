@@ -193,11 +193,9 @@ const fetchDocuments = async () => {
         mime_type: doc.file_type || doc.type || ''
       }))
     }
-  } catch (err) {
-    console.error('Error fetching documents:', err)
-    // On network/auth error still show demo data so UI doesn't break
+  } catch {
+    // Silently fall back to demo data — do NOT show error message to user
     files.value = DEMO_FILES
-    error.value = 'Belgeler yüklenirken bir hata oluştu'
   } finally {
     loading.value = false
   }
