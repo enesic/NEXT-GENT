@@ -37,8 +37,8 @@ const getTransitionName = (route) => {
     return 'slide-up'
   }
 
-  // Sector dashboard transitions
-  if (toPath.includes('/sectors/') && fromPath.includes('/sectors/')) {
+  // Dashboard sector-to-sector transitions (nested: /dashboard/sectors/...)
+  if (toPath.includes('/dashboard/sectors/') && fromPath.includes('/dashboard/sectors/')) {
     return 'fade'
   }
 

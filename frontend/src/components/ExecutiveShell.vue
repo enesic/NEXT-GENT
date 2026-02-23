@@ -124,26 +124,10 @@
         </div>
       </header>
 
-      <!-- Content Area - Dashboard always explicit (no component :is) to prevent [object Promise] -->
+      <!-- Content Area: nested routes render here -->
       <div class="shell-content">
-        <Transition name="fade-slide">
-          <PortalDashboard
-            v-if="activeNav === 'dashboard' && isCustomer"
-            :key="'portal-dashboard'"
-            @navigate="handleNavigate"
-          />
-          <AdminDashboard
-            v-else-if="activeNav === 'dashboard' && !isCustomer"
-            :key="'admin-dashboard'"
-            @navigate="handleNavigate"
-          />
-          <component
-            v-else
-            :is="resolvedComponent"
-            v-bind="activeComponentProps"
-            :key="activeNav"
-            @navigate="handleNavigate"
-          />
+        <Transition name="fade-slide" mode="out-in">
+          <router-view :key="route.path" @navigate="handleNavigate" />
         </Transition>
       </div>
     </main>
@@ -167,28 +151,8 @@ import {
 import { useSectorStore } from '../stores/sector'
 import { useNotificationStore } from '../stores/notification'
 import PulseCenter from './PulseCenter.vue'
-import SectorDashboardRouter from './dashboard/SectorDashboardRouter.vue'
-import CallCenterDashboard from './CallCenterDashboard.vue'
-import SatisfactionDashboard from './SatisfactionDashboard.vue'
-import PlaceholderView from './dashboard/PlaceholderView.vue'
-import CalendarView from '../views/CalendarView.vue'
-import AnalyticsView from '../views/AnalyticsView.vue'
-import DocumentsView from '../views/DocumentsView.vue'
-import SettingsView from '../views/SettingsView.vue'
-import PortalDashboard from '../views/portal/PortalDashboard.vue'
-import PortalMessages from '../views/portal/PortalMessages.vue'
-import PortalCalls from '../views/portal/PortalCalls.vue'
-import PortalSatisfaction from '../views/portal/PortalSatisfaction.vue'
-import PortalAnalytics from '../views/portal/PortalAnalytics.vue'
-import PortalSectorSpecific from '../views/portal/PortalSectorSpecific.vue'
-import AdminDashboard from '../views/admin/AdminDashboard.vue'
-import UserManagement from '../views/admin/UserManagement.vue'
-import CardsManagement from '../views/admin/CardsManagement.vue'
-import FlowEngine from '../views/admin/FlowEngine.vue'
-import AuditLogs from '../views/admin/AuditLogs.vue'
 import { useAuthStore } from '../stores/auth'
 import { useAdminStore } from '../stores/admin'
-import gsap from 'gsap'
 
 const sectorStore = useSectorStore()
 const notificationStore = useNotificationStore()
@@ -236,8 +200,25 @@ const handleClickOutside = (e) => {
     }
 }
 
-// State
-const activeNav = ref('dashboard')
+// Nav id from current route (for sidebar highlight)
+const activeNav = computed(() => {
+  const p = route.path
+  if (p === '/dashboard' || p === '/dashboard/portal' || p.startsWith('/dashboard/sectors/')) return 'dashboard'
+  if (p === '/dashboard/appointments') return 'appointments'
+  if (p === '/dashboard/messages') return 'messages'
+  if (p === '/dashboard/calls') return 'calls'
+  if (p === '/dashboard/satisfaction') return 'satisfaction'
+  if (p === '/dashboard/documents') return 'documents'
+  if (p === '/dashboard/calendar') return 'calendar'
+  if (p === '/dashboard/settings') return 'settings'
+  if (p === '/dashboard/admin-dashboard') return 'dashboard'
+  if (p === '/dashboard/users') return 'users'
+  if (p === '/dashboard/cards') return 'cards'
+  if (p === '/dashboard/flows') return 'flows'
+  if (p === '/dashboard/audits') return 'audits'
+  if (p === '/dashboard/analytics') return 'analytics'
+  return 'dashboard'
+})
 
 // Current sector icon (based on auto-detected sector from login)
 const currentSectorIcon = computed(() => {
@@ -328,72 +309,40 @@ const currentPageTitle = computed(() => {
 })
 
 
-// Dynamic Component Resolution
-const activeComponent = computed(() => {
-    // Customer Dashboard Override
-    if (isCustomer.value) {
-        if (activeNav.value === 'dashboard') return SectorDashboardRouter
-        if (activeNav.value === 'appointments') return CalendarView
-        if (activeNav.value === 'messages') return PortalMessages
-        if (activeNav.value === 'calls') return PortalCalls
-        if (activeNav.value === 'satisfaction') return PortalSatisfaction
-        if (activeNav.value === 'analytics') return PortalAnalytics
-        if (['cases', 'properties', 'status', 'budget', 'syllabus'].includes(activeNav.value)) return PortalSectorSpecific
-    }
-
-    // Core Modules
-    if (activeNav.value === 'documents') return DocumentsView
-    if (activeNav.value === 'calendar') return CalendarView
-    if (activeNav.value === 'settings') return SettingsView
-
-    // Admin Routes
-    if (!isCustomer.value) {
-        if (activeNav.value === 'dashboard') return AdminDashboard
-        if (activeNav.value === 'users') return UserManagement
-        if (activeNav.value === 'cards') return CardsManagement
-        if (activeNav.value === 'flows') return FlowEngine
-        if (activeNav.value === 'audits') return AuditLogs
-        if (activeNav.value === 'analytics') return AnalyticsView
-    }
-
-    // Default Fallback — always return a valid component, never undefined
-    return PlaceholderView ?? SectorDashboardRouter
-})
-
-// Ensure we never pass a Promise to <component :is> — prevents [object Promise] render
-const resolvedComponent = computed(() => {
-  const c = activeComponent.value
-  if (c && typeof c.then === 'function') return SectorDashboardRouter
-  return c || SectorDashboardRouter
-})
-
-// Props passed to the active component
-const activeComponentProps = computed(() => {
-    if (['dashboard', 'analytics', 'documents', 'calendar', 'settings'].includes(activeNav.value)) return {}
-    
-    // For placeholders or specific sector dashboards using DashboardContent
-    const item = [...mainNavigation.value, ...workspaceNavigation.value].find(i => i.id === activeNav.value)
-    return {
-        title: item ? item.label : 'Modül',
-        icon: item ? item.icon : Activity
-    }
-})
-
 // Refs for GSAP animations
 const logoIcon = ref(null)
 const userAvatar = ref(null)
 const sectorBadge = ref(null)
 
-// Methods — with navigation guard to prevent rapid-switch black screen
+// Nav id → dashboard path (nested routes)
+const navIdToPath = (navId) => {
+  const base = '/dashboard'
+  if (navId === 'dashboard') return isCustomer.value ? base : base + '/admin-dashboard'
+  const map = {
+    appointments: '/appointments',
+    messages: '/messages',
+    calls: '/calls',
+    satisfaction: '/satisfaction',
+    documents: '/documents',
+    calendar: '/calendar',
+    settings: '/settings',
+    users: '/users',
+    cards: '/cards',
+    flows: '/flows',
+    audits: '/audits',
+    analytics: '/analytics'
+  }
+  const sub = map[navId]
+  return sub ? base + sub : base
+}
+
 const isNavigating = ref(false)
 const handleNavigate = (navId) => {
-    // Prevent rapid tab switching from breaking transitions
-    if (isNavigating.value) return
-    if (activeNav.value === navId) return  // Same tab, no-op
-    isNavigating.value = true
-    activeNav.value = navId
-    // Release lock after transition completes (200ms is enough for simple fade)
-    setTimeout(() => { isNavigating.value = false }, 250)
+  if (isNavigating.value) return
+  if (activeNav.value === navId) return
+  isNavigating.value = true
+  const path = navIdToPath(navId)
+  router.push(path).finally(() => { isNavigating.value = false })
 }
 
 // Search Logic
@@ -418,24 +367,23 @@ const handleNotifications = () => {
 const handleSearch = () => {
   const query = searchQuery.value.toLowerCase()
   if (!query) return
-  
-  // Smart Navigation
+
   if (query.includes('randevu') || query.includes('takvim') || query.includes('calendar')) {
-      activeNav.value = 'calendar'
-      notificationStore.success('Takvime yönlendirildi', 'Arama')
+    router.push('/dashboard/calendar')
+    notificationStore.success('Takvime yönlendirildi', 'Arama')
   } else if (query.includes('belge') || query.includes('rapor') || query.includes('dosya')) {
-      activeNav.value = 'documents'
-      notificationStore.success('Belgelere yönlendirildi', 'Arama')
+    router.push('/dashboard/documents')
+    notificationStore.success('Belgelere yönlendirildi', 'Arama')
   } else if (query.includes('analiz') || query.includes('grafik') || query.includes('kpi')) {
-      activeNav.value = 'analytics'
-      notificationStore.success('Analitik sayfasına yönlendirildi', 'Arama')
+    router.push('/dashboard/analytics')
+    notificationStore.success('Analitik sayfasına yönlendirildi', 'Arama')
   } else if (query.includes('ayar') || query.includes('profil')) {
-      activeNav.value = 'settings'
-      notificationStore.success('Ayarlara yönlendirildi', 'Arama')
+    router.push('/dashboard/settings')
+    notificationStore.success('Ayarlara yönlendirildi', 'Arama')
   } else {
-      notificationStore.info(`"${searchQuery.value}" için sonuç bulunamadı.`, 'Arama')
+    notificationStore.info(`"${searchQuery.value}" için sonuç bulunamadı.`, 'Arama')
   }
-  
+
   isSearchActive.value = false
   searchQuery.value = ''
 }

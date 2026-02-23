@@ -232,11 +232,9 @@ const proceedToDashboard = (sector = null) => {
   isLoading.value = false
   isInitializing.value = true
 
-  // Kısa görsel geri bildirim için 800ms bekle, sonra yönlendir
   setTimeout(() => {
-    // Sektör geçerliyse sektöre özgü dashboard'a, değilse ana dashboard'a yönlendir
-    const dashboardPath = sector ? `/sectors/${sector}/dashboard` : '/dashboard'
-    window.location.replace(dashboardPath)
+    const dashboardPath = sector ? `/dashboard/sectors/${sector}` : '/dashboard'
+    router.push(dashboardPath)
   }, 800)
 }
 
