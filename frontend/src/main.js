@@ -1,3 +1,4 @@
+// Version: 1.0.1 - Force Rebuild
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import './style.css'
@@ -11,7 +12,7 @@ import axios from 'axios'
 // Use relative URL for production (nginx proxy) or localhost for development
 axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 if (import.meta.env.DEV) {
-  console.log('🚀 NextGent System v3.0 - Loaded')
+    console.log('🚀 NextGent System v3.0 - Loaded')
 }
 
 const app = createApp(App)
