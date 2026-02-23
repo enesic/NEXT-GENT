@@ -230,6 +230,12 @@ const routes = [
         component: () => import('../views/sectors/ecommerce/EcommerceDashboard.vue'),
         meta: { requiresAuth: true, sector: 'ecommerce' }
     },
+    {
+        path: '/sectors/ecommerce/settings',
+        name: 'EcommerceSettings',
+        component: () => import('../views/sectors/ecommerce/EcommerceSettings.vue'),
+        meta: { requiresAuth: true, sector: 'ecommerce', title: 'E-ticaret Ayarları' }
+    },
 
     // Education Sector
     {

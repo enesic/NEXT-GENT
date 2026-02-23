@@ -465,6 +465,30 @@ onMounted(() => {
   box-shadow: 0 0 32px rgba(236, 72, 153, 0.35);
 }
 
+/* E-Ticaret – Özel layout */
+.dashboard-layout.sector-ecommerce {
+  background: #0c0a0a;
+}
+
+.dashboard-layout.sector-ecommerce .dashboard-header {
+  background: rgba(12, 10, 10, 0.9);
+  border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.dashboard-layout.sector-ecommerce .title {
+  font-family: 'Playfair Display', Georgia, serif;
+  color: #fdf2f8;
+}
+
+.dashboard-layout.sector-ecommerce .subtitle {
+  color: rgba(196, 181, 253, 0.7);
+}
+
+.dashboard-layout.sector-ecommerce .sector-icon-wrapper {
+  border-radius: 16px;
+  box-shadow: 0 0 32px rgba(139, 92, 246, 0.35);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .dashboard-main {

@@ -1,6 +1,13 @@
 <template>
   <DashboardLayout sector="beauty" :sector-icon="Sparkles">
   <div class="beauty-dashboard">
+    <!-- Decorative Welcome - Her zaman görünür -->
+    <div class="beauty-welcome">
+      <span class="beauty-divider"></span>
+      <p class="beauty-tagline">Bakım ve güzellik yönetiminizin merkezi</p>
+      <span class="beauty-divider"></span>
+    </div>
+
     <!-- Error State -->
     <ErrorState
       v-if="hasError && !isLoading"
@@ -12,7 +19,7 @@
 
     <!-- Loading State -->
     <template v-else-if="isLoading && !kpis">
-      <section class="stats-grid">
+      <section class="stats-grid beauty-stats">
         <SkeletonStatCard v-for="i in 4" :key="i" />
       </section>
     </template>
@@ -31,12 +38,6 @@
           {{ stats.todayAppointments }} randevu bugün
         </span>
       </div>
-    </div>
-    <!-- Decorative Welcome -->
-    <div class="beauty-welcome">
-      <span class="beauty-divider"></span>
-      <p class="beauty-tagline">Bakım ve güzellik yönetiminizin merkezi</p>
-      <span class="beauty-divider"></span>
     </div>
     <!-- Stats Overview -->
     <section class="stats-grid beauty-stats">
@@ -573,12 +574,13 @@ onMounted(() => {
 
 .beauty-tagline {
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: rgba(253, 242, 248, 0.7);
+  color: #f9a8d4;
   margin: 0;
+  text-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
 }
 
 /* Stats Grid – Elegant spacing */
