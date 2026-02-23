@@ -223,14 +223,6 @@ const routes = [
         meta: { requiresAuth: true, sector: 'manufacturing' }
     },
 
-    // E-commerce Sector
-    {
-        path: '/sectors/ecommerce/dashboard',
-        name: 'EcommerceDashboard',
-        component: () => import('../views/sectors/ecommerce/EcommerceDashboard.vue'),
-        meta: { requiresAuth: true, sector: 'ecommerce' }
-    },
-
     // Education Sector
     {
         path: '/sectors/education/dashboard',
@@ -271,6 +263,12 @@ const router = createRouter({
 
 // Navigation guard for authentication
 router.beforeEach((to, from, next) => {
+    // Tüm sektör URL'leri → /dashboard (sektör login bilgisine göre ilgili dashboard yüklenir)
+    if (to.path.startsWith('/sectors/')) {
+        next('/dashboard')
+        return
+    }
+
     const authStore = useAuthStore()
     const adminStore = useAdminStore()
 

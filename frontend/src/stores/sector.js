@@ -10,13 +10,13 @@ import * as LucideIcons from 'lucide-vue-next'
  */
 export const useSectorStore = defineStore('sector', () => {
     // State
-    const currentSectorId = ref(localStorage.getItem('current_sector') || 'medical')
+    const currentSectorId = ref(sessionStorage.getItem('current_sector') || 'medical')
 
     // Actions
     const setSector = (sectorId) => {
         if (sectorThemes[sectorId]) {
             currentSectorId.value = sectorId
-            localStorage.setItem('current_sector', sectorId)
+            sessionStorage.setItem('current_sector', sectorId)
         }
     }
 
@@ -53,7 +53,7 @@ export const useSectorStore = defineStore('sector', () => {
     // Computed Data exposure
     const stats = computed(() => currentSector.value.stats)
     const quickActions = computed(() => currentSector.value.quickActions)
-    const chartConfig = computed(() => currentSector.value.chartConfig)
+    const chartConfig = computed(() => currentSector.value.chartConfig || currentSector.value.chart)
 
     return {
         currentSectorId,
