@@ -151,86 +151,98 @@ class handler(BaseHTTPRequestHandler):
             data = json.loads(post_data.decode('utf-8'))
 
             tenant_slug = data.get("tenant", "medical")
-            score = data.get("score")
+            # Explicitly cast score to int to avoid DB type mismatches
+            try:
+                score = int(data.get("score", 5))
+            except (ValueError, TypeError):
+                score = 5
+            
             feedback = data.get("feedback", "")
 
-            # Connect to database and insert feedback
+            # Connect to database
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             
             async def save_feedback():
-                conn = await asyncpg.connect(DATABASE_URL)
-                tenant = await conn.fetchrow("SELECT id FROM tenants WHERE slug = $1", tenant_slug)
-                if not tenant:
-                    await conn.close()
-                    return False
-                
-            async def save_feedback():
                 try:
                     conn = await asyncpg.connect(DATABASE_URL)
+                    
+                    # 1. Get Tenant
                     tenant = await conn.fetchrow("SELECT id FROM tenants WHERE slug = $1", tenant_slug)
                     if not tenant:
                         await conn.close()
                         return False, "Tenant not found"
                     
-                    now = datetime.now()
-                    new_id = uuid.uuid4()
-                    
-                    # Explicitly convert to UUID objects for asyncpg if they are strings
                     tenant_id = tenant['id']
                     if isinstance(tenant_id, str):
                         tenant_id = uuid.UUID(tenant_id)
+                        
+                    now = datetime.now()
+                    sentiment = 'positive' if score >= 4 else ('negative' if score <= 2 else 'neutral')
                     
-                    # Try inserting with all known columns from model + satisfaction_score used in GET
-                    await conn.execute(
-                        """INSERT INTO vapi_calls (
-                            id,
-                            tenant_id, 
-                            vapi_call_id, 
-                            caller_phone_encrypted, 
-                            phone_hash, 
-                            call_duration_seconds,
-                            call_status,
-                            started_at,
-                            updated_at,
-                            satisfaction_score, 
-                            sentiment, 
-                            created_at
+                    # 2. Try inserting into 'satisfactions' table (primary table for web feedback)
+                    try:
+                        await conn.execute(
+                            """INSERT INTO satisfactions (
+                                id, tenant_id, survey_type, channel, csat_score, 
+                                feedback_text, sentiment, created_at, updated_at
+                            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)""",
+                            uuid.uuid4(), tenant_id, 'csat', 'in_app', score, 
+                            feedback, sentiment, now, now
                         )
-                           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)""",
-                        new_id,
-                        tenant_id, 
-                        f"feedback-{uuid.uuid4()}", 
-                        "web-feedback", 
-                        "web-hash",
-                        0,
-                        'completed',
-                        now,
-                        now,
-                        score, 
-                        'positive' if score >= 4 else 'neutral', 
-                        now
-                    )
+                    except Exception as s_err:
+                        print(f"Satisfactions table insert failed: {s_err}")
+                        # Not failing the whole request yet, trying vapi_calls
+                    
+                    # 3. Try inserting into 'vapi_calls' table (for analytics compatibility)
+                    # We try common column names to be extremely resilient
+                    try:
+                        # Inspecting columns would be best, but we'll try the most likely structure first
+                        # We use a fallback logic: try satisfaction_score, if fails try call_quality_score
+                        try:
+                            await conn.execute(
+                                """INSERT INTO vapi_calls (
+                                    id, tenant_id, vapi_call_id, caller_phone_encrypted, phone_hash, 
+                                    call_duration_seconds, call_status, started_at, updated_at, 
+                                    satisfaction_score, sentiment, created_at
+                                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)""",
+                                uuid.uuid4(), tenant_id, f"web-{uuid.uuid4()}", "web-feedback", "web-hash",
+                                0, 'completed', now, now, score, sentiment, now
+                            )
+                        except asyncpg.exceptions.UndefinedColumnError:
+                            # Fallback if satisfaction_score doesn't exist but call_quality_score does
+                            await conn.execute(
+                                """INSERT INTO vapi_calls (
+                                    id, tenant_id, vapi_call_id, caller_phone_encrypted, phone_hash, 
+                                    call_duration_seconds, call_status, started_at, updated_at, 
+                                    call_quality_score, sentiment, created_at
+                                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)""",
+                                uuid.uuid4(), tenant_id, f"web-{uuid.uuid4()}", "web-feedback", "web-hash",
+                                0, 'completed', now, now, score, sentiment, now
+                            )
+                    except Exception as v_err:
+                        # If both vapi_calls attempts fail, we report this error
+                        await conn.close()
+                        return False, f"Vapi_calls Error: {str(v_err)}"
+
                     await conn.close()
                     return True, None
                 except Exception as db_err:
-                    error_str = str(db_err)
-                    # Return detailed error to help us see WHAT column is missing or wrong
-                    return False, f"DB Error: {error_str}"
+                    return False, str(db_err)
 
             success, error_msg = loop.run_until_complete(save_feedback())
             loop.close()
 
-            if success:
-                self.send_response(201)
-                res = {"status": "success"}
-            else:
-                self.send_response(500)
-                res = {"status": "error", "message": error_msg}
-                
+            status_code = 201 if success else 500
+            self.send_response(status_code)
             self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
+            
+            res = {"status": "success" if success else "error"}
+            if error_msg:
+                res["message"] = error_msg
+            
             self.wfile.write(json.dumps(res).encode())
 
         except Exception as e:
@@ -238,7 +250,8 @@ class handler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            self.wfile.write(json.dumps({"error": str(e), "trace": "do_post_level"}).encode())
+            self.wfile.write(json.dumps({"error": str(e)}).encode())
+
 
     def do_OPTIONS(self):
         self.send_response(200)

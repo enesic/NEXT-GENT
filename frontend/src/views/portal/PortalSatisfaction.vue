@@ -124,7 +124,7 @@ const submitFeedback = async () => {
     isSubmitting.value = true
     try {
         const tenant = sessionStorage.getItem('tenant_slug') || 'medical'
-        await axios.post('/satisfaction', {
+        const response = await axios.post('/satisfaction', {
             tenant: tenant,
             score: form.score,
             feedback: form.feedback
@@ -139,9 +139,10 @@ const submitFeedback = async () => {
         form.value = { score: 5, feedback: '' }
     } catch (err) {
         console.error('Feedback error:', err)
+        const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message
         notificationStore.error(
-            'Geri bildirim gönderilirken bir hata oluştu. Lütfen tekrar deneyin.',
-            'Hata'
+            `Geri bildirim gönderilirken bir hata oluştu: ${errorMsg}`,
+            'Sistem Hatası'
         )
     } finally {
         isSubmitting.value = false

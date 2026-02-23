@@ -2,6 +2,51 @@
 <html lang="tr">
 
 <head>
+    <!-- AGGRESSIVE Error Shield (Must be at the very top of head to catch early errors) -->
+    <script>
+        (function () {
+            const shadowPatterns = [
+                'chrome-extension', 'sharebx', 'reporter', 'export', 'extension', 'browser-extension'
+            ];
+            const originalConsole = {
+                log: console.log, warn: console.warn, error: console.error, info: console.info
+            };
+
+            function isNoise(msg) {
+                const s = String(msg || '').toLowerCase();
+                return shadowPatterns.some(p => s.includes(p));
+            }
+
+            // Suppress early Window errors
+            window.onerror = function (msg, src) {
+                if (isNoise(msg) || isNoise(src)) return true;
+                return false;
+            };
+
+            window.addEventListener('error', function (e) {
+                if (isNoise(e.message) || isNoise(e.filename)) {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                }
+            }, true);
+
+            window.addEventListener('unhandledrejection', function (e) {
+                const r = e.reason ? (e.reason.message || String(e.reason)) : '';
+                if (isNoise(r)) {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                }
+            }, true);
+
+            // Mute Console
+            Object.keys(originalConsole).forEach(m => {
+                console[m] = function () {
+                    if (Array.from(arguments).some(arg => isNoise(arg))) return;
+                    originalConsole[m].apply(console, arguments);
+                };
+            });
+        })();
+    </script>
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="/vite.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,62 +69,6 @@
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700&display=swap"
         rel="stylesheet">
 
-    <!-- Aggressive Global Shield to suppress persistent extension noise (sharebx, reporter, etc.) -->
-    <script>
-        (function () {
-            const suppressPatterns = [
-                'chrome-extension',
-                'sharebx.js',
-                'webpage_content_reporter',
-                'Unexpected token \'export\'',
-                'sharebx',
-                'extension'
-            ];
-
-            function shouldSuppress(message, source) {
-                const msg = String(message || '').toLowerCase();
-                const src = String(source || '').toLowerCase();
-                return suppressPatterns.some(p => msg.includes(p.toLowerCase()) || src.includes(p.toLowerCase()));
-            }
-
-            // Global Error Handlers
-            window.onerror = function (message, source, lineno, colno, error) {
-                if (shouldSuppress(message, source)) return true;
-                return false;
-            };
-
-            window.addEventListener('error', function (event) {
-                if (shouldSuppress(event.message, event.filename)) {
-                    event.stopImmediatePropagation();
-                    event.preventDefault();
-                }
-            }, true);
-
-            window.addEventListener('unhandledrejection', function (event) {
-                const reason = event.reason ? (event.reason.message || String(event.reason)) : '';
-                if (shouldSuppress(reason)) {
-                    event.stopImmediatePropagation();
-                    event.preventDefault();
-                }
-            }, true);
-
-            // Comprehensive Console Shield (Filters out extension logs, warnings, and errors)
-            ['log', 'warn', 'error', 'info', 'debug'].forEach(method => {
-                const original = console[method];
-                console[method] = function () {
-                    const args = Array.from(arguments);
-                    const shouldMute = args.some(arg => {
-                        const str = String(arg || '');
-                        return suppressPatterns.some(p => str.toLowerCase().includes(p.toLowerCase()));
-                    });
-
-                    if (!shouldMute) {
-                        original.apply(console, arguments);
-                    }
-                };
-            });
-        })();
-    </script>
 
     <!-- Preload module preload for main entry -->
     <link rel="modulepreload" href="/src/main.js">
