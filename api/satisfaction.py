@@ -168,23 +168,32 @@ class handler(BaseHTTPRequestHandler):
                 # Insert into vapi_calls as satisfaction update (simulated for simplicity)
                 # We must provide all NOT NULL columns required by the schema
                 now = datetime.now()
+                new_id = uuid.uuid4()
                 await conn.execute(
                     """INSERT INTO vapi_calls (
+                        id,
                         tenant_id, 
                         vapi_call_id, 
                         caller_phone_encrypted, 
                         phone_hash, 
-                        started_at, 
+                        call_duration_seconds,
+                        call_status,
+                        started_at,
+                        updated_at,
                         satisfaction_score, 
                         sentiment, 
                         created_at
                     )
-                       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)""",
+                       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)""",
+                    new_id,
                     tenant['id'], 
                     f"feedback-{uuid.uuid4()}", 
                     "web-feedback", 
-                    "web-hash", 
-                    now, 
+                    "web-hash",
+                    0,
+                    'completed',
+                    now,
+                    now,
                     score, 
                     'Positive' if score >= 4 else 'Neutral', 
                     now

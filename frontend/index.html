@@ -59,6 +59,20 @@
                     event.preventDefault();
                 }
             }, true);
+
+            // Monkey-patch console.error to filter out persistent extension noise
+            const originalConsoleError = console.error;
+            console.error = function () {
+                const args = Array.from(arguments);
+                const shouldMute = args.some(arg => {
+                    const str = String(arg || '');
+                    return suppressPatterns.some(p => str.includes(p));
+                });
+
+                if (!shouldMute) {
+                    originalConsoleError.apply(console, arguments);
+                }
+            };
         })();
     </script>
 
