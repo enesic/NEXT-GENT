@@ -6,43 +6,75 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NextGent - Executive Luxury</title>
-    
+
     <!-- DNS Prefetch for external resources -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link rel="dns-prefetch" href="//localhost:8001">
-    
+
     <!-- Preconnect for critical resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
+
     <!-- Preload critical fonts -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        as="style">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
-    
-    <!-- Global Error Shield to suppress extension-related SyntaxErrors -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700&display=swap"
+        rel="stylesheet">
+
+    <!-- Global Error Shield to suppress extension-related Noise/Errors -->
     <script>
-        window.onerror = function(message, source, lineno, colno, error) {
-            // Suppress errors from extensions or external scripts that don't belong to our domain
-            if (source && (source.indexOf('chrome-extension') !== -1 || source.indexOf('sharebx.js') !== -1 || source.indexOf('webpage_content_reporter') !== -1)) {
-                return true; // Prevents the error from appearing in the console for the user
+        (function () {
+            const suppressPatterns = [
+                'chrome-extension',
+                'sharebx.js',
+                'webpage_content_reporter',
+                'Unexpected token \'export\'',
+                'sharebx'
+            ];
+
+            function shouldSuppress(message, source) {
+                const msg = String(message || '');
+                const src = String(source || '');
+                return suppressPatterns.some(p => msg.includes(p) || src.includes(p));
             }
-            return false; // Let other errors pass through
-        };
+
+            window.onerror = function (message, source, lineno, colno, error) {
+                if (shouldSuppress(message, source)) return true;
+                return false;
+            };
+
+            window.addEventListener('error', function (event) {
+                if (shouldSuppress(event.message, event.filename)) {
+                    event.stopImmediatePropagation();
+                    event.preventDefault();
+                }
+            }, true);
+
+            window.addEventListener('unhandledrejection', function (event) {
+                if (shouldSuppress(event.reason)) {
+                    event.stopImmediatePropagation();
+                    event.preventDefault();
+                }
+            }, true);
+        })();
     </script>
-    
+
     <!-- Preload module preload for main entry -->
     <link rel="modulepreload" href="/src/main.js">
-    
+
     <!-- Performance optimizations -->
     <meta name="theme-color" content="#030303">
     <meta name="description" content="NextGent - Executive Luxury Call Center & Analytics Platform">
-    
+
     <!-- Critical CSS inline to avoid render blocking -->
     <style>
         /* Critical above-the-fold styles */
-        html, body, #app {
+        html,
+        body,
+        #app {
             margin: 0;
             padding: 0;
             width: 100%;
@@ -51,7 +83,7 @@
             color: #ffffff;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
-        
+
         /* Loading indicator */
         .app-loading {
             position: fixed;
@@ -65,7 +97,7 @@
             background: #030303;
             z-index: 9999;
         }
-        
+
         .app-loading-spinner {
             width: 40px;
             height: 40px;
@@ -74,9 +106,11 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-        
+
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>

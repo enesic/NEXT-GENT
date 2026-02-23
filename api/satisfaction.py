@@ -5,6 +5,7 @@ Handles /satisfaction/metrics and /satisfaction/trends
 import json
 import asyncio
 import asyncpg
+import uuid
 from datetime import datetime, timedelta
 from http.server import BaseHTTPRequestHandler
 
@@ -165,11 +166,28 @@ class handler(BaseHTTPRequestHandler):
                     return False
                 
                 # Insert into vapi_calls as satisfaction update (simulated for simplicity)
-                # In a real app, this would go to 'satisfactions' table if it existed in the serverless context
+                # We must provide all NOT NULL columns required by the schema
+                now = datetime.now()
                 await conn.execute(
-                    """INSERT INTO vapi_calls (tenant_id, satisfaction_score, sentiment, created_at)
-                       VALUES ($1, $2, $3, $4)""",
-                    tenant['id'], score, 'Positive' if score >= 4 else 'Neutral', datetime.now()
+                    """INSERT INTO vapi_calls (
+                        tenant_id, 
+                        vapi_call_id, 
+                        caller_phone_encrypted, 
+                        phone_hash, 
+                        started_at, 
+                        satisfaction_score, 
+                        sentiment, 
+                        created_at
+                    )
+                       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)""",
+                    tenant['id'], 
+                    f"feedback-{uuid.uuid4()}", 
+                    "web-feedback", 
+                    "web-hash", 
+                    now, 
+                    score, 
+                    'Positive' if score >= 4 else 'Neutral', 
+                    now
                 )
                 await conn.close()
                 return True
