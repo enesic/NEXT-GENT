@@ -168,18 +168,25 @@ const getEventsForDay = (date) => {
   }))
 }
 
+function toEventsArray(raw) {
+  if (Array.isArray(raw)) return raw
+  if (raw && Array.isArray(raw.data)) return raw.data
+  if (raw && Array.isArray(raw.events)) return raw.events
+  if (raw && Array.isArray(raw.appointments)) return raw.appointments
+  if (raw && Array.isArray(raw.items)) return raw.items
+  if (raw && Array.isArray(raw.results)) return raw.results
+  return []
+}
+
 const fetchEvents = async () => {
   try {
-    // Check if user is customer (crudely via sectorStore or let api handle it)
-    // Better: Helper to check role
-    const isCustomer = !sessionStorage.getItem('user')?.includes('admin') // Simple check
-    
+    const isCustomer = !sessionStorage.getItem('user')?.includes('admin')
     const endpoint = isCustomer ? '/portal/appointments' : '/interactions'
-    
+
     const response = await axios.get(endpoint, { params: { limit: 100 } })
-    
-    // Normalize data structure or use rich dummy data if empty
-    if (response.data.length === 0) {
+    const arr = toEventsArray(response?.data ?? {})
+
+    if (arr.length === 0) {
       const today = new Date()
       const y = today.getFullYear()
       const m = today.getMonth()
@@ -203,14 +210,14 @@ const fetchEvents = async () => {
         { id: 15, title: 'Yatırımcı Toplantısı', start_time: new Date(y, m, 15, 11, 0), status: 'pending', color: 'secondary', time: '11:00' }
       ]
     } else {
-      events.value = response.data.map(e => ({
-          ...e,
-          start_time: e.date || e.start_time,
-          title: e.title || e.type || 'Randevu'
+      events.value = arr.map(e => ({
+        ...e,
+        start_time: e.date || e.start_time || e.created_at,
+        title: e.title || e.summary || e.type || 'Randevu'
       }))
     }
-  } catch (e) {
-    console.error("Calendar events fetch error:", e)
+  } catch {
+    events.value = []
   }
 }
 
