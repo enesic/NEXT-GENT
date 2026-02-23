@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/vite.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextGent - Executive Luxury</title>
+    
+    <!-- DNS Prefetch for external resources -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="//localhost:8001">
+    
+    <!-- Preconnect for critical resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Preload critical fonts -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
+    
+    <!-- Preload module preload for main entry -->
+    <link rel="modulepreload" href="data:text/javascript;base64,aW1wb3J0IHsgY3JlYXRlQXBwIH0gZnJvbSAndnVlJw0KaW1wb3J0IHsgY3JlYXRlUGluaWEgfSBmcm9tICdwaW5pYScNCmltcG9ydCAnLi9zdHlsZS5jc3MnDQppbXBvcnQgQXBwIGZyb20gJy4vQXBwLnZ1ZScNCmltcG9ydCByb3V0ZXIgZnJvbSAnLi9yb3V0ZXInDQppbXBvcnQgVnVlQXBleENoYXJ0cyBmcm9tICd2dWUzLWFwZXhjaGFydHMnDQoNCmltcG9ydCBheGlvcyBmcm9tICdheGlvcycNCg0KLy8gQ29uZmlndXJlIGRlZmF1bHQgYmFzZSBVUkwNCi8vIFVzZSByZWxhdGl2ZSBVUkwgZm9yIHByb2R1Y3Rpb24gKG5naW54IHByb3h5KSBvciBsb2NhbGhvc3QgZm9yIGRldmVsb3BtZW50DQpheGlvcy5kZWZhdWx0cy5iYXNlVVJMID0gaW1wb3J0Lm1ldGEuZW52LlZJVEVfQVBJX0JBU0VfVVJMIHx8ICcvYXBpL3YxJw0KaWYgKGltcG9ydC5tZXRhLmVudi5ERVYpIHsNCiAgY29uc29sZS5sb2coJ/CfmoAgTmV4dEdlbnQgU3lzdGVtIHYzLjAgLSBMb2FkZWQnKQ0KfQ0KDQpjb25zdCBhcHAgPSBjcmVhdGVBcHAoQXBwKQ0KY29uc3QgcGluaWEgPSBjcmVhdGVQaW5pYSgpDQoNCmFwcC51c2UocGluaWEpDQphcHAudXNlKHJvdXRlcikNCmFwcC51c2UoVnVlQXBleENoYXJ0cykNCmFwcC5wcm92aWRlKCdheGlvcycsIGF4aW9zKQ0KYXBwLmNvbmZpZy5lcnJvckhhbmRsZXIgPSAoZXJyLCBpbnN0YW5jZSwgaW5mbykgPT4gew0KICAgIGNvbnNvbGUuZXJyb3IoJ0dsb2JhbCBWdWUgRXJyb3I6JywgZXJyKQ0KICAgIGNvbnNvbGUuZXJyb3IoJ0NvbXBvbmVudDonLCBpbnN0YW5jZSkNCiAgICBjb25zb2xlLmVycm9yKCdJbmZvOicsIGluZm8pDQoNCiAgICAvLyBTaG93IGVycm9yIG9uIHNjcmVlbiAoQ3JpdGljYWwgZm9yIGRlYnVnZ2luZyBCbGFjayBTY3JlZW4pDQogICAgY29uc3QgZXJyb3JCb3ggPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCdkaXYnKQ0KICAgIGVycm9yQm94LnN0eWxlLnBvc2l0aW9uID0gJ2ZpeGVkJw0KICAgIGVycm9yQm94LnN0eWxlLnRvcCA9ICcwJw0KICAgIGVycm9yQm94LnN0eWxlLmxlZnQgPSAnMCcNCiAgICBlcnJvckJveC5zdHlsZS53aWR0aCA9ICcxMDAlJw0KICAgIGVycm9yQm94LnN0eWxlLmhlaWdodCA9ICcxMDAlJw0KICAgIGVycm9yQm94LnN0eWxlLmJhY2tncm91bmRDb2xvciA9ICcjMDAwJw0KICAgIGVycm9yQm94LnN0eWxlLmNvbG9yID0gJyNmZjQ0NDQnDQogICAgZXJyb3JCb3guc3R5bGUuekluZGV4ID0gJzk5OTk5Jw0KICAgIGVycm9yQm94LnN0eWxlLnBhZGRpbmcgPSAnMjBweCcNCiAgICBlcnJvckJveC5zdHlsZS5mb250RmFtaWx5ID0gJ21vbm9zcGFjZScNCiAgICBlcnJvckJveC5zdHlsZS5vdmVyZmxvdyA9ICdhdXRvJw0KICAgIGVycm9yQm94LmlubmVySFRNTCA9IGANCiAgICAgICAgPGgxPkFwcGxpY2F0aW9uIENyYXNoPC9oMT4NCiAgICAgICAgPHA+QSBjcml0aWNhbCBlcnJvciBvY2N1cnJlZCBwcmV2ZW50aW5nIHRoZSBhcHAgZnJvbSBsb2FkaW5nLjwvcD4NCiAgICAgICAgPHByZSBzdHlsZT0iYmFja2dyb3VuZDogIzExMTsgcGFkZGluZzogMTBweDsgYm9yZGVyOiAxcHggc29saWQgIzMzMzsgd2hpdGUtc3BhY2U6IHByZS13cmFwOyI+JHtlcnIuc3RhY2sgfHwgZXJyLm1lc3NhZ2V9PC9wcmU+DQogICAgICAgIDxwPkluZm86ICR7aW5mb308L3A+DQogICAgICAgIDxidXR0b24gb25jbGljaz0ibG9jYXRpb24ucmVsb2FkKCkiIHN0eWxlPSJwYWRkaW5nOiAxMHB4IDIwcHg7IGJhY2tncm91bmQ6ICMzMzM7IGNvbG9yOiB3aGl0ZTsgYm9yZGVyOiBub25lOyBjdXJzb3I6IHBvaW50ZXI7IG1hcmdpbi10b3A6IDIwcHg7Ij5SZWxvYWQgQXBwPC9idXR0b24+DQogICAgYA0KICAgIGRvY3VtZW50LmJvZHkuYXBwZW5kQ2hpbGQoZXJyb3JCb3gpDQp9DQoNCmFwcC5tb3VudCgnI2FwcCcpDQoNCi8vIEdsb2JhbCBlcnJvciBoYW5kbGVyIGZvciBkeW5hbWljIGltcG9ydCBmYWlsdXJlcyAoUHJvYWN0aXZlIFJlbG9hZCkNCndpbmRvdy5hZGRFdmVudExpc3RlbmVyKCd1bmhhbmRsZWRyZWplY3Rpb24nLCAoZXZlbnQpID0+IHsNCiAgICAvLyBDaGVjayBmb3IgY29tbW9uIGNodW5rIGxvYWQgZXJyb3JzDQogICAgY29uc3QgaXNDaHVua0xvYWRGYWlsZWQgPSBldmVudC5yZWFzb24gJiYgKA0KICAgICAgICAoZXZlbnQucmVhc29uLm1lc3NhZ2UgJiYgZXZlbnQucmVhc29uLm1lc3NhZ2UuaW5jbHVkZXMoJ0ZhaWxlZCB0byBmZXRjaCBkeW5hbWljYWxseSBpbXBvcnRlZCBtb2R1bGUnKSkgfHwNCiAgICAgICAgKGV2ZW50LnJlYXNvbi5tZXNzYWdlICYmIGV2ZW50LnJlYXNvbi5tZXNzYWdlLmluY2x1ZGVzKCdJbXBvcnRpbmcgYSBtb2R1bGUgc2NyaXB0IGZhaWxlZCcpKSB8fA0KICAgICAgICAoZXZlbnQucmVhc29uLm5hbWUgPT09ICdDaHVua0xvYWRFcnJvcicpDQogICAgKTsNCg0KICAgIGlmIChpc0NodW5rTG9hZEZhaWxlZCkgew0KICAgICAgICBjb25zb2xlLmVycm9yKCdEeW5hbWljIGltcG9ydCBmYWlsZWQgKGxpa2VseSBzdGFsZSBjYWNoZSkuIFJlbG9hZGluZyBwYWdlLi4uJywgZXZlbnQucmVhc29uKTsNCg0KICAgICAgICBjb25zdCBzdG9yYWdlS2V5ID0gJ2dsb2JhbF9jaHVua19yZWxvYWRfJyArIHdpbmRvdy5sb2NhdGlvbi5wYXRobmFtZTsNCiAgICAgICAgY29uc3QgbGFzdFJlbG9hZCA9IHNlc3Npb25TdG9yYWdlLmdldEl0ZW0oc3RvcmFnZUtleSk7DQogICAgICAgIGNvbnN0IG5vdyA9IERhdGUubm93KCk7DQoNCiAgICAgICAgLy8gTGltaXQgcmVsb2FkcyB0byBvbmNlIGV2ZXJ5IDUgc2Vjb25kcyB0byBwcmV2ZW50IGZyZW56aWVkIGxvb3BzLCANCiAgICAgICAgLy8gYnV0IGFsbG93IHF1aWNrIHJlY292ZXJ5IGlmIGl0IGhhcHBlbnMgYWdhaW4gb24gYSBkaWZmZXJlbnQgcm91dGUNCiAgICAgICAgaWYgKCFsYXN0UmVsb2FkIHx8IG5vdyAtIHBhcnNlSW50KGxhc3RSZWxvYWQpID4gNTAwMCkgew0KICAgICAgICAgICAgc2Vzc2lvblN0b3JhZ2Uuc2V0SXRlbShzdG9yYWdlS2V5LCBub3cudG9TdHJpbmcoKSk7DQogICAgICAgICAgICB3aW5kb3cubG9jYXRpb24ucmVsb2FkKHRydWUpOw0KICAgICAgICB9DQogICAgfQ0KfSk7DQo=">
+    
+    <!-- Performance optimizations -->
+    <meta name="theme-color" content="#030303">
+    <meta name="description" content="NextGent - Executive Luxury Call Center & Analytics Platform">
+    
+    <!-- Critical CSS inline to avoid render blocking -->
+    <style>
+        /* Critical above-the-fold styles */
+        html, body, #app {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: #030303;
+            color: #ffffff;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        /* Loading indicator */
+        .app-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #030303;
+            z-index: 9999;
+        }
+        
+        .app-loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(99, 102, 241, 0.2);
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+  <script type="module" crossorigin src="/assets/index-CrHf0WMG.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Cu5F8NZv.css">
+</head>
+
+<body>
+    <div id="app">
+        <!-- Loading indicator while app initializes -->
+        <div class="app-loading">
+            <div class="app-loading-spinner"></div>
+        </div>
+    </div>
+</body>
+
+</html>
