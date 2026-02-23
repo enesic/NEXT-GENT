@@ -136,14 +136,12 @@ const defaultOptions = {
       displayColors: true,
       callbacks: {
         label: function(context) {
-          let label = context.dataset.label || ''
-          if (label) {
-            label += ': '
+          const name = context.label || ''
+          const value = context.parsed?.y ?? context.parsed ?? context.raw
+          if (value != null && !isNaN(Number(value))) {
+            return `${name}: ${new Intl.NumberFormat('tr-TR').format(Number(value))}`
           }
-          if (context.parsed.y !== null) {
-            label += new Intl.NumberFormat('tr-TR').format(context.parsed.y)
-          }
-          return label
+          return name
         }
       }
     }
