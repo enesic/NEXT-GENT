@@ -124,12 +124,18 @@
         </div>
       </header>
 
-      <!-- Content Area - Suspense prevents [object Promise] from async component resolution -->
+      <!-- Content Area - Dashboard bypass: PortalDashboard doğrudan render (component :is Promise hatasını önler) -->
       <div class="shell-content">
         <Suspense>
           <template #default>
             <Transition name="fade-slide">
+              <PortalDashboard
+                v-if="activeNav === 'dashboard' && isCustomer"
+                :key="activeNav"
+                @navigate="handleNavigate"
+              />
               <component
+                v-else
                 :is="resolvedComponent"
                 v-bind="activeComponentProps"
                 :key="activeNav"
