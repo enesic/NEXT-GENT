@@ -2,14 +2,14 @@
 <html lang="tr">
 
 <head>
-    <!-- AGGRESSIVE Error Shield (Must be at the very top of head to catch early errors) -->
+    <!-- AGGRESSIVE Error Shield (Must be at the very top of head to catch extension noise) -->
     <script>
         (function () {
             const shadowPatterns = [
-                'chrome-extension', 'sharebx', 'reporter', 'export', 'extension', 'browser-extension'
+                'chrome-extension', 'sharebx', 'reporter', 'export', 'extension', 'browser-extension', 'syntaxerror'
             ];
             const originalConsole = {
-                log: console.log, warn: console.warn, error: console.error, info: console.info
+                log: console.log, warn: console.warn, error: console.error, info: console.info, debug: console.debug
             };
 
             function isNoise(msg) {
@@ -40,10 +40,12 @@
 
             // Mute Console
             Object.keys(originalConsole).forEach(m => {
-                console[m] = function () {
-                    if (Array.from(arguments).some(arg => isNoise(arg))) return;
-                    originalConsole[m].apply(console, arguments);
-                };
+                if (typeof console[m] === 'function') {
+                    console[m] = function () {
+                        if (Array.from(arguments).some(arg => isNoise(arg))) return;
+                        originalConsole[m].apply(console, arguments);
+                    };
+                }
             });
         })();
     </script>
