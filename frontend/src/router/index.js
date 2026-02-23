@@ -263,8 +263,8 @@ const router = createRouter({
 
 // Navigation guard for authentication
 router.beforeEach((to, from, next) => {
-    // E-commerce: /sectors/ecommerce/dashboard kaldırıldı → /dashboard
-    if (to.path === '/sectors/ecommerce/dashboard' || to.path.startsWith('/sectors/ecommerce/')) {
+    // Tüm sektör URL'leri → /dashboard (sektör login bilgisine göre ilgili dashboard yüklenir)
+    if (to.path.startsWith('/sectors/')) {
         next('/dashboard')
         return
     }

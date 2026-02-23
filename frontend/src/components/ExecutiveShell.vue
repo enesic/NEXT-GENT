@@ -157,7 +157,7 @@ import {
 import { useSectorStore } from '../stores/sector'
 import { useNotificationStore } from '../stores/notification'
 import PulseCenter from './PulseCenter.vue'
-import DashboardContent from './dashboard/DashboardContent.vue'
+import SectorDashboardRouter from './dashboard/SectorDashboardRouter.vue'
 import CallCenterDashboard from './CallCenterDashboard.vue'
 import SatisfactionDashboard from './SatisfactionDashboard.vue'
 import PlaceholderView from './dashboard/PlaceholderView.vue'
@@ -312,9 +312,9 @@ const currentPageTitle = computed(() => {
 
 // Dynamic Component Resolution
 const activeComponent = computed(() => {
-    // Customer Dashboard Override
+    // Customer Dashboard Override — sektör login bilgisine göre ilgili dashboard yüklenir
     if (isCustomer.value) {
-        if (activeNav.value === 'dashboard') return PortalDashboard
+        if (activeNav.value === 'dashboard') return SectorDashboardRouter
         if (activeNav.value === 'appointments') return CalendarView
         if (activeNav.value === 'messages') return PortalMessages
         if (activeNav.value === 'calls') return PortalCalls
@@ -339,7 +339,7 @@ const activeComponent = computed(() => {
     }
 
     // Default Fallback — always return a valid component, never undefined
-    return PlaceholderView ?? DashboardContent
+    return PlaceholderView ?? SectorDashboardRouter
 })
 
 // Props passed to the active component

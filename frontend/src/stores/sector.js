@@ -63,7 +63,7 @@ export const useSectorStore = defineStore('sector', () => {
     // Computed Data exposure
     const stats = computed(() => currentSector.value.stats)
     const quickActions = computed(() => currentSector.value.quickActions)
-    const chartConfig = computed(() => currentSector.value.chartConfig)
+    const chartConfig = computed(() => currentSector.value.chartConfig || currentSector.value.chart)
 
     return {
         currentSectorId,
