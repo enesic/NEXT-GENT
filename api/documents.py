@@ -86,13 +86,12 @@ class handler(BaseHTTPRequestHandler):
                     
                     documents.append({
                         "id": doc_id_counter,
-                        "title": doc_template["title"],
-                        "type": doc_template["type"],
-                        "description": doc_template["description"],
+                        "filename": doc_template["title"],
+                        "file_type": self.get_mime_from_type(doc_template["type"]),
                         "created_at": doc_date.isoformat(),
                         "updated_at": doc_date.isoformat(),
                         "status": random.choice(["active", "archived", "pending"]),
-                        "size": f"{random.randint(50, 500)} KB",
+                        "size": random.randint(51200, 512000),
                         "category": doc_template["category"],
                         "tenant_id": tenant['id'],
                         "file_url": f"/documents/{tenant_slug}/{doc_id_counter}.pdf"
@@ -139,6 +138,28 @@ class handler(BaseHTTPRequestHandler):
         }
         
         return sector_documents.get(sector, sector_documents["beauty"])
+
+    def get_mime_from_type(self, doc_type: str) -> str:
+        """Map internal doc type to MIME type string for frontend getFileTypeFromMime()"""
+        mime_map = {
+            "customer_file": "application/pdf",
+            "appointment":   "application/pdf",
+            "treatment_plan":"application/pdf",
+            "catalog":       "application/pdf",
+            "service_report":"application/pdf",
+            "invoice":       "application/pdf",
+            "inspection":    "application/pdf",
+            "warranty":      "application/pdf",
+            "patient_file":  "application/pdf",
+            "test_result":   "application/pdf",
+            "prescription":  "application/pdf",
+            "examination":   "application/pdf",
+            "loan_application":   "application/pdf",
+            "investment_report":  "application/pdf",
+            "insurance_policy":   "application/pdf",
+            "account_statement":  "application/pdf",
+        }
+        return mime_map.get(doc_type, "application/pdf")
 
     def do_OPTIONS(self):
         self.send_response(200)

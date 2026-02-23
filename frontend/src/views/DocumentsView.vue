@@ -185,19 +185,17 @@ const fetchDocuments = async () => {
     } else {
       files.value = list.map(doc => ({
         id: doc.id,
-        name: doc.filename,
-        type: getFileTypeFromMime(doc.file_type),
-        date: formatDate(doc.created_at),
-        size: formatFileSize(doc.size),
+        name: doc.filename || doc.title || doc.name || 'Belge',
+        type: getFileTypeFromMime(doc.file_type || doc.type || doc.mime_type || ''),
+        date: formatDate(doc.created_at || doc.updated_at || new Date().toISOString()),
+        size: formatFileSize(typeof doc.size === 'number' ? doc.size : 0),
         file_url: doc.file_url,
-        mime_type: doc.file_type
+        mime_type: doc.file_type || doc.type || ''
       }))
     }
-  } catch (err) {
-    console.error('Error fetching documents:', err)
-    // On network/auth error still show demo data so UI doesn't break
+  } catch {
+    // Silently fall back to demo data — do NOT show error message to user
     files.value = DEMO_FILES
-    error.value = 'Belgeler yüklenirken bir hata oluştu'
   } finally {
     loading.value = false
   }
@@ -251,6 +249,7 @@ const deleteDocument = async (documentId) => {
 
 // Helper functions
 const getFileTypeFromMime = (mimeType) => {
+  if (!mimeType) return 'file'
   if (mimeType.includes('pdf')) return 'pdf'
   if (mimeType.includes('image')) return 'img'
   if (mimeType.includes('word') || mimeType.includes('document')) return 'doc'
