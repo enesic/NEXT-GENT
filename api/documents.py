@@ -33,19 +33,13 @@ class handler(BaseHTTPRequestHandler):
             finally:
                 loop.close()
             
-            response_data = {
-                "status": "success",
-                "data": documents,  # This must be an array
-                "total": len(documents),
-                "limit": limit
-            }
-            
+            # Return plain array so response.data.map() works in all frontend versions
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             
-            self.wfile.write(json.dumps(response_data).encode())
+            self.wfile.write(json.dumps(documents).encode())
             
         except Exception as e:
             self.send_response(500)
