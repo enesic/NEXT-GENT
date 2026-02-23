@@ -131,9 +131,6 @@
         </Transition>
       </div>
     </main>
-
-    <!-- Pulse Center -->
-    <PulseCenter />
   </div>
 </template>
 
@@ -150,7 +147,6 @@ import {
 } from 'lucide-vue-next'
 import { useSectorStore } from '../stores/sector'
 import { useNotificationStore } from '../stores/notification'
-import PulseCenter from './PulseCenter.vue'
 import { useAuthStore } from '../stores/auth'
 import { useAdminStore } from '../stores/admin'
 
