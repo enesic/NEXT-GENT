@@ -1,3 +1,4 @@
+<!-- Re-trigger build to fix stale live version -->
 <template>
   <div class="documents-layout">
     <div class="header">
