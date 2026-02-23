@@ -142,7 +142,7 @@ class handler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            self.wfile.write(json.dumps({"error": str(e)}).encode())
+            self.wfile.write(json.dumps({"error": f"[V2.0] Diagnostic Error: {str(e)}"}).encode())
 
     def do_POST(self):
         try:
@@ -151,13 +151,11 @@ class handler(BaseHTTPRequestHandler):
             data = json.loads(post_data.decode('utf-8'))
 
             tenant_slug = data.get("tenant", "medical")
-            # Explicitly cast score to int to avoid DB type mismatches
+            feedback = data.get("feedback", "")
             try:
                 score = int(data.get("score", 5))
-            except (ValueError, TypeError):
+            except:
                 score = 5
-            
-            feedback = data.get("feedback", "")
 
             # Connect to database
             loop = asyncio.new_event_loop()
@@ -171,7 +169,7 @@ class handler(BaseHTTPRequestHandler):
                     tenant = await conn.fetchrow("SELECT id FROM tenants WHERE slug = $1", tenant_slug)
                     if not tenant:
                         await conn.close()
-                        return False, "Tenant not found"
+                        return False, "[V2.0] Tenant not found"
                     
                     tenant_id = tenant['id']
                     if isinstance(tenant_id, str):
@@ -180,7 +178,8 @@ class handler(BaseHTTPRequestHandler):
                     now = datetime.now()
                     sentiment = 'positive' if score >= 4 else ('negative' if score <= 2 else 'neutral')
                     
-                    # 2. Try inserting into satisfactions (plural) or satisfaction (singular)
+                    # 2. Try inserting into satisfactions/satisfaction
+                    # We use a single try-except to try the most likely first
                     satisfaction_id = uuid.uuid4()
                     try:
                         await conn.execute(
@@ -191,7 +190,7 @@ class handler(BaseHTTPRequestHandler):
                             satisfaction_id, tenant_id, 'csat', 'in_app', score, 
                             feedback, sentiment, now, now
                         )
-                    except Exception:
+                    except:
                         try:
                             await conn.execute(
                                 """INSERT INTO satisfaction (
@@ -202,44 +201,42 @@ class handler(BaseHTTPRequestHandler):
                                 feedback, sentiment, now, now
                             )
                         except Exception as s_err:
-                            print(f"Satisfaction table insert failed: {s_err}")
+                            print(f"Satisfaction insert fail: {s_err}")
                     
-                    # 3. Insert into call_interactions (formerly vapi_calls)
+                    # 3. Sync with call_interactions (Confirmed name from calls.py)
                     try:
+                        # We try to find a valid customer_id for this tenant to avoid FF errors
+                        cust = await conn.fetchrow("SELECT id FROM customers WHERE tenant_id = $1 LIMIT 1", tenant_id)
+                        customer_id = cust['id'] if cust else None
+                        
                         await conn.execute(
                             """INSERT INTO call_interactions (
-                                id, tenant_id, interaction_type, 
-                                caller_phone_encrypted, phone_hash, 
-                                call_duration_seconds, resolution_status, 
-                                call_timestamp, satisfaction_score, sentiment
-                            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)""",
-                            uuid.uuid4(), tenant_id, 'web_feedback',
-                            "web-feedback", "web-hash",
-                            0, 'COMPLETED', now, score, sentiment
+                                id, tenant_id, customer_id, interaction_type, 
+                                call_duration_seconds, satisfaction_score, 
+                                call_timestamp, call_summary, resolution_status
+                            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)""",
+                            uuid.uuid4(), tenant_id, customer_id, 'web_feedback',
+                            0, score, now, f"Web Feedback: {feedback[:50]}", 'COMPLETED'
                         )
                     except Exception as ci_err:
-                        # Only report error if the primary interaction table fails
                         await conn.close()
-                        return False, f"Database Sync Error: {str(ci_err)}"
+                        return False, f"[V2.0] DB Sync Error: {str(ci_err)}"
 
                     await conn.close()
                     return True, None
                 except Exception as db_err:
-                    return False, str(db_err)
+                    return False, f"[V2.0] Fatal DB Error: {str(db_err)}"
 
             success, error_msg = loop.run_until_complete(save_feedback())
             loop.close()
 
-            status_code = 201 if success else 500
-            self.send_response(status_code)
+            self.send_response(201 if success else 500)
             self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             
             res = {"status": "success" if success else "error"}
-            if error_msg:
-                res["message"] = error_msg
-            
+            if error_msg: res["message"] = error_msg
             self.wfile.write(json.dumps(res).encode())
 
         except Exception as e:
@@ -247,7 +244,8 @@ class handler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            self.wfile.write(json.dumps({"error": str(e)}).encode())
+            self.wfile.write(json.dumps({"error": f"[V2.0] Handler Error: {str(e)}"}).encode())
+
 
 
     def do_OPTIONS(self):

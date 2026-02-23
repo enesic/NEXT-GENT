@@ -2,51 +2,44 @@
 <html lang="tr">
 
 <head>
-    <!-- AGGRESSIVE Error Shield (Must be at the very top of head to catch extension noise) -->
+    <!-- [DIAGNOSTIC V2.0] AGGRESSIVE Error Shield -->
     <script>
         (function () {
             const shadowPatterns = [
-                'chrome-extension', 'sharebx', 'reporter', 'export', 'extension', 'browser-extension', 'syntaxerror'
+                'chrome-extension', 'sharebx', 'reporter', 'export', 'extension', 'browser-extension', 'syntaxerror', 'content_reporter'
             ];
-            const originalConsole = {
-                log: console.log, warn: console.warn, error: console.error, info: console.info, debug: console.debug
-            };
 
-            function isNoise(msg) {
+            const isNoise = (msg) => {
                 const s = String(msg || '').toLowerCase();
                 return shadowPatterns.some(p => s.includes(p));
-            }
-
-            // Suppress early Window errors
-            window.onerror = function (msg, src) {
-                if (isNoise(msg) || isNoise(src)) return true;
-                return false;
             };
 
-            window.addEventListener('error', function (e) {
+            // 1. Intercept Global Errors
+            window.onerror = (msg, src) => isNoise(msg) || isNoise(src);
+            window.addEventListener('error', (e) => {
                 if (isNoise(e.message) || isNoise(e.filename)) {
                     e.stopImmediatePropagation();
                     e.preventDefault();
                 }
             }, true);
-
-            window.addEventListener('unhandledrejection', function (e) {
+            window.addEventListener('unhandledrejection', (e) => {
                 const r = e.reason ? (e.reason.message || String(e.reason)) : '';
-                if (isNoise(r)) {
-                    e.stopImmediatePropagation();
-                    e.preventDefault();
-                }
+                if (isNoise(r)) { e.stopImmediatePropagation(); e.preventDefault(); }
             }, true);
 
-            // Mute Console
-            Object.keys(originalConsole).forEach(m => {
-                if (typeof console[m] === 'function') {
-                    console[m] = function () {
-                        if (Array.from(arguments).some(arg => isNoise(arg))) return;
-                        originalConsole[m].apply(console, arguments);
-                    };
-                }
-            });
+            // 2. Proxy Console for Absolute Muting
+            const hijack = (method) => {
+                const original = console[method];
+                console[method] = new Proxy(original, {
+                    apply: (target, thisArg, args) => {
+                        if (args.some(arg => isNoise(arg))) return;
+                        return target.apply(thisArg, args);
+                    }
+                });
+            };
+            ['log', 'warn', 'error', 'info', 'debug'].forEach(hijack);
+
+            console.info("🛡️ [V2.0] Error Shield Active - Extensions Muted.");
         })();
     </script>
     <meta charset="UTF-8">
