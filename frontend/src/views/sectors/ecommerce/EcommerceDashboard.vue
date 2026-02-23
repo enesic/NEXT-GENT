@@ -1,11 +1,10 @@
 <template>
   <DashboardLayout sector="ecommerce" :sector-icon="ShoppingCart">
-  <div class="ecommerce-dashboard">
-    <!-- Decorative Welcome - Her zaman görünür -->
-    <div class="sector-welcome">
-      <span class="welcome-divider"></span>
-      <p class="welcome-tagline">E-ticaret yönetiminizin merkezi</p>
-      <span class="welcome-divider"></span>
+  <div class="ecommerce-dashboard executive-lux">
+    <!-- Hoş Geldiniz -->
+    <div class="welcome-section">
+      <h2 class="welcome-title">Hoş Geldiniz</h2>
+      <p class="welcome-subtitle">Hesap özetiniz ve son aktiviteleriniz</p>
     </div>
 
     <!-- Error State -->
@@ -24,75 +23,103 @@
       </section>
     </template>
 
-    <!-- Data Loaded -->
+    <!-- Data Loaded - Executive Lux Layout -->
     <template v-else>
-    <!-- Quick Action Bar -->
-    <div class="quick-actions">
-      <div class="quick-buttons">
-        <button class="quick-btn primary-btn" @click="showOrderModal = true">
-          <Package :size="18" :stroke-width="2" />
-          Yeni Sipariş Oluştur
-        </button>
-        <button class="quick-btn secondary-btn" @click="handleInventory">
-          <AlertCircle :size="18" :stroke-width="2" />
-          Stok Yönetimi
-        </button>
-        <button class="quick-btn secondary-btn" @click="router.push('/sectors/ecommerce/settings')">
-          <Settings :size="18" :stroke-width="2" />
-          Ayarlar
-        </button>
-      </div>
-      <div class="quick-stats">
-        <span class="quick-stat">
-          <span class="qs-dot confirmed"></span>
-          {{ stats.todayOrders }} sipariş bugün
-        </span>
-      </div>
-    </div>
-    <!-- Stats Overview -->
+    <!-- KPI Cards: Toplam Müşteri, Toplam Etkileşim, Siparişler, Memnuniyet -->
     <section class="stats-grid sector-stats">
       <StatCard
-        :icon="ShoppingBag"
-        label="Bugünkü Siparişler"
-        :value="stats.todayOrders"
-        change="+18%"
-        changeType="positive"
-        :gradient="theme.primaryGradient"
-        @click="navigateTo('/orders')"
-      />
-      <StatCard
-        :icon="TrendingUp"
-        label="Günlük Gelir"
-        :value="`₺${Number(stats.dailyRevenue || 0).toLocaleString('tr-TR')}`"
-        change="+24%"
-        changeType="positive"
-        :gradient="theme.primaryGradient"
-        :animated="false"
-        @click="navigateTo('/revenue')"
-      />
-      <StatCard
         :icon="Users"
-        label="Aktif Müşteriler"
+        label="Toplam Müşteri"
         :value="stats.activeCustomers"
-        change="+12%"
-        changeType="positive"
         :gradient="theme.primaryGradient"
         @click="navigateTo('/customers')"
       />
       <StatCard
-        :icon="AlertCircle"
-        label="Düşük Stok"
-        :value="stats.lowStockItems"
-        change="-5%"
-        changeType="positive"
-        :gradient="'linear-gradient(135deg, #f59e0b, #fbbf24)'"
-        @click="navigateTo('/inventory')"
+        :icon="Activity"
+        label="Toplam Etkileşim"
+        :value="stats.totalInteractions"
+        :gradient="theme.primaryGradient"
+        @click="navigateTo('/analytics')"
+      />
+      <StatCard
+        :icon="Package"
+        label="Siparişler"
+        :value="stats.todayOrders"
+        :gradient="theme.primaryGradient"
+        @click="navigateTo('/orders'); showOrderModal = true"
+      />
+      <StatCard
+        :icon="Heart"
+        label="Memnuniyet"
+        :value="`${satisfactionDisplay}%`"
+        :gradient="'linear-gradient(135deg, #f472b6, #fb923c)'"
+        @click="navigateTo('/satisfaction')"
       />
     </section>
 
-    <!-- Main Content Grid -->
-    <div class="content-grid">
-      <!-- Son Siparişler -->
+    <!-- Main Content: Aktivite Analizi + Hızlı İşlemler + Son Aktiviteler -->
+    <div class="content-grid executive-grid">
+      <!-- Aktivite Analizi -->
+      <section class="card chart-card activity-card">
+        <div class="card-header">
+          <h3 class="card-title">Aktivite Analizi</h3>
+          <span class="card-subtitle">Haftalık Veriler</span>
+        </div>
+        <div class="chart-wrapper">
+          <SkeletonChart v-if="salesChartLoading || !salesChartData" type="line" />
+          <InteractiveChart
+            v-else
+            type="line"
+            :data="salesChartData"
+            :gradient-colors="['rgba(249, 115, 22, 0.8)', 'rgba(249, 115, 22, 0.1)']"
+          />
+        </div>
+      </section>
+
+      <!-- Hızlı İşlemler -->
+      <section class="card quick-actions-card">
+        <div class="card-header">
+          <h3 class="card-title">Hızlı İşlemler</h3>
+        </div>
+        <div class="quick-actions-grid">
+          <button v-ripple class="quick-action-btn" @click="showOrderModal = true">
+            <FilePlus :size="24" :stroke-width="2" />
+            <span>Sipariş Oluştur</span>
+          </button>
+          <button v-ripple class="quick-action-btn" @click="handleInventory">
+            <PackagePlus :size="24" :stroke-width="2" />
+            <span>Ürün Ekle</span>
+          </button>
+          <button v-ripple class="quick-action-btn" @click="navigateTo('/shipping')">
+            <Zap :size="24" :stroke-width="2" />
+            <span>Kargo Takip</span>
+          </button>
+          <button v-ripple class="quick-action-btn" @click="navigateTo('/campaigns')">
+            <Megaphone :size="24" :stroke-width="2" />
+            <span>Kampanya</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Son Aktiviteler -->
+      <section class="card activities-card">
+        <div class="card-header">
+          <h3 class="card-title">Son Aktiviteler</h3>
+          <button v-ripple class="btn-pulse" @click="navigateTo('/pulse')">
+            <TrendingUp :size="16" />
+            Dashboard Pulse
+          </button>
+        </div>
+        <div class="activities-list">
+          <div v-for="act in recentActivities" :key="act.id" class="activity-item">
+            <span class="activity-bullet"></span>
+            <span class="activity-text">{{ act.text }}</span>
+            <span class="activity-time">{{ act.time }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Son Siparişler (ikinci sütun) -->
       <section class="card">
         <div class="card-header">
           <h3 class="card-title">Son Siparişler</h3>
@@ -148,34 +175,6 @@
             <span class="legend-label">{{ product.name }}</span>
             <span class="legend-value">{{ product.sales }}</span>
           </div>
-        </div>
-      </section>
-
-      <!-- Satış Trendi -->
-      <section class="card chart-card">
-        <div class="card-header">
-          <h3 class="card-title">Satış Trendi</h3>
-          <div class="time-filters">
-            <button 
-              v-for="filter in timeFilters" 
-              :key="filter.value"
-              v-ripple
-              class="filter-btn" 
-              :class="{ active: selectedTimeFilter === filter.value }"
-              @click="selectedTimeFilter = filter.value"
-            >
-              {{ filter.label }}
-            </button>
-          </div>
-        </div>
-        <div class="chart-wrapper">
-          <SkeletonChart v-if="salesChartLoading || !salesChartData" type="line" />
-          <InteractiveChart
-            v-else
-            type="line"
-            :data="salesChartData"
-            :gradient-colors="['rgba(139, 92, 246, 0.8)', 'rgba(139, 92, 246, 0.1)']"
-          />
         </div>
       </section>
 
@@ -263,7 +262,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { 
   ShoppingCart, ShoppingBag, TrendingUp, Users, AlertCircle,
-  Package, Truck, Settings
+  Package, Truck, Settings, Activity, Heart, FilePlus, PackagePlus, Zap, Megaphone
 } from 'lucide-vue-next'
 import DashboardLayout from '@/components/dashboard/DashboardLayout.vue'
 import StatCard from '@/components/dashboard/StatCard.vue'
@@ -313,7 +312,8 @@ const stats = computed(() => {
     todayOrders: 127,
     dailyRevenue: 45800,
     activeCustomers: 1234,
-    lowStockItems: 8
+    lowStockItems: 8,
+    totalInteractions: 856
   }
 
   if (!kpis.value || kpis.value.length === 0) {
@@ -322,7 +322,8 @@ const stats = computed(() => {
       todayOrders: pulse.value?.pendingAppointments ?? defaultStats.todayOrders,
       dailyRevenue: pulse.value?.totalRevenue ?? defaultStats.dailyRevenue,
       activeCustomers: pulse.value?.todayClients ?? defaultStats.activeCustomers,
-      lowStockItems: kpis.value?.[3]?.value ?? defaultStats.lowStockItems
+      lowStockItems: kpis.value?.[3]?.value ?? defaultStats.lowStockItems,
+      totalInteractions: pulse.value?.totalInteractions ?? defaultStats.totalInteractions
     }
   }
 
@@ -330,9 +331,23 @@ const stats = computed(() => {
     todayOrders: pulse.value?.pendingAppointments ?? kpis.value[0]?.value ?? defaultStats.todayOrders,
     dailyRevenue: kpis.value[1]?.value ?? defaultStats.dailyRevenue,
     activeCustomers: pulse.value?.todayClients ?? kpis.value[2]?.value ?? defaultStats.activeCustomers,
-    lowStockItems: kpis.value[3]?.value ?? defaultStats.lowStockItems
+    lowStockItems: kpis.value[3]?.value ?? defaultStats.lowStockItems,
+    totalInteractions: pulse.value?.totalInteractions ?? kpis.value[2]?.value ?? defaultStats.totalInteractions
   }
 })
+
+const satisfactionDisplay = computed(() => {
+  const s = satisfaction.value
+  if (s == null) return 0
+  if (typeof s === 'number') return s
+  if (s?.score != null) return s.score
+  return 0
+})
+
+const recentActivities = ref([
+  { id: 1, text: 'Sistem aktif 2 saat önce', time: '2 saat önce' },
+  { id: 2, text: 'Aktivite girişi yapıldı 2 saat önce', time: '2 saat önce' }
+])
 
 // Time Filters
 const timeFilters = [
@@ -494,9 +509,9 @@ onMounted(() => {
   margin: -32px;
   padding: 32px;
   background: 
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 40% at 100% 50%, rgba(167, 139, 250, 0.05) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 30% at 0% 80%, rgba(99, 102, 241, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(249, 115, 22, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 100% 50%, rgba(251, 146, 60, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 30% at 0% 80%, rgba(234, 88, 12, 0.03) 0%, transparent 50%),
     linear-gradient(180deg, #0c0a0a 0%, #0a0808 100%);
 }
 
@@ -579,7 +594,146 @@ onMounted(() => {
 
 .qs-dot.confirmed { background: #34d399; box-shadow: 0 0 8px rgba(52, 211, 153, 0.5); }
 
-/* Decorative Welcome */
+/* Decorative Welcome / Executive Lux */
+.welcome-section {
+  margin-bottom: 28px;
+}
+
+.welcome-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: #fdf2f8;
+  margin: 0 0 8px 0;
+  letter-spacing: 0.02em;
+}
+
+.welcome-subtitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 15px;
+  color: rgba(253, 242, 248, 0.7);
+  margin: 0;
+}
+
+/* Executive grid layout */
+.content-grid.executive-grid {
+  grid-template-columns: 1fr 360px;
+  grid-template-rows: auto auto auto;
+}
+
+.content-grid.executive-grid .activity-card {
+  grid-column: 1;
+  grid-row: 1 / 3;
+}
+
+.content-grid.executive-grid .quick-actions-card {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.content-grid.executive-grid .activities-card {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.quick-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(249, 115, 22, 0.2);
+  border-radius: 16px;
+  color: #fdf2f8;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.quick-action-btn:hover {
+  background: rgba(249, 115, 22, 0.1);
+  border-color: rgba(249, 115, 22, 0.4);
+  transform: translateY(-2px);
+}
+
+.quick-action-btn .lucide-icon {
+  color: #fb923c;
+}
+
+.card-subtitle {
+  font-size: 13px;
+  color: rgba(253, 242, 248, 0.6);
+  font-weight: 500;
+}
+
+.activities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-bullet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fb923c;
+  flex-shrink: 0;
+}
+
+.activity-text {
+  flex: 1;
+  font-size: 14px;
+  color: rgba(253, 242, 248, 0.9);
+}
+
+.activity-time {
+  font-size: 12px;
+  color: rgba(253, 242, 248, 0.5);
+}
+
+.btn-pulse {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  border: none;
+  border-radius: 20px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-pulse:hover {
+  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Decorative Welcome (legacy) */
 .sector-welcome {
   display: flex;
   align-items: center;
@@ -651,11 +805,14 @@ onMounted(() => {
   border-color: rgba(139, 92, 246, 0.25);
 }
 
-.card:nth-child(1) { grid-column: span 6; }
-.card:nth-child(2) { grid-column: span 6; }
-.card:nth-child(3) { grid-column: span 8; }
-.card:nth-child(4) { grid-column: span 4; }
-.card.metrics-card { grid-column: span 12; }
+.executive-grid .card:nth-child(1) { grid-column: 1; grid-row: 1 / 3; }
+.executive-grid .card:nth-child(2) { grid-column: 2; grid-row: 1; }
+.executive-grid .card:nth-child(3) { grid-column: 2; grid-row: 2; }
+.executive-grid .card:nth-child(4) { grid-column: 1; grid-row: 3; }
+.executive-grid .card:nth-child(5) { grid-column: 2; grid-row: 3; }
+.executive-grid .card:nth-child(6) { grid-column: 1; grid-row: 4; }
+.executive-grid .card:nth-child(7) { grid-column: 2; grid-row: 4; }
+.executive-grid .card.metrics-card { grid-column: 1 / -1; grid-row: auto; }
 
 .card-header {
   display: flex;

@@ -109,31 +109,80 @@ const handleLogin = async () => {
       pin: form.value.pin
     })
     
-    // Backend returns:
-    // { status, token, customer: { id, name, email, segment, tenant_id, tenant_slug, tenant_name, ... } }
-    const customer = response.data.customer
+    // Backend returns (FastAPI): { token, user, tenant_id, sector, tenant_name, customer_id }
+    // Backend returns (Vercel API): { token, customer: { tenant_slug, tenant_id, ... } }
     const token = response.data.token
+    const customer = response.data.customer || {
+      ...response.data.user,
+      tenant_id: response.data.tenant_id,
+      tenant_slug: response.data.tenant_name ? response.data.tenant_name.toLowerCase().replace(/\s+/g, '-') : null
+    }
 
-    if (!token || !customer) {
+    if (!token) {
       throw new Error('Sunucudan geçersiz yanıt alındı.')
     }
 
-    // tenant_slug'dan sektörü belirle (örn: "beauty-001" → "beauty")
+    // Sektörü belirle: Önce backend'den gelen sector, yoksa tenant_slug, yoksa customer_id prefix
+    const sectorFromBackend = response.data.sector
     const tenantSlug = customer.tenant_slug || ''
-    const extractedSector = tenantSlug.split('-')[0] || 'medical'
-    
-    // Geçerli bir sektör mü kontrol et? Değilse (örn: 'nextgent') ana dashboard'a yönlendir
-    const isValidSector = sectorThemes && sectorThemes[extractedSector]
-    const sector = isValidSector ? extractedSector : null
-    const tenantId = customer.tenant_id
+    const slugPart = tenantSlug.split('-')[0] || ''
+    const customerId = (customer.customer_id || response.data.customer_id || '').toUpperCase()
+
+    // Sektör eşlemesi: ecm, ec → ecommerce; bea → beauty
+    const slugToSector = {
+      ecommerce: 'ecommerce',
+      ecm: 'ecommerce',
+      ec: 'ecommerce',
+      beauty: 'beauty',
+      bea: 'beauty',
+      medical: 'medical',
+      legal: 'legal',
+      retail: 'retail',
+      education: 'education',
+      finance: 'finance',
+      hospitality: 'hospitality',
+      automotive: 'automotive',
+      manufacturing: 'manufacturing',
+      real_estate: 'real_estate',
+      nextgent: 'beauty' // varsayılan demo tenant
+    }
+    const customerIdToSector = {
+      ECM: 'ecommerce',
+      EC: 'ecommerce',
+      BEA: 'beauty',
+      MED: 'medical',
+      LEG: 'legal',
+      EST: 'real_estate',
+      MFG: 'manufacturing',
+      EDU: 'education',
+      FIN: 'finance',
+      HOS: 'hospitality',
+      AUT: 'automotive',
+      RTL: 'retail',
+      TEC: 'technology'
+    }
+
+    let sector = null
+    if (sectorFromBackend && sectorThemes[sectorFromBackend]) {
+      sector = sectorFromBackend
+    } else if (slugToSector[slugPart] && sectorThemes[slugToSector[slugPart]]) {
+      sector = slugToSector[slugPart]
+    } else if (customerId) {
+      const prefix = customerId.split('-')[0]
+      if (customerIdToSector[prefix] && sectorThemes[customerIdToSector[prefix]]) {
+        sector = customerIdToSector[prefix]
+      }
+    }
+
+    const tenantId = customer.tenant_id || response.data.tenant_id
 
     // Set auth state — user must be set for isAuthenticated to be true
     authStore.setToken(token)
     authStore.setUser(customer)
     authStore.setTenant(tenantId)
 
-    // Set sector directly from backend response if valid
-    if (isValidSector) {
+    // Set sector from resolved value
+    if (sector && sectorThemes[sector]) {
       sectorStore.setSector(sector)
     }
 
