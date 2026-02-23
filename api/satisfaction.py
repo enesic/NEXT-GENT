@@ -24,13 +24,13 @@ async def get_satisfaction_data(tenant_slug, days=30):
         tid = tenant['id']
         since = datetime.now() - timedelta(days=days)
 
-        # Get satisfaction scores from vapi_calls
+        # Get satisfaction scores from call_interactions
         rows = await conn.fetch(
-            """SELECT satisfaction_score, sentiment, created_at
-               FROM vapi_calls 
-               WHERE tenant_id = $1 AND created_at > $2 
+            """SELECT satisfaction_score, sentiment, call_timestamp as created_at
+               FROM call_interactions 
+               WHERE tenant_id = $1 AND call_timestamp > $2 
                  AND satisfaction_score IS NOT NULL
-               ORDER BY created_at""",
+               ORDER BY call_timestamp""",
             tid, since)
 
         await conn.close()
@@ -76,10 +76,10 @@ async def get_satisfaction_trends(tenant_slug, days=30):
         since = datetime.now() - timedelta(days=days)
 
         rows = await conn.fetch(
-            """SELECT DATE(created_at) as day, AVG(satisfaction_score) as avg_score
-               FROM vapi_calls 
-               WHERE tenant_id = $1 AND created_at > $2 AND satisfaction_score IS NOT NULL
-               GROUP BY DATE(created_at) ORDER BY day""",
+            """SELECT DATE(call_timestamp) as day, AVG(satisfaction_score) as avg_score
+               FROM call_interactions 
+               WHERE tenant_id = $1 AND call_timestamp > $2 AND satisfaction_score IS NOT NULL
+               GROUP BY DATE(call_timestamp) ORDER BY day""",
             tid, since)
 
         await conn.close()
@@ -180,50 +180,47 @@ class handler(BaseHTTPRequestHandler):
                     now = datetime.now()
                     sentiment = 'positive' if score >= 4 else ('negative' if score <= 2 else 'neutral')
                     
-                    # 2. Try inserting into 'satisfactions' table (primary table for web feedback)
+                    # 2. Try inserting into satisfactions (plural) or satisfaction (singular)
+                    satisfaction_id = uuid.uuid4()
                     try:
                         await conn.execute(
                             """INSERT INTO satisfactions (
                                 id, tenant_id, survey_type, channel, csat_score, 
                                 feedback_text, sentiment, created_at, updated_at
                             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)""",
-                            uuid.uuid4(), tenant_id, 'csat', 'in_app', score, 
+                            satisfaction_id, tenant_id, 'csat', 'in_app', score, 
                             feedback, sentiment, now, now
                         )
-                    except Exception as s_err:
-                        print(f"Satisfactions table insert failed: {s_err}")
-                        # Not failing the whole request yet, trying vapi_calls
-                    
-                    # 3. Try inserting into 'vapi_calls' table (for analytics compatibility)
-                    # We try common column names to be extremely resilient
-                    try:
-                        # Inspecting columns would be best, but we'll try the most likely structure first
-                        # We use a fallback logic: try satisfaction_score, if fails try call_quality_score
+                    except Exception:
                         try:
                             await conn.execute(
-                                """INSERT INTO vapi_calls (
-                                    id, tenant_id, vapi_call_id, caller_phone_encrypted, phone_hash, 
-                                    call_duration_seconds, call_status, started_at, updated_at, 
-                                    satisfaction_score, sentiment, created_at
-                                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)""",
-                                uuid.uuid4(), tenant_id, f"web-{uuid.uuid4()}", "web-feedback", "web-hash",
-                                0, 'completed', now, now, score, sentiment, now
+                                """INSERT INTO satisfaction (
+                                    id, tenant_id, survey_type, channel, csat_score, 
+                                    feedback_text, sentiment, created_at, updated_at
+                                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)""",
+                                satisfaction_id, tenant_id, 'csat', 'in_app', score, 
+                                feedback, sentiment, now, now
                             )
-                        except asyncpg.exceptions.UndefinedColumnError:
-                            # Fallback if satisfaction_score doesn't exist but call_quality_score does
-                            await conn.execute(
-                                """INSERT INTO vapi_calls (
-                                    id, tenant_id, vapi_call_id, caller_phone_encrypted, phone_hash, 
-                                    call_duration_seconds, call_status, started_at, updated_at, 
-                                    call_quality_score, sentiment, created_at
-                                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)""",
-                                uuid.uuid4(), tenant_id, f"web-{uuid.uuid4()}", "web-feedback", "web-hash",
-                                0, 'completed', now, now, score, sentiment, now
-                            )
-                    except Exception as v_err:
-                        # If both vapi_calls attempts fail, we report this error
+                        except Exception as s_err:
+                            print(f"Satisfaction table insert failed: {s_err}")
+                    
+                    # 3. Insert into call_interactions (formerly vapi_calls)
+                    try:
+                        await conn.execute(
+                            """INSERT INTO call_interactions (
+                                id, tenant_id, interaction_type, 
+                                caller_phone_encrypted, phone_hash, 
+                                call_duration_seconds, resolution_status, 
+                                call_timestamp, satisfaction_score, sentiment
+                            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)""",
+                            uuid.uuid4(), tenant_id, 'web_feedback',
+                            "web-feedback", "web-hash",
+                            0, 'COMPLETED', now, score, sentiment
+                        )
+                    except Exception as ci_err:
+                        # Only report error if the primary interaction table fails
                         await conn.close()
-                        return False, f"Vapi_calls Error: {str(v_err)}"
+                        return False, f"Database Sync Error: {str(ci_err)}"
 
                     await conn.close()
                     return True, None
