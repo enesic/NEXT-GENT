@@ -223,18 +223,12 @@ const routes = [
         meta: { requiresAuth: true, sector: 'manufacturing' }
     },
 
-    // E-commerce Sector
+    // E-commerce Sector (Güzellik Merkezi dashboard kopyası)
     {
         path: '/sectors/ecommerce/dashboard',
         name: 'EcommerceDashboard',
         component: () => import('../views/sectors/ecommerce/EcommerceDashboard.vue'),
-        meta: { requiresAuth: true, sector: 'ecommerce' }
-    },
-    {
-        path: '/sectors/ecommerce/settings',
-        name: 'EcommerceSettings',
-        component: () => import('../views/sectors/ecommerce/EcommerceSettings.vue'),
-        meta: { requiresAuth: true, sector: 'ecommerce', title: 'E-ticaret Ayarları' }
+        meta: { requiresAuth: true, sector: 'ecommerce', title: 'E-ticaret Dashboard' }
     },
 
     // Education Sector
