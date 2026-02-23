@@ -15,9 +15,9 @@
           </button>
         </div>
         <div class="filters">
-          <button class="view-btn active">Ay</button>
-          <button class="view-btn">Hafta</button>
-          <button class="view-btn">Liste</button>
+          <button class="view-btn" :class="{ active: currentView === 'month' }" @click="currentView = 'month'">Ay</button>
+          <button class="view-btn" :class="{ active: currentView === 'week' }" @click="currentView = 'week'">Hafta</button>
+          <button class="view-btn" :class="{ active: currentView === 'list' }" @click="currentView = 'list'">Liste</button>
         </div>
         <button class="add-btn" @click="showAppointmentModal = true">
           <Plus :size="18" />
@@ -28,7 +28,8 @@
 
     <div class="calendar-content-grid">
       <div class="calendar-wrapper">
-        <div class="calendar-grid">
+        <!-- Month View -->
+        <div v-if="currentView === 'month'" class="calendar-grid">
           <!-- Weekday Headers -->
           <div v-for="day in weekDays" :key="day" class="weekday-header">
             {{ day }}
@@ -54,6 +55,60 @@
               >
                 <span class="event-time">{{ event.time }}</span>
                 <span class="event-title">{{ event.title }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Week View -->
+        <div v-else-if="currentView === 'week'" class="week-view">
+          <div class="week-header">
+            <div class="time-spacer"></div>
+            <div v-for="day in currentWeekDays" :key="day.date" class="week-col-header" :class="{ today: day.isToday }">
+              <span class="day-name">{{ day.dayName }}</span>
+              <span class="day-num">{{ day.date.getDate() }}</span>
+            </div>
+          </div>
+          <div class="week-body">
+            <div class="time-column">
+              <div v-for="hour in 13" :key="hour" class="hour-label">
+                {{ hour + 7 }}:00
+              </div>
+            </div>
+            <div class="week-grid">
+              <div v-for="day in currentWeekDays" :key="day.date" class="week-col">
+                <div v-for="hour in 13" :key="hour" class="hour-slot"></div>
+                <div 
+                  v-for="event in getEventsForDay(day.date)" 
+                  :key="event.id"
+                  class="week-event-pill"
+                  :style="getEventStyle(event)"
+                  :class="[event.status.toLowerCase(), event.color]"
+                >
+                  <span class="time">{{ event.time }}</span>
+                  <span class="title">{{ event.title }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- List View -->
+        <div v-else-if="currentView === 'list'" class="list-view">
+          <div v-if="listEvents.length === 0" class="empty-list">
+            Yakın zamanda planlanmış bir randevu bulunmuyor.
+          </div>
+          <div v-for="event in listEvents" :key="event.id" class="list-item" :class="event.color">
+            <div class="item-date">
+              <span class="day">{{ new Date(event.start_time).getDate() }}</span>
+              <span class="month">{{ months[new Date(event.start_time).getMonth()] }}</span>
+            </div>
+            <div class="item-details">
+              <h4>{{ event.title }}</h4>
+              <div class="meta">
+                <span>{{ new Date(event.start_time).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) }}</span>
+                <span class="dot">•</span>
+                <span class="status-badge" :class="event.status.toLowerCase()">{{ event.status }}</span>
               </div>
             </div>
           </div>
@@ -106,12 +161,32 @@ const sectorStore = useSectorStore()
 
 const currentDate = ref(new Date())
 const events = ref([])
+const currentView = ref('month') // 'month', 'week', 'list'
 const showAppointmentModal = ref(false)
+
 const upcomingEvents = computed(() => {
     return events.value
         .filter(e => new Date(e.start_time) >= new Date())
         .sort((a,b) => new Date(a.start_time) - new Date(b.start_time))
         .slice(0, 5)
+})
+
+const currentWeekDays = computed(() => {
+  const curr = new Date(currentDate.value)
+  const first = curr.getDate() - ((curr.getDay() + 6) % 7) // Monday start
+  
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(curr.setDate(first + i))
+    return {
+      date: d,
+      isToday: isSameDay(d, new Date()),
+      dayName: weekDays[i]
+    }
+  })
+})
+
+const listEvents = computed(() => {
+  return [...events.value].sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
 })
 
 const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
@@ -229,6 +304,20 @@ const changeMonth = (delta) => {
 
 const selectDay = (day) => {
   console.log("Selected:", day.date)
+}
+
+const getEventStyle = (event) => {
+  const date = new Date(event.start_time)
+  const hours = date.getHours()
+  const minutes = date.getMinutes()
+  
+  if (hours < 8 || hours > 20) return { display: 'none' }
+  
+  const top = (hours - 8) * 60 + minutes
+  return {
+    top: `${top}px`,
+    height: '50px' // Default fixed height for demo
+  }
 }
 
 const getColor = (colorName) => {
@@ -595,5 +684,196 @@ onMounted(fetchEvents)
     opacity: 1;
     transform: scale(1) translateY(0);
   }
+}
+
+/* Week View Styles */
+.week-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.week-header {
+  display: flex;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-elevated);
+}
+
+.time-spacer {
+  width: 60px;
+  flex-shrink: 0;
+}
+
+.week-col-header {
+  flex: 1;
+  padding: 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-left: 1px solid var(--border-subtle);
+}
+
+.week-col-header.today .day-name {
+  color: var(--current-accent);
+}
+
+.week-col-header.today .day-num {
+  background: var(--current-accent);
+  color: white;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin: 0 auto;
+}
+
+.day-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.day-num {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.week-body {
+  display: flex;
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+}
+
+.time-column {
+  width: 60px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border-subtle);
+}
+
+.hour-label {
+  height: 60px;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  padding-top: 4px;
+}
+
+.week-grid {
+  flex: 1;
+  display: flex;
+  position: relative;
+}
+
+.week-col {
+  flex: 1;
+  position: relative;
+  border-left: 1px solid var(--border-subtle);
+}
+
+.hour-slot {
+  height: 60px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.week-event-pill {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  padding: 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  z-index: 10;
+  border-left: 3px solid var(--current-accent);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.week-event-pill .time {
+  font-weight: 800;
+  font-size: 10px;
+}
+
+/* List View Styles */
+.list-view {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.list-item {
+  display: flex;
+  gap: 20px;
+  padding: 16px;
+  background: #030303;
+  border-radius: 16px;
+  border: 1px solid var(--border-subtle);
+  transition: all 0.3s;
+}
+
+.list-item:hover {
+  border-color: var(--current-accent);
+  background: rgba(var(--current-rgb), 0.05);
+  transform: translateX(4px);
+}
+
+.list-item .item-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  height: 60px;
+  background: var(--surface-elevated);
+  border-radius: 12px;
+}
+
+.list-item.primary .item-date .day { color: var(--current-accent); }
+.list-item.accent .item-date .day { color: #8b5cf6; }
+.list-item.secondary .item-date .day { color: #06b6d4; }
+.list-item.red .item-date .day { color: #ef4444; }
+
+.item-details h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.status-badge {
+  text-transform: capitalize;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+}
+
+.status-badge.confirmed { color: #10b981; background: rgba(16, 185, 129, 0.1); }
+.status-badge.pending { color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+.status-badge.cancelled { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+
+.empty-list {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted);
+  font-style: italic;
 }
 </style>
