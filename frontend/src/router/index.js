@@ -223,12 +223,6 @@ const routes = [
         meta: { requiresAuth: true, sector: 'manufacturing' }
     },
 
-    // E-commerce: Kaldırıldı → /dashboard (ExecutiveShell) yönlendirmesi
-    {
-        path: '/sectors/ecommerce/dashboard',
-        redirect: '/dashboard'
-    },
-
     // Education Sector
     {
         path: '/sectors/education/dashboard',
@@ -269,6 +263,12 @@ const router = createRouter({
 
 // Navigation guard for authentication
 router.beforeEach((to, from, next) => {
+    // E-commerce: /sectors/ecommerce/dashboard kaldırıldı → /dashboard
+    if (to.path === '/sectors/ecommerce/dashboard' || to.path.startsWith('/sectors/ecommerce/')) {
+        next('/dashboard')
+        return
+    }
+
     const authStore = useAuthStore()
     const adminStore = useAdminStore()
 
