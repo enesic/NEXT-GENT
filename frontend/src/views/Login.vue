@@ -181,13 +181,13 @@ const handleLogin = async () => {
     authStore.setUser(customer)
     authStore.setTenant(tenantId)
 
-    // Set sector from resolved value
+    // E-ticaret: ExecutiveShell (/dashboard) kullan, sektör badge için sectorStore'u ayarla
+    // Diğer sektörler: /sectors/{sector}/dashboard
     if (sector && sectorThemes[sector]) {
       sectorStore.setSector(sector)
     }
-
-    // Success - proceed to dashboard
-    proceedToDashboard(sector)
+    const redirectSector = sector === 'ecommerce' ? null : sector
+    proceedToDashboard(redirectSector)
     
   } catch (error) {
     isLoading.value = false

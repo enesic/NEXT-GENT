@@ -223,12 +223,10 @@ const routes = [
         meta: { requiresAuth: true, sector: 'manufacturing' }
     },
 
-    // E-commerce Sector (Güzellik Merkezi dashboard kopyası)
+    // E-commerce: Kaldırıldı → /dashboard (ExecutiveShell) yönlendirmesi
     {
         path: '/sectors/ecommerce/dashboard',
-        name: 'EcommerceDashboard',
-        component: () => import('../views/sectors/ecommerce/EcommerceDashboard.vue'),
-        meta: { requiresAuth: true, sector: 'ecommerce', title: 'E-ticaret Dashboard' }
+        redirect: '/dashboard'
     },
 
     // Education Sector
