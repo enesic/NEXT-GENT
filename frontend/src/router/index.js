@@ -71,31 +71,10 @@ const routes = [
             }
         ]
     },
-    // Portal Routes
+    // Eski portal URL → ExecutiveShell /dashboard'a yönlendir (login sonrası doğru shell yüklensin)
     {
         path: '/portal/dashboard',
-        name: 'PortalDashboard',
-        component: () => import('../views/portal/PortalDashboard.vue'),
-        meta: { requiresAuth: true }
-    },
-    // Legal Routes
-    {
-        path: '/kvkk',
-        name: 'KVKK',
-        component: () => import('../views/legal/KVKK.vue'),
-        meta: { requiresAuth: false }
-    },
-    {
-        path: '/gizlilik-politikasi',
-        name: 'PrivacyPolicy',
-        component: () => import('../views/legal/PrivacyPolicy.vue'),
-        meta: { requiresAuth: false }
-    },
-    {
-        path: '/teknik-gereksinimler',
-        name: 'TechnicalRequirements',
-        component: () => import('../views/legal/TechnicalRequirements.vue'),
-        meta: { requiresAuth: false }
+        redirect: '/dashboard'
     }
 ]
 

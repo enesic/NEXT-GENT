@@ -11,43 +11,14 @@
 <script setup>
 import { computed } from 'vue'
 import { useSectorStore } from '../../stores/sector'
-
-// Sync import — [object Promise] hatasını önler, Vite chunk'lara ayırır
-import MedicalDashboard from '../../views/sectors/medical/MedicalDashboard.vue'
-import LegalDashboard from '../../views/sectors/legal/LegalDashboard.vue'
-import BeautyDashboard from '../../views/sectors/beauty/BeautyDashboard.vue'
-import HospitalityDashboard from '../../views/sectors/hospitality/HospitalityDashboard.vue'
-import RealEstateDashboard from '../../views/sectors/real_estate/RealEstateDashboard.vue'
-import ManufacturingDashboard from '../../views/sectors/manufacturing/ManufacturingDashboard.vue'
-import EducationDashboard from '../../views/sectors/education/EducationDashboard.vue'
-import FinanceDashboard from '../../views/sectors/finance/FinanceDashboard.vue'
-import AutomotiveDashboard from '../../views/sectors/automotive/AutomotiveDashboard.vue'
-import RetailDashboard from '../../views/sectors/retail/RetailDashboard.vue'
 import PortalDashboard from '../../views/portal/PortalDashboard.vue'
-import DashboardContent from './DashboardContent.vue'
 
 const sectorStore = useSectorStore()
 
-const sectorComponentMap = {
-  medical: MedicalDashboard,
-  legal: LegalDashboard,
-  beauty: BeautyDashboard,
-  hospitality: HospitalityDashboard,
-  real_estate: RealEstateDashboard,
-  manufacturing: ManufacturingDashboard,
-  education: EducationDashboard,
-  finance: FinanceDashboard,
-  automotive: AutomotiveDashboard,
-  retail: RetailDashboard,
-  ecommerce: DashboardContent
-}
-
 defineEmits(['navigate'])
 
-const activeSectorComponent = computed(() => {
-  const sectorId = sectorStore.currentSectorId
-  return sectorComponentMap[sectorId] || PortalDashboard
-})
+// Giriş sonrası Genel Bakış'ta her zaman portal görünsün (Hoş Geldiniz, istatistikler, grafik, hızlı işlemler)
+const activeSectorComponent = computed(() => PortalDashboard)
 </script>
 
 <style scoped>
