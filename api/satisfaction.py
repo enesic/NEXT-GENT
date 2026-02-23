@@ -165,61 +165,80 @@ class handler(BaseHTTPRequestHandler):
                     await conn.close()
                     return False
                 
-                # Insert into vapi_calls as satisfaction update (simulated for simplicity)
-                # We must provide all NOT NULL columns required by the schema
-                now = datetime.now()
-                new_id = uuid.uuid4()
-                await conn.execute(
-                    """INSERT INTO vapi_calls (
-                        id,
+            async def save_feedback():
+                try:
+                    conn = await asyncpg.connect(DATABASE_URL)
+                    tenant = await conn.fetchrow("SELECT id FROM tenants WHERE slug = $1", tenant_slug)
+                    if not tenant:
+                        await conn.close()
+                        return False, "Tenant not found"
+                    
+                    now = datetime.now()
+                    new_id = uuid.uuid4()
+                    
+                    # Explicitly convert to UUID objects for asyncpg if they are strings
+                    tenant_id = tenant['id']
+                    if isinstance(tenant_id, str):
+                        tenant_id = uuid.UUID(tenant_id)
+                    
+                    # Try inserting with all known columns from model + satisfaction_score used in GET
+                    await conn.execute(
+                        """INSERT INTO vapi_calls (
+                            id,
+                            tenant_id, 
+                            vapi_call_id, 
+                            caller_phone_encrypted, 
+                            phone_hash, 
+                            call_duration_seconds,
+                            call_status,
+                            started_at,
+                            updated_at,
+                            satisfaction_score, 
+                            sentiment, 
+                            created_at
+                        )
+                           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)""",
+                        new_id,
                         tenant_id, 
-                        vapi_call_id, 
-                        caller_phone_encrypted, 
-                        phone_hash, 
-                        call_duration_seconds,
-                        call_status,
-                        started_at,
-                        updated_at,
-                        satisfaction_score, 
-                        sentiment, 
-                        created_at
+                        f"feedback-{uuid.uuid4()}", 
+                        "web-feedback", 
+                        "web-hash",
+                        0,
+                        'completed',
+                        now,
+                        now,
+                        score, 
+                        'positive' if score >= 4 else 'neutral', 
+                        now
                     )
-                       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)""",
-                    new_id,
-                    tenant['id'], 
-                    f"feedback-{uuid.uuid4()}", 
-                    "web-feedback", 
-                    "web-hash",
-                    0,
-                    'completed',
-                    now,
-                    now,
-                    score, 
-                    'Positive' if score >= 4 else 'Neutral', 
-                    now
-                )
-                await conn.close()
-                return True
+                    await conn.close()
+                    return True, None
+                except Exception as db_err:
+                    error_str = str(db_err)
+                    # Return detailed error to help us see WHAT column is missing or wrong
+                    return False, f"DB Error: {error_str}"
 
-            success = loop.run_until_complete(save_feedback())
+            success, error_msg = loop.run_until_complete(save_feedback())
             loop.close()
 
             if success:
                 self.send_response(201)
+                res = {"status": "success"}
             else:
-                self.send_response(404)
+                self.send_response(500)
+                res = {"status": "error", "message": error_msg}
                 
             self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            self.wfile.write(json.dumps({"status": "success" if success else "error"}).encode())
+            self.wfile.write(json.dumps(res).encode())
 
         except Exception as e:
             self.send_response(500)
             self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            self.wfile.write(json.dumps({"error": str(e)}).encode())
+            self.wfile.write(json.dumps({"error": str(e), "trace": "do_post_level"}).encode())
 
     def do_OPTIONS(self):
         self.send_response(200)

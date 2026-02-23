@@ -24,7 +24,7 @@
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700&display=swap"
         rel="stylesheet">
 
-    <!-- Global Error Shield to suppress extension-related Noise/Errors -->
+    <!-- Aggressive Global Shield to suppress persistent extension noise (sharebx, reporter, etc.) -->
     <script>
         (function () {
             const suppressPatterns = [
@@ -32,15 +32,17 @@
                 'sharebx.js',
                 'webpage_content_reporter',
                 'Unexpected token \'export\'',
-                'sharebx'
+                'sharebx',
+                'extension'
             ];
 
             function shouldSuppress(message, source) {
-                const msg = String(message || '');
-                const src = String(source || '');
-                return suppressPatterns.some(p => msg.includes(p) || src.includes(p));
+                const msg = String(message || '').toLowerCase();
+                const src = String(source || '').toLowerCase();
+                return suppressPatterns.some(p => msg.includes(p.toLowerCase()) || src.includes(p.toLowerCase()));
             }
 
+            // Global Error Handlers
             window.onerror = function (message, source, lineno, colno, error) {
                 if (shouldSuppress(message, source)) return true;
                 return false;
@@ -54,25 +56,28 @@
             }, true);
 
             window.addEventListener('unhandledrejection', function (event) {
-                if (shouldSuppress(event.reason)) {
+                const reason = event.reason ? (event.reason.message || String(event.reason)) : '';
+                if (shouldSuppress(reason)) {
                     event.stopImmediatePropagation();
                     event.preventDefault();
                 }
             }, true);
 
-            // Monkey-patch console.error to filter out persistent extension noise
-            const originalConsoleError = console.error;
-            console.error = function () {
-                const args = Array.from(arguments);
-                const shouldMute = args.some(arg => {
-                    const str = String(arg || '');
-                    return suppressPatterns.some(p => str.includes(p));
-                });
+            // Comprehensive Console Shield (Filters out extension logs, warnings, and errors)
+            ['log', 'warn', 'error', 'info', 'debug'].forEach(method => {
+                const original = console[method];
+                console[method] = function () {
+                    const args = Array.from(arguments);
+                    const shouldMute = args.some(arg => {
+                        const str = String(arg || '');
+                        return suppressPatterns.some(p => str.toLowerCase().includes(p.toLowerCase()));
+                    });
 
-                if (!shouldMute) {
-                    originalConsoleError.apply(console, arguments);
-                }
-            };
+                    if (!shouldMute) {
+                        original.apply(console, arguments);
+                    }
+                };
+            });
         })();
     </script>
 
