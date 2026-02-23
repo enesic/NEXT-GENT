@@ -60,3 +60,4 @@ backups/
 # OS specific files
 desktop.ini
 .vercel
+.env*.local
