@@ -32,9 +32,13 @@ export const WS_EVENTS = {
   PONG: 'pong'
 }
 
+// Production hosts that typically don't support WebSocket (Vercel, static hosting)
+const WS_DISABLED_HOSTS = ['nextgent.co', 'vercel.app']
+
 /**
  * WebSocket Composable
- * Handles real-time connections with automatic reconnection
+ * Handles real-time connections with automatic reconnection.
+ * Disabled on production hosts without WebSocket support to prevent console spam.
  */
 export function useWebSocket() {
     const ws = ref(null)
@@ -42,23 +46,24 @@ export function useWebSocket() {
     const error = ref(null)
     const listeners = ref(new Map())
     const reconnectAttempts = ref(0)
-    const maxReconnectDelay = 30000 // 30 seconds
+    const maxReconnectAttempts = 2
+    const maxReconnectDelay = 5000
     let reconnectTimeout = null
 
-    // Get tenant ID from auth store
     const authStore = useAuthStore()
 
-    const connect = () => {
-        // Don't connect if no tenant ID
-        if (!authStore.tenant_id) {
-            console.warn('Cannot connect to WebSocket: No tenant ID')
-            return
-        }
+    const isWsDisabled = () => {
+        const host = typeof window !== 'undefined' ? window.location.hostname : ''
+        const disabled = WS_DISABLED_HOSTS.some(h => host.includes(h))
+        const hasDedicatedWs = !!import.meta.env.VITE_WS_URL
+        return disabled && !hasDedicatedWs
+    }
 
-        // Don't connect if already connected
-        if (ws.value && ws.value.readyState === WebSocket.OPEN) {
-            return
-        }
+    const connect = () => {
+        if (isWsDisabled()) return
+        if (!authStore.tenant_id) return
+        if (ws.value && ws.value.readyState === WebSocket.OPEN) return
+        if (reconnectAttempts.value >= maxReconnectAttempts) return
 
         try {
             // Build WebSocket URL
@@ -86,11 +91,11 @@ export function useWebSocket() {
                 wsUrl = `${protocol}//${host}${portSuffix}${API_CONFIG.BASE_URL}/ws/${authStore.tenant_id}`
             }
 
-            console.log(`🔌 Connecting to WebSocket: ${wsUrl}`)
+            if (import.meta.env.DEV) console.log(`🔌 Connecting to WebSocket: ${wsUrl}`)
             ws.value = new WebSocket(wsUrl)
 
             ws.value.onopen = () => {
-                console.log('✅ WebSocket Connected')
+                if (import.meta.env.DEV) console.log('✅ WebSocket Connected')
                 isConnected.value = true
                 error.value = null
                 reconnectAttempts.value = 0
@@ -121,13 +126,11 @@ export function useWebSocket() {
             }
 
             ws.value.onclose = () => {
-                console.log('❌ WebSocket Disconnected')
                 isConnected.value = false
                 handleReconnect()
             }
 
             ws.value.onerror = (e) => {
-                console.error('⚠️ WebSocket Error:', e)
                 error.value = e
             }
 
@@ -138,17 +141,10 @@ export function useWebSocket() {
     }
 
     const handleReconnect = () => {
-        // Clear existing timeout
+        if (reconnectAttempts.value >= maxReconnectAttempts) return
         if (reconnectTimeout) clearTimeout(reconnectTimeout)
 
-        // Calculate delay with exponential backoff
-        // 1s, 2s, 4s, 8s, 16s, 30s (capped)
-        const delay = Math.min(
-            1000 * Math.pow(2, reconnectAttempts.value),
-            maxReconnectDelay
-        )
-
-        console.log(`Reconnecting in ${delay}ms (Attempt ${reconnectAttempts.value + 1})`)
+        const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.value), maxReconnectDelay)
 
         reconnectTimeout = setTimeout(() => {
             reconnectAttempts.value++

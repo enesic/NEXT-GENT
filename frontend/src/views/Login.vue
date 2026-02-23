@@ -9,7 +9,7 @@
     <div v-if="!isInitializing" class="login-card" ref="loginCard">
       <div class="brand-header">
         <div class="logo-icon">
-          <img src="/logo.svg" alt="NextGent Logo" class="brand-logo-image" />
+          <img src="/logo.svg" alt="NextGent Logo" class="brand-logo-image" style="width: 48px; height: 48px;" />
         </div>
         <h1 class="brand-name">NextGent</h1>
       </div>
@@ -77,6 +77,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useNotificationStore } from '../stores/notification'
 import { useSectorStore } from '../stores/sector'
+import { sectorThemes } from '../config/sectorThemes'
 import { Activity, CreditCard, Lock, Check } from 'lucide-vue-next'
 import gsap from 'gsap'
 import { inject } from 'vue'
@@ -108,17 +109,85 @@ const handleLogin = async () => {
       pin: form.value.pin
     })
     
-    // Set auth data from API response
-    authStore.setToken(response.data.token)
-    authStore.setUser(response.data.customer) // API returns 'customer', not 'user'
-    authStore.setTenant(response.data.customer.tenant_id) // tenant_id is inside customer object
-    
-    // Set sector from tenant config
-    const tenantConfig = JSON.parse(response.data.customer.tenant_config || '{}')
-    sectorStore.setSector(tenantConfig.sector || 'beauty')
-    
-    // Success - proceed to dashboard
-    proceedToDashboard()
+    // Backend returns (FastAPI): { token, user, tenant_id, sector, tenant_name, customer_id }
+    // Backend returns (Vercel API): { token, customer: { tenant_slug, tenant_id, ... } }
+    const token = response.data.token
+    const customer = response.data.customer || {
+      ...response.data.user,
+      tenant_id: response.data.tenant_id,
+      tenant_slug: response.data.tenant_name ? response.data.tenant_name.toLowerCase().replace(/\s+/g, '-') : null
+    }
+
+    if (!token) {
+      throw new Error('Sunucudan geçersiz yanıt alındı.')
+    }
+
+    // Sektörü belirle: Önce backend'den gelen sector, yoksa tenant_slug, yoksa customer_id prefix
+    const sectorFromBackend = response.data.sector
+    const tenantSlug = customer.tenant_slug || ''
+    const slugPart = tenantSlug.split('-')[0] || ''
+    const customerId = (customer.customer_id || response.data.customer_id || '').toUpperCase()
+
+    // Sektör eşlemesi: ecm, ec → ecommerce; bea → beauty
+    const slugToSector = {
+      ecommerce: 'ecommerce',
+      ecm: 'ecommerce',
+      ec: 'ecommerce',
+      beauty: 'beauty',
+      bea: 'beauty',
+      medical: 'medical',
+      legal: 'legal',
+      retail: 'retail',
+      education: 'education',
+      finance: 'finance',
+      hospitality: 'hospitality',
+      automotive: 'automotive',
+      manufacturing: 'manufacturing',
+      real_estate: 'real_estate',
+      nextgent: 'beauty' // varsayılan demo tenant
+    }
+    const customerIdToSector = {
+      ECM: 'ecommerce',
+      EC: 'ecommerce',
+      BEA: 'beauty',
+      MED: 'medical',
+      LEG: 'legal',
+      EST: 'real_estate',
+      MFG: 'manufacturing',
+      EDU: 'education',
+      FIN: 'finance',
+      HOS: 'hospitality',
+      AUT: 'automotive',
+      RTL: 'retail',
+      TEC: 'technology'
+    }
+
+    let sector = null
+    if (sectorFromBackend && sectorThemes[sectorFromBackend]) {
+      sector = sectorFromBackend
+    } else if (slugToSector[slugPart] && sectorThemes[slugToSector[slugPart]]) {
+      sector = slugToSector[slugPart]
+    } else if (customerId) {
+      const prefix = customerId.split('-')[0]
+      if (customerIdToSector[prefix] && sectorThemes[customerIdToSector[prefix]]) {
+        sector = customerIdToSector[prefix]
+      }
+    }
+
+    const tenantId = customer.tenant_id || response.data.tenant_id
+
+    // Set auth state — user must be set for isAuthenticated to be true
+    authStore.setToken(token)
+    authStore.setUser(customer)
+    authStore.setTenant(tenantId)
+
+    // E-ticaret: ExecutiveShell (/dashboard) kullan, sektör badge için sectorStore'u ayarla
+    // Diğer sektörler: /sectors/{sector}/dashboard
+    if (sector && sectorThemes[sector]) {
+      sectorStore.setSector(sector)
+    }
+    const redirectSector = sector === 'ecommerce' ? null : sector
+    proceedToDashboard(redirectSector)
     
   } catch (error) {
     isLoading.value = false
@@ -147,14 +216,11 @@ const handleLogin = async () => {
     let errorMessage = 'Giriş başarısız. '
     
     if (error.response) {
-      // Backend returned an error response
       console.log('Error Data:', error.response.data)
-      errorMessage += `Sunucu Hatası (${error.response.status}): ${error.response.data.detail || JSON.stringify(error.response.data)}`
+      errorMessage += `Sunucu Hatası (${error.response.status}): ${error.response.data.message || error.response.data.detail || JSON.stringify(error.response.data)}`
     } else if (error.request) {
-      // Request made but no response
       errorMessage += 'Sunucuya ulaşılamıyor. Lütfen internet bağlantınızı ve backend servisini kontrol edin.'
     } else {
-      // Setup error
       errorMessage += error.message
     }
     
@@ -162,35 +228,18 @@ const handleLogin = async () => {
   }
 }
 
-const proceedToDashboard = () => {
+const proceedToDashboard = (sector = null) => {
   isLoading.value = false
-  
-  // Start cinematic exit animation
-  gsap.to(loginCard.value, {
-    scale: 0.95,
-    opacity: 0,
-    y: 20,
-    duration: 0.5,
-    ease: 'power2.in',
-    onComplete: () => {
-      isInitializing.value = true
-      
-      // Animate loader entry
-      nextTick(() => {
-        gsap.from(resultLoader.value, {
-          opacity: 0,
-          scale: 0.9,
-          duration: 0.5
-        })
-      })
+  isInitializing.value = true
 
-      // Wait a bit before navigating so user sees the success message
-      setTimeout(() => {
-        router.push('/dashboard')
-      }, 800)
-    }
-  })
+  // Kısa görsel geri bildirim için 800ms bekle, sonra yönlendir
+  setTimeout(() => {
+    // Sektör geçerliyse sektöre özgü dashboard'a, değilse ana dashboard'a yönlendir
+    const dashboardPath = sector ? `/sectors/${sector}/dashboard` : '/dashboard'
+    window.location.replace(dashboardPath)
+  }, 800)
 }
+
 
 onMounted(() => {
   // Intro Animation

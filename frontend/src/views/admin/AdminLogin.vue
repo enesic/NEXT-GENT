@@ -11,7 +11,7 @@
         <div class="login-header">
           <div class="logo-container">
             <div class="logo-icon">
-              <img src="/logo.svg" alt="NextGent Logo" class="admin-logo-image" />
+              <img src="/logo.svg" alt="NextGent Logo" class="admin-logo-image" style="width: 60px; height: 60px;" />
             </div>
             <h1>NextGent Admin</h1>
           </div>

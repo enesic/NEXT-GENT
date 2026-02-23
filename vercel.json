@@ -3,7 +3,9 @@
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
   "framework": "vite",
-  "regions": ["fra1"],
+  "regions": [
+    "fra1"
+  ],
   "headers": [
     {
       "source": "/assets/(.*)",
@@ -28,15 +30,19 @@
         {
           "key": "X-XSS-Protection",
           "value": "1; mode=block"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains; preload"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
         }
       ]
     }
   ],
   "rewrites": [
-    {
-      "source": "/api/test",
-      "destination": "/api/test.py"
-    },
     {
       "source": "/api/v1/auth/login",
       "destination": "/api/auth_login.py"
@@ -62,8 +68,28 @@
       "destination": "/api/calls.py"
     },
     {
+      "source": "/api/v1/helpdesk/chat",
+      "destination": "/api/helpdesk_chat.py"
+    },
+    {
+      "source": "/api/v1/analytics/:path*",
+      "destination": "/api/analytics.py"
+    },
+    {
+      "source": "/api/v1/satisfaction/:path*",
+      "destination": "/api/satisfaction.py"
+    },
+    {
+      "source": "/api/v1/interactions",
+      "destination": "/api/interactions.py"
+    },
+    {
       "source": "/api/v1/dashboard/config",
       "destination": "/api/dashboard_config.py"
+    },
+    {
+      "source": "/api/v1/health",
+      "destination": "/api/analytics.py"
     },
     {
       "source": "/api/:path*",

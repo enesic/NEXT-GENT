@@ -19,7 +19,7 @@
           <button class="view-btn">Hafta</button>
           <button class="view-btn">Liste</button>
         </div>
-        <button class="add-btn">
+        <button class="add-btn" @click="showAppointmentModal = true">
           <Plus :size="18" />
           Yeni Randevu
         </button>
@@ -87,18 +87,26 @@
       </div>
     </div>
   </div>
+
+  <!-- Appointment Modal -->
+  <AppointmentModal
+    v-model="showAppointmentModal"
+    @created="fetchEvents"
+  />
 </template>
 
 <script setup>
 import { ref, computed, onMounted, inject } from 'vue'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-vue-next'
 import { useSectorStore } from '../stores/sector'
+import AppointmentModal from '../components/common/AppointmentModal.vue'
 
 const axios = inject('axios')
 const sectorStore = useSectorStore()
 
 const currentDate = ref(new Date())
 const events = ref([])
+const showAppointmentModal = ref(false)
 const upcomingEvents = computed(() => {
     return events.value
         .filter(e => new Date(e.start_time) >= new Date())
@@ -164,7 +172,7 @@ const fetchEvents = async () => {
   try {
     // Check if user is customer (crudely via sectorStore or let api handle it)
     // Better: Helper to check role
-    const isCustomer = !localStorage.getItem('user')?.includes('admin') // Simple check
+    const isCustomer = !sessionStorage.getItem('user')?.includes('admin') // Simple check
     
     const endpoint = isCustomer ? '/portal/appointments' : '/interactions'
     
@@ -231,6 +239,8 @@ onMounted(fetchEvents)
   flex-direction: column;
   gap: 32px;
   color: var(--text-primary);
+  overflow: hidden;  /* prevents calendar expanding parent */
+  min-width: 0;
 }
 
 .header-controls {
@@ -335,6 +345,8 @@ onMounted(fetchEvents)
   grid-template-columns: 1fr 320px;
   gap: 32px;
   flex: 1;
+  overflow: hidden;  /* key: don't let children expand the grid */
+  min-width: 0;
 }
 
 .calendar-wrapper {
@@ -343,6 +355,8 @@ onMounted(fetchEvents)
   padding: 24px;
   border: 1px solid var(--border-subtle);
   box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  overflow: hidden;  /* prevent today's events from overflowing */
+  min-width: 0;      /* allow grid cell to shrink */
 }
 
 .calendar-grid {
@@ -375,6 +389,9 @@ onMounted(fetchEvents)
   transition: all 0.2s;
   animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   opacity: 0;
+  overflow: hidden;  /* prevent event pills from expanding the cell */
+  min-width: 0;
+  max-width: 100%;
 }
 
 .calendar-day:hover {

@@ -104,12 +104,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, inject } from 'vue'
 import { Upload, FileText, Image, File, Search, Trash2, Download, FileCode, FileArchive, ChevronRight, User, Folder } from 'lucide-vue-next'
 import { useSectorStore } from '../stores/sector'
-import { axios } from '../plugins/axios'
 
 const sectorStore = useSectorStore()
+const axios = inject('axios')
 
 const files = ref([])
 const loading = ref(false)

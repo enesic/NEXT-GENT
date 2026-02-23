@@ -1,15 +1,22 @@
 <template>
   <div class="portal-page">
     <div class="page-header">
-      <h1 :style="{ color: colors.primary }">Mesajlar</h1>
-      <p class="subtitle">Gelen kutusu ve mesaj geçmişiniz</p>
+      <h1>Mesajlar</h1>
+      <p class="subtitle">Gelen kutusu ve mesaj geçmişiniz <span v-if="totalMessages > 0" class="msg-count">({{ totalMessages }} mesaj)</span></p>
     </div>
 
     <div class="content-card">
       <div v-if="loading" class="loading-state">
-        Yükleniyor...
+        <div class="spinner"></div>
+        <span>Mesajlar yükleniyor...</span>
       </div>
       
+      <div v-else-if="errorMsg" class="empty-state">
+        <component :is="sectorStore.getIcon('AlertCircle')" :size="48" color="#ef4444" />
+        <p>{{ errorMsg }}</p>
+        <button class="retry-btn" @click="loadMessages">Tekrar Dene</button>
+      </div>
+
       <div v-else-if="messages.length === 0" class="empty-state">
         <component :is="sectorStore.getIcon('MessageSquare')" :size="48" :color="colors.secondary" />
         <p>Henüz bir mesajınız bulunmuyor.</p>
@@ -27,11 +34,20 @@
             </div>
             <div class="item-content">
                 <div class="item-header">
-                    <span class="item-title">{{ message.sender || 'Sistem' }}</span>
+                    <span class="item-title">{{ cleanName(message.customer_name) }}</span>
+                    <span class="item-badge" :class="message.status">{{ statusLabel(message.status) }}</span>
                     <span class="item-date">{{ formatTime(message.created_at) }}</span>
                 </div>
                 <p class="item-desc">{{ message.message }}</p>
+                <span v-if="message.channel" class="item-channel">{{ message.channel }}</span>
             </div>
+        </div>
+
+        <!-- Pagination -->
+        <div v-if="totalMessages > pageSize" class="pagination">
+          <button :disabled="currentPage <= 1" @click="goToPage(currentPage - 1)" class="page-btn">← Önceki</button>
+          <span class="page-info">Sayfa {{ currentPage }} / {{ totalPages }}</span>
+          <button :disabled="currentPage >= totalPages" @click="goToPage(currentPage + 1)" class="page-btn">Sonraki →</button>
         </div>
       </div>
     </div>
@@ -39,39 +55,94 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, inject } from 'vue'
+import { ref, onMounted, onUnmounted, computed, inject } from 'vue'
 import { useSectorStore } from '../../stores/sector'
+import { useAuthStore } from '../../stores/auth'
 
 const sectorStore = useSectorStore()
+const authStore = useAuthStore()
 const axios = inject('axios')
 
 const messages = ref([])
 const loading = ref(true)
+const errorMsg = ref(null)
+const currentPage = ref(1)
+const totalMessages = ref(0)
+const pageSize = 10
+const isFetching = ref(false)  // Prevent concurrent fetch spam
+let destroyed = false           // Prevent state updates after unmount
+
+const totalPages = computed(() => Math.ceil(totalMessages.value / pageSize))
 
 const colors = computed(() => sectorStore.theme || {
     primary: '#0ea5e9',
     secondary: '#0f766e',
-    text: '#0f172a'
+    text: '#e2e8f0'
 })
 
 const getColor = (name) => (sectorStore.theme || {})[name] || colors.value.primary
 const getGlowColor = (name) => getColor(name) + '1A'
+
+// Filter out 'Sistem' and similar system names
+const cleanName = (name) => {
+    if (!name) return 'Müşteri'
+    const lower = name.trim().toLowerCase()
+    if (['sistem', 'system', 'admin', 'test', ''].includes(lower)) return 'Müşteri'
+    return name.trim()
+}
+
+const statusLabel = (status) => {
+    const labels = { read: 'Okundu', unread: 'Okunmadı', replied: 'Yanıtlandı' }
+    return labels[status] || status
+}
 
 const formatTime = (d) => {
     if (!d) return ''
     return new Date(d).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
 }
 
-onMounted(async () => {
+const loadMessages = async () => {
+    if (isFetching.value || destroyed) return  // guard against spam & stale updates
+    isFetching.value = true
     try {
-        const res = await axios.get('/portal/messages?limit=50')
-        messages.value = res.data || []
+        loading.value = true
+        errorMsg.value = null
+        // ✅ Correct endpoint: /portal/messages (not /messages)
+        const res = await axios.get(`/portal/messages?limit=${pageSize}&page=${currentPage.value}`)
+        if (destroyed) return   // component was unmounted while awaiting
+        
+        // Handle paginated response from backend
+        if (res.data && res.data.data) {
+            messages.value = res.data.data
+            totalMessages.value = res.data.pagination?.total ?? res.data.data.length
+        } else if (Array.isArray(res.data)) {
+            messages.value = res.data
+            totalMessages.value = res.data.length
+        } else {
+            messages.value = []
+            totalMessages.value = 0
+        }
     } catch (e) {
-        console.error('Failed to load messages', e)
+        if (!destroyed) {
+            console.error('Failed to load messages', e)
+            errorMsg.value = 'Mesajlar yüklenirken bir hata oluştu.'
+        }
     } finally {
-        loading.value = false
+        if (!destroyed) {
+            loading.value = false
+            isFetching.value = false
+        }
     }
-})
+}
+
+const goToPage = (page) => {
+    if (page < 1 || page > totalPages.value) return
+    currentPage.value = page
+    loadMessages()
+}
+
+onMounted(() => { loadMessages() })
+onUnmounted(() => { destroyed = true; isFetching.value = false })
 </script>
 
 <style scoped>
@@ -103,16 +174,36 @@ onMounted(async () => {
     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
 }
 
+.msg-count {
+    color: var(--text-muted);
+    font-weight: 400;
+    font-size: 13px;
+}
+
 .loading-state, .empty-state {
     text-align: center;
     padding: 48px;
     color: var(--text-secondary);
-}
-
-.empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 16px;
+}
+
+.spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--border-subtle);
+    border-top-color: var(--text-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.empty-state {
     gap: 16px;
 }
 
@@ -171,5 +262,71 @@ onMounted(async () => {
     font-size: 14px;
     color: var(--text-secondary);
     line-height: 1.5;
+}
+
+.item-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+.item-badge.unread { background: rgba(59, 130, 246, 0.25); color: #93bbfd; font-weight: 700; box-shadow: 0 0 8px rgba(59, 130, 246, 0.3); }
+.item-badge.read { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+.item-badge.replied { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+
+.item-channel {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: capitalize;
+    margin-top: 4px;
+    display: inline-block;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.page-btn {
+    padding: 8px 16px;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 13px;
+}
+.page-btn:hover:not(:disabled) {
+    background: var(--surface-hover);
+    border-color: var(--border-hover);
+}
+.page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.page-info {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.retry-btn {
+    padding: 8px 20px;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.retry-btn:hover {
+    background: var(--surface-hover);
 }
 </style>

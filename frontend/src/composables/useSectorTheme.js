@@ -16,11 +16,11 @@ const SECTOR_THEMES = {
     },
     beauty: {
         name: 'Güzellik Merkezi',
-        primaryGradient: 'linear-gradient(135deg, #ec4899, #f472b6)',
+        primaryGradient: 'linear-gradient(135deg, #ec4899 0%, #a855f7 100%)',
         accentColor: '#f9a8d4',
         iconColor: '#ec4899',
-        glowColor: 'rgba(236, 72, 153, 0.3)',
-        backgroundColor: 'rgba(236, 72, 153, 0.05)'
+        glowColor: 'rgba(236, 72, 153, 0.35)',
+        backgroundColor: 'rgba(236, 72, 153, 0.06)'
     },
     hospitality: {
         name: 'Otel Yönetimi',
@@ -56,11 +56,11 @@ const SECTOR_THEMES = {
     },
     ecommerce: {
         name: 'E-Ticaret',
-        primaryGradient: 'linear-gradient(135deg, #8b5cf6, #a78bfa)',
-        accentColor: '#c4b5fd',
-        iconColor: '#8b5cf6',
-        glowColor: 'rgba(139, 92, 246, 0.3)',
-        backgroundColor: 'rgba(139, 92, 246, 0.05)'
+        primaryGradient: 'linear-gradient(135deg, #f97316, #fb923c)',
+        accentColor: '#fdba74',
+        iconColor: '#f97316',
+        glowColor: 'rgba(249, 115, 22, 0.3)',
+        backgroundColor: 'rgba(249, 115, 22, 0.05)'
     },
     education: {
         name: 'Eğitim',

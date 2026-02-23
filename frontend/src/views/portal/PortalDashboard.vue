@@ -1,7 +1,7 @@
 <template>
   <div class="portal-dashboard">
     <div class="welcome-section">
-      <h1 :style="{ color: colors.primary }">{{ t('welcome_message') }}</h1>
+      <h1>{{ t('welcome_message') }}</h1>
       <p class="subtitle">{{ t('dashboard_subtitle') }}</p>
     </div>
 
@@ -20,7 +20,7 @@
             </div>
         </div>
         <div class="stat-body">
-            <span class="stat-value" :style="{ color: colors.text }">{{ stat.value }}</span>
+            <span class="stat-value" >{{ stat.value }}</span>
             <span v-if="stat.change" class="stat-change" :class="stat.change > 0 ? 'positive' : 'negative'">
               {{ stat.change > 0 ? '↑' : '↓' }} {{ Math.abs(stat.change) }}%
             </span>
@@ -32,7 +32,7 @@
         <!-- MAIN DRAFT: Large Chart Section -->
         <div class="chart-section glass-panel">
             <div class="section-header">
-                <h3 :style="{ color: colors.text }">{{ chartConfig?.title || 'Hasta Trafiği' }}</h3>
+                <h3 >{{ chartConfig?.title || 'Hasta Trafiği' }}</h3>
                 <span class="section-subtitle">{{ chartConfig?.subtitle || 'Yıllık Veriler' }}</span>
             </div>
              <LuxuryChart 
@@ -50,7 +50,7 @@
         <!-- MAIN DRAFT: Right Side Quick Actions -->
         <div class="side-panel">
             <div class="quick-actions-card">
-                <h3 :style="{ color: colors.text }">Hızlı İşlemler</h3>
+                <h3 >Hızlı İşlemler</h3>
                 <div class="actions-list">
                     <button 
                         v-for="(action, index) in displayActions" 
@@ -70,12 +70,12 @@
 
             <!-- MAIN DRAFT: Recent Activity Widget -->
              <div class="activity-card">
-                <h3 :style="{ color: colors.text }">Son Aktiviteler</h3>
+                <h3 >Son Aktiviteler</h3>
                 <div class="activity-list">
                     <div v-for="i in 3" :key="i" class="activity-row">
                         <div class="dot" :style="{ background: i === 1 ? colors.primary : colors.secondary }"></div>
                         <div class="activity-text">
-                            <strong :style="{ color: colors.text }">{{ getDummyActivity(i).title }}</strong>
+                            <strong >{{ getDummyActivity(i).title }}</strong>
                             <span class="time">2 saat önce</span>
                         </div>
                     </div>
@@ -83,6 +83,19 @@
             </div>
         </div>
     </div>
+
+    <!-- Quick Action Modal -->
+    <QuickActionModal
+      :visible="showActionModal"
+      :title="activeAction.label"
+      :icon="activeAction.icon"
+      :fields="activeAction.fields"
+      :submitLabel="activeAction.submitLabel || 'Kaydet'"
+      :successMessage="activeAction.successMessage || 'İşlem başarıyla kaydedildi!'"
+      :accentColor="colors.primary"
+      @close="showActionModal = false"
+      @submit="handleActionSubmit"
+    />
   </div>
 </template>
 
@@ -90,8 +103,10 @@
 import { ref, computed, inject, onMounted } from 'vue'
 import { useSectorStore } from '../../stores/sector'
 import LuxuryChart from '../../components/LuxuryChart.vue'
+import QuickActionModal from '../../components/QuickActionModal.vue'
 import dashboardAPI from '../../config/dashboardAPI'
 
+const emit = defineEmits(['navigate'])
 const sectorStore = useSectorStore()
 
 // Data state
@@ -100,6 +115,33 @@ const error = ref(null)
 const stats = ref([])
 const satisfactionData = ref(null)
 const quickStatsData = ref(null)
+
+// Quick Entry State
+const showQuickEntry = ref(false)
+const entryType = ref('appointment') // 'appointment' or 'customer'
+const submitting = ref(false)
+const submitError = ref(null)
+const formData = ref({})
+
+const resetForm = () => {
+    formData.value = {
+        client_name: '',
+        client_email: '',
+        title: '',
+        start_time: '',
+        end_time: '',
+        first_name: '',
+        last_name: '',
+        email: '',
+        phone: ''
+    }
+    submitError.value = null
+}
+
+const closeQuickEntry = () => {
+    showQuickEntry.value = false
+    resetForm()
+}
 
 // Dynamic Theme Colors
 const colors = computed(() => sectorStore.theme || {
@@ -125,19 +167,19 @@ const getGlowColor = (colorName) => {
     return getColor(colorName) + '1A' // 10% opacity
 }
 
-// DEFAULT MEDICAL DATA (Fallback)
+// DEFAULT STATS (Generic Fallback)
 const defaultStats = [
-    { label: 'Bugünkü Randevular', value: '124', change: 5.2, icon: 'Calendar', color: 'primary' },
-    { label: 'Aktif Hastalar', value: '1,284', change: 2.1, icon: 'Users', color: 'accent' },
-    { label: 'Acil Durumlar', value: '3', change: -10.5, icon: 'AlertCircle', color: 'red' },
-    { label: 'Memnuniyet', value: '98%', change: 1.2, icon: 'Heart', color: 'secondary' }
+    { label: 'Günlük Randevular', value: '0', change: 0, icon: 'Calendar', color: 'primary' },
+    { label: 'Aktif Müşteriler', value: '0', change: 0, icon: 'Users', color: 'accent' },
+    { label: 'Bekleyen Talepler', value: '0', change: 0, icon: 'AlertCircle', color: 'red' },
+    { label: 'Memnuniyet', value: '100%', change: 0, icon: 'Heart', color: 'secondary' }
 ]
 
 const defaultActions = [
     { label: 'Randevu Ekle', icon: 'CalendarPlus' },
-    { label: 'Hasta Kaydı', icon: 'UserPlus' },
-    { label: 'Reçete Yaz', icon: 'FileText' },
-    { label: 'Lab Sonuçları', icon: 'Activity' }
+    { label: 'Kayıt Ekle', icon: 'UserPlus' },
+    { label: 'Belge Hazırla', icon: 'FileText' },
+    { label: 'Durum Kontrolü', icon: 'Activity' }
 ]
 
 // Fetch dashboard data from API
@@ -153,8 +195,13 @@ const fetchDashboardData = async () => {
             dashboardAPI.getQuickStats(30).catch(() => null)
         ])
 
+        console.log('✅ Dashboard data loaded:', { kpis, satisfaction, quickStats })
+
+        // Guard: if API returns HTML string instead of JSON, skip it
+        const isValidJSON = (data) => data && typeof data !== 'string' && !String(data).startsWith('<!DOCTYPE')
+
         // Map KPIs to stat cards format
-        if (kpis && Array.isArray(kpis)) {
+        if (isValidJSON(kpis) && Array.isArray(kpis)) {
             stats.value = kpis.map((kpi, index) => ({
                 label: kpi.label,
                 value: kpi.value,
@@ -163,12 +210,13 @@ const fetchDashboardData = async () => {
                 color: kpi.positive ? 'primary' : 'red',
                 description: kpi.description
             }))
+        } else if (kpis && typeof kpis === 'string') {
+            console.warn('⚠️ KPIs returned HTML instead of JSON, using defaults')
         }
 
-        satisfactionData.value = satisfaction
-        quickStatsData.value = quickStats
+        satisfactionData.value = isValidJSON(satisfaction) ? satisfaction : null
+        quickStatsData.value = isValidJSON(quickStats) ? quickStats : null
 
-        console.log('✅ Dashboard data loaded:', { kpis, satisfaction, quickStats })
     } catch (err) {
         console.error('❌ Error fetching dashboard data:', err)
         error.value = err.message || 'Veri yüklenirken hata oluştu'
@@ -209,50 +257,208 @@ const displayActions = computed(() => {
 })
 
 const chartConfig = computed(() => sectorStore.chartConfig || {
-    title: 'Hasta Trafiği',
+    title: 'Aktivite Analizi',
     subtitle: 'Haftalık Veriler',
-    datasets: [{ name: 'Hasta', data: [30, 40, 35, 50, 49, 60, 70, 91, 125] }],
-    labels: [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999]
+    datasets: [{ name: 'Değer', data: [0, 0, 0, 0, 0, 0, 0] }],
+    labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz']
 })
 
 const getDummyActivity = (i) => {
-    const sector = sectorStore.currentSector || 'medical'
+    const sectorId = sectorStore.currentSectorId || 'generic'
     const messages = {
         medical: ['Yeni randevu oluşturuldu', 'Lab sonuçları onaylandı', 'Acil servis girişi'],
         legal: ['Dava dosyası güncellendi', 'Müvekkil araması', 'Duruşma hatırlatması'],
         technology: ['Server yedeklemesi tamamlandı', 'Yeni deployment', 'CPU kullanımı arttı'],
         finance: ['Para transferi geldi', 'Fatura kesildi', 'Kur güncellemesi'],
-        real_estate: ['Yeni ilan yayında', 'Müşteri randevusu', 'Tapu işlemleri başlatıldı']
+        real_estate: ['Yeni ilan yayında', 'Müşteri randevusu', 'Tapu işlemleri başlatıldı'],
+        beauty: ['Yeni randevu oluşturuldu', 'Müşteri kaydı tamamlandı', 'Hizmet notu eklendi'],
+        generic: ['Sistem aktif', 'Aktivite girişi yapıldı', 'İşlem tamamlandı']
     }
-    return { title: (messages[sector] || messages.medical)[i-1] || 'İşlem tamamlandı' }
+    return { title: (messages[sectorId] || messages.generic)[i-1] || 'İşlem tamamlandı' }
 }
 
-// Button click handler
-const handleActionClick = (action) => {
-    console.log('Action clicked:', action)
-    
-    // Map action labels to routes
-    const routeMap = {
-        'Randevu Ekle': '/portal/appointments',
-        'Hasta Kaydı': '/portal/customers',
-        'Reçete Yaz': '/portal/documents',
-        'Lab Sonuçları': '/portal/documents',
-        'Dava Aç': '/portal/cases',
-        'Müvekkil Ekle': '/portal/customers',
-        'Dosya Yükle': '/portal/documents',
-        'Takvim': '/portal/calendar',
-        'Mülk Ekle': '/portal/properties',
-        'Müşteri Ekle': '/portal/customers',
-        'Görüşme Planla': '/portal/appointments',
-        'Rapor': '/portal/analytics'
+// Quick Action Modal State
+const showActionModal = ref(false)
+const activeAction = ref({
+  label: '',
+  icon: 'CalendarPlus',
+  fields: [],
+  submitLabel: 'Kaydet',
+  successMessage: 'İşlem başarıyla kaydedildi!'
+})
+
+// Sector-specific Quick Action form definitions
+const actionForms = {
+  beauty: {
+    'Randevu Ekle': {
+      icon: 'CalendarPlus',
+      submitLabel: 'Randevu Oluştur',
+      successMessage: 'Randevu başarıyla oluşturuldu!',
+      fields: [
+        { key: 'customerName', label: 'Müşteri Adı', type: 'text', placeholder: 'Müşteri adını girin' },
+        { key: 'service', label: 'Hizmet', type: 'select', placeholder: 'Hizmet seçin', options: [
+          { value: 'ciltBakimi', label: 'Cilt Bakımı' },
+          { value: 'lazerEpilasyon', label: 'Lazer Epilasyon' },
+          { value: 'sacBakimi', label: 'Saç Bakımı' },
+          { value: 'tirnak', label: 'Tırnak Bakımı' },
+          { value: 'masaj', label: 'Masaj' }
+        ]},
+        { key: 'date', label: 'Tarih ve Saat', type: 'datetime-local' },
+        { key: 'notes', label: 'Notlar', type: 'textarea', placeholder: 'Ek notlar...' }
+      ]
+    },
+    'Müşteri Kaydı': {
+      icon: 'UserPlus',
+      submitLabel: 'Müşteri Ekle',
+      successMessage: 'Müşteri başarıyla kaydedildi!',
+      fields: [
+        { key: 'firstName', label: 'Ad', type: 'text', placeholder: 'Ad' },
+        { key: 'lastName', label: 'Soyad', type: 'text', placeholder: 'Soyad' },
+        { key: 'phone', label: 'Telefon', type: 'tel', placeholder: '+90 5XX XXX XX XX' },
+        { key: 'email', label: 'E-posta', type: 'email', placeholder: 'ornek@email.com' },
+        { key: 'skinType', label: 'Cilt Tipi', type: 'select', placeholder: 'Cilt tipi seçin', options: [
+          { value: 'normal', label: 'Normal' },
+          { value: 'kuru', label: 'Kuru' },
+          { value: 'yagli', label: 'Yağlı' },
+          { value: 'karma', label: 'Karma' },
+          { value: 'hassas', label: 'Hassas' }
+        ]}
+      ]
+    },
+    'İşlem Notu': {
+      icon: 'FileText',
+      submitLabel: 'Notu Kaydet',
+      successMessage: 'İşlem notu kaydedildi!',
+      fields: [
+        { key: 'customerName', label: 'Müşteri', type: 'text', placeholder: 'Müşteri adı' },
+        { key: 'treatmentType', label: 'İşlem Türü', type: 'text', placeholder: 'Yapılan işlem' },
+        { key: 'notes', label: 'Detaylı Not', type: 'textarea', placeholder: 'İşlem detaylarını yazın...' }
+      ]
+    },
+    'Lab Sonuçları': {
+      icon: 'Activity',
+      submitLabel: 'Sonuç Kaydet',
+      successMessage: 'Lab sonuçları kaydedildi!',
+      fields: [
+        { key: 'customerName', label: 'Müşteri', type: 'text', placeholder: 'Müşteri adı' },
+        { key: 'testType', label: 'Test Türü', type: 'text', placeholder: 'Örn: Alerji Testi' },
+        { key: 'result', label: 'Sonuç', type: 'textarea', placeholder: 'Test sonuçlarını girin...' },
+        { key: 'date', label: 'Test Tarihi', type: 'date' }
+      ]
     }
+  },
+  ecommerce: {
+    'Sipariş Oluştur': {
+      icon: 'ShoppingCart',
+      submitLabel: 'Sipariş Oluştur',
+      successMessage: 'Sipariş başarıyla oluşturuldu!',
+      fields: [
+        { key: 'customerName', label: 'Müşteri Adı', type: 'text', placeholder: 'Müşteri adını girin' },
+        { key: 'product', label: 'Ürün', type: 'text', placeholder: 'Ürün adı veya SKU' },
+        { key: 'quantity', label: 'Adet', type: 'number', placeholder: '1' },
+        { key: 'address', label: 'Teslimat Adresi', type: 'textarea', placeholder: 'Adres bilgilerini girin...' }
+      ]
+    },
+    'Ürün Ekle': {
+      icon: 'Package',
+      submitLabel: 'Ürün Ekle',
+      successMessage: 'Ürün başarıyla eklendi!',
+      fields: [
+        { key: 'productName', label: 'Ürün Adı', type: 'text', placeholder: 'Ürün adı' },
+        { key: 'sku', label: 'SKU', type: 'text', placeholder: 'SKU-001' },
+        { key: 'price', label: 'Fiyat (₺)', type: 'number', placeholder: '0.00' },
+        { key: 'stock', label: 'Stok Adedi', type: 'number', placeholder: '0' },
+        { key: 'description', label: 'Açıklama', type: 'textarea', placeholder: 'Ürün açıklaması...' }
+      ]
+    },
+    'Kargo Takip': {
+      icon: 'Truck',
+      submitLabel: 'Kargo Takip Sorgula',
+      successMessage: 'Kargo bilgileri yüklendi!',
+      fields: [
+        { key: 'trackingNo', label: 'Takip Numarası', type: 'text', placeholder: 'Kargo takip numarası' },
+        { key: 'carrier', label: 'Kargo Firması', type: 'select', placeholder: 'Firma seçin', options: [
+          { value: 'yurtici', label: 'Yurtiçi Kargo' },
+          { value: 'aras', label: 'Aras Kargo' },
+          { value: 'mng', label: 'MNG Kargo' },
+          { value: 'ptt', label: 'PTT Kargo' },
+          { value: 'ups', label: 'UPS' }
+        ]}
+      ]
+    },
+    'Kampanya': {
+      icon: 'Tag',
+      submitLabel: 'Kampanya Oluştur',
+      successMessage: 'Kampanya başarıyla oluşturuldu!',
+      fields: [
+        { key: 'campaignName', label: 'Kampanya Adı', type: 'text', placeholder: 'Kampanya adı' },
+        { key: 'discount', label: 'İndirim Oranı (%)', type: 'number', placeholder: '10' },
+        { key: 'startDate', label: 'Başlangıç Tarihi', type: 'date' },
+        { key: 'endDate', label: 'Bitiş Tarihi', type: 'date' },
+        { key: 'description', label: 'Açıklama', type: 'textarea', placeholder: 'Kampanya detayları...' }
+      ]
+    }
+  }
+}
+
+// Button click handler - open modal with appropriate form
+const handleActionClick = (action) => {
+    const sector = sectorStore.currentSectorId || 'medical'
+    const sectorForms = actionForms[sector]
     
-    // Fallback: try to navigate based on label
-    const route = routeMap[action.label] || '/portal/dashboard'
-    
-    // For now, show alert (you can replace with router.push(route) when routes are ready)
-    console.log(`Navigating to: ${route}`)
-    alert(`"${action.label}" özelliği yakında eklenecek!\nHedef sayfa: ${route}`)
+    if (sectorForms && sectorForms[action.label]) {
+        const form = sectorForms[action.label]
+        activeAction.value = {
+            label: action.label,
+            icon: form.icon,
+            fields: form.fields,
+            submitLabel: form.submitLabel,
+            successMessage: form.successMessage
+        }
+        showActionModal.value = true
+    } else {
+        // Fallback: navigate for sectors without defined forms
+        const target = action.nav || 'dashboard'
+        emit('navigate', target)
+    }
+}
+
+const handleActionSubmit = (formData) => {
+    console.log('Quick Action submitted:', formData)
+}
+
+const saveEntry = async () => {
+    try {
+        submitting.value = true
+        submitError.value = null
+        
+        let endpoint = entryType.value === 'appointment' ? '/portal/appointments' : '/portal/customers'
+        
+        // Basic validation
+        if (entryType.value === 'appointment') {
+            if (!formData.value.client_name || !formData.value.start_time || !formData.value.end_time) {
+                throw new Error('Lütfen zorunlu alanları doldurun.')
+            }
+        } else {
+            if (!formData.value.first_name || !formData.value.last_name || !formData.value.phone || !formData.value.email) {
+                throw new Error('Lütfen zorunlu alanları doldurun.')
+            }
+        }
+
+        const axios = inject('axios')
+        const response = await axios.post(endpoint, formData.value)
+        
+        if (response.data.status === 'success') {
+            closeQuickEntry()
+            // Optional: trigger a success message or refresh
+            fetchDashboardData()
+        }
+    } catch (err) {
+        console.error('Save error:', err)
+        submitError.value = err.response?.data?.detail || err.message || 'Kayıt sırasında bir hata oluştu.'
+    } finally {
+        submitting.value = false
+    }
 }
 
 </script>
@@ -273,6 +479,7 @@ const handleActionClick = (action) => {
   font-size: 28px;
   font-weight: 700;
   margin-bottom: 4px;
+  color: var(--text-primary, #e2e8f0);
 }
 
 .subtitle {
@@ -334,6 +541,7 @@ const handleActionClick = (action) => {
     font-size: 28px;
     font-weight: 700;
     display: block;
+    color: var(--text-primary, #e2e8f0);
 }
 
 .stat-change {
@@ -369,6 +577,7 @@ const handleActionClick = (action) => {
     font-size: 18px;
     font-weight: 600;
     margin: 0;
+    color: var(--text-primary, #e2e8f0);
 }
 
 .section-subtitle {
@@ -394,6 +603,7 @@ const handleActionClick = (action) => {
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 16px;
+    color: var(--text-primary, #e2e8f0);
 }
 
 .actions-list {
@@ -478,11 +688,147 @@ const handleActionClick = (action) => {
 .activity-text strong {
     font-size: 13px;
     font-weight: 500;
+    color: var(--text-primary, #e2e8f0);
 }
 
 .time {
     font-size: 11px;
     color: var(--text-secondary);
+}
+
+/* Quick Entry Styles */
+.quick-entry-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.quick-entry-panel {
+    width: 100%;
+    max-width: 500px;
+    background: var(--surface-elevated);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-subtle);
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.panel-header h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 28px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.form-group input {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--current-accent, #0ea5e9);
+    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+}
+
+.error-msg {
+    color: #ef4444;
+    font-size: 13px;
+    margin-top: -8px;
+    margin-bottom: 16px;
+}
+
+.panel-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.cancel-btn {
+    padding: 10px 20px;
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.save-btn {
+    padding: 10px 24px;
+    background: var(--current-accent, #0ea5e9);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.save-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.save-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.fade-enter-active, .fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.fade-enter-from, .fade-leave-to {
+    opacity: 0;
 }
 
 @media (max-width: 1200px) {

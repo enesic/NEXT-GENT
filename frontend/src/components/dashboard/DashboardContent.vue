@@ -230,7 +230,7 @@ const getStatusText = (status) => {
   return statusMap[status] || status
 }
 
-watch(() => sectorStore.currentSector, fetchDashboardData)
+watch(() => sectorStore.currentSectorId, fetchDashboardData)
 
 onMounted(fetchDashboardData)
 </script>
@@ -442,6 +442,7 @@ onMounted(fetchDashboardData)
   font-size: 16px;
   font-weight: 600;
   letter-spacing: -0.01em;
+  color: var(--text-primary);
 }
 
 .insights-list {
@@ -464,6 +465,13 @@ onMounted(fetchDashboardData)
   justify-content: space-between;
   padding: 24px;
   border-bottom: 1px solid var(--border-subtle);
+}
+
+.table-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
 }
 
 .view-all-btn {
@@ -569,6 +577,7 @@ onMounted(fetchDashboardData)
 .section-title h3 {
   font-size: 16px;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .satisfaction-metrics {

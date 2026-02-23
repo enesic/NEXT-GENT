@@ -3,7 +3,7 @@
     <div class="sidebar-header">
       <div class="logo">
         <div class="logo-icon">
-          <img src="/logo.svg" alt="NextGent Logo" class="logo-image" />
+          <img src="/logo.svg" alt="NextGent Logo" class="logo-image" style="width: 24px; height: 24px;" />
         </div>
         <span class="logo-text">NextGent</span>
       </div>

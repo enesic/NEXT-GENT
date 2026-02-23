@@ -4,6 +4,9 @@
     <header class="dashboard-header">
       <div class="header-content">
         <div class="brand-section">
+          <div class="logo-container">
+            <img src="/logo.svg" alt="NextGent Logo" class="header-logo" />
+          </div>
           <div class="sector-icon-wrapper">
             <component :is="sectorIcon" :size="28" :stroke-width="2" />
           </div>
@@ -197,12 +200,29 @@ onMounted(() => {
   font-weight: 700;
   margin: 0;
   letter-spacing: -0.02em;
+  color: var(--text-primary);
 }
 
 .subtitle {
   font-size: 13px;
   color: #9ca3af;
   margin: 4px 0 0 0;
+}
+
+.logo-container {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
 }
 
 .header-actions {
@@ -419,6 +439,54 @@ onMounted(() => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* Güzellik Merkezi – Özel lüks layout */
+.dashboard-layout.sector-beauty {
+  background: #0c0a0a;
+}
+
+.dashboard-layout.sector-beauty .dashboard-header {
+  background: rgba(12, 10, 10, 0.9);
+  border-bottom: 1px solid rgba(236, 72, 153, 0.1);
+}
+
+.dashboard-layout.sector-beauty .title {
+  font-family: 'Playfair Display', Georgia, serif;
+  color: #fdf2f8;
+}
+
+.dashboard-layout.sector-beauty .subtitle {
+  color: rgba(249, 168, 212, 0.7);
+}
+
+.dashboard-layout.sector-beauty .sector-icon-wrapper {
+  border-radius: 16px;
+  box-shadow: 0 0 32px rgba(236, 72, 153, 0.35);
+}
+
+/* E-Ticaret – Özel layout */
+.dashboard-layout.sector-ecommerce {
+  background: #0c0a0a;
+}
+
+.dashboard-layout.sector-ecommerce .dashboard-header {
+  background: rgba(12, 10, 10, 0.9);
+  border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.dashboard-layout.sector-ecommerce .title {
+  font-family: 'Playfair Display', Georgia, serif;
+  color: #fdf2f8;
+}
+
+.dashboard-layout.sector-ecommerce .subtitle {
+  color: rgba(196, 181, 253, 0.7);
+}
+
+.dashboard-layout.sector-ecommerce .sector-icon-wrapper {
+  border-radius: 16px;
+  box-shadow: 0 0 32px rgba(139, 92, 246, 0.35);
 }
 
 /* Responsive */

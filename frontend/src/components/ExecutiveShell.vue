@@ -4,8 +4,8 @@
     <aside class="shell-sidebar">
       <div class="sidebar-header">
         <div class="logo">
-          <div class="logo-icon" ref="logoIcon">
-            <component :is="currentLogoIcon" :size="20" :stroke-width="2" />
+          <div class="logo-icon">
+            <img src="/logo.svg" alt="NextGent Logo" class="logo-image" />
           </div>
           <span class="logo-text">NextGent</span>
         </div>
@@ -39,8 +39,8 @@
         </div>
       </nav>
 
-      <div class="sidebar-footer">
-        <div class="user-profile" @click="toggleUserMenu">
+      <div class="sidebar-footer" ref="footerRef">
+        <div class="user-profile" @click.stop="toggleUserMenu">
           <div class="user-avatar" ref="userAvatar">{{ userInitials }}</div>
           <div class="user-info">
             <div class="user-name">{{ userName }}</div>
@@ -48,10 +48,42 @@
           </div>
           <MoreVertical :size="16" :stroke-width="2" />
         </div>
-        <div v-if="showUserMenu" class="user-menu">
-          <button class="menu-item" @click="handleLogout">
-            Çıkış Yap
-          </button>
+        <div v-if="showUserMenu" class="user-menu-panel" @click.stop>
+          <div class="profile-header">
+            <div class="profile-avatar" :style="{ background: `linear-gradient(135deg, var(--current-accent), var(--current-accent))` }">{{ userInitials }}</div>
+            <div class="profile-info">
+              <div class="profile-name">{{ userName }}</div>
+              <div class="profile-role">{{ userRole }}</div>
+            </div>
+          </div>
+          <div class="profile-details">
+            <div class="detail-row">
+              <span class="detail-label">Müşteri ID</span>
+              <span class="detail-value">{{ authStore.user?.customer_id || '-' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Sektör</span>
+              <span class="detail-value">{{ sectorStore.currentSector?.label || 'Genel' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Segment</span>
+              <span class="detail-value">{{ authStore.user?.segment || 'Standart' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">E-posta</span>
+              <span class="detail-value">{{ authStore.user?.email || '-' }}</span>
+            </div>
+          </div>
+          <div class="profile-actions">
+            <button class="profile-action-btn" @click="handleNavigate('settings'); showUserMenu = false">
+              <Settings :size="16" :stroke-width="2" />
+              <span>Ayarlar</span>
+            </button>
+            <button class="profile-action-btn logout" @click="handleLogout">
+              <LogOut :size="16" :stroke-width="2" />
+              <span>Çıkış Yap</span>
+            </button>
+          </div>
         </div>
       </div>
     </aside>
@@ -64,7 +96,7 @@
           <h1 class="page-title">{{ currentPageTitle }}</h1>
           <div class="sector-badge" ref="sectorBadge" v-if="isCustomer">
             <component :is="currentSectorIcon" :size="14" :stroke-width="2.5" />
-            <span>{{ sectorStore.currentSector?.label || 'Sağlık' }}</span>
+            <span>{{ sectorStore.currentSector?.label || 'Genel Bakış' }}</span>
           </div>
         </div>
 
@@ -92,9 +124,9 @@
         </div>
       </header>
 
-      <!-- Content Area with Transition -->
+      <!-- Content Area - NO mode='out-in' (causes stuck transitions on rapid clicks) -->
       <div class="shell-content">
-        <Transition name="fade-slide" mode="out-in">
+        <Transition name="fade-slide">
              <component 
                 :is="activeComponent" 
                 v-bind="activeComponentProps"
@@ -111,7 +143,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onMounted, inject } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import { 
   Activity, Stethoscope, Scale, Building2, Home, Gavel,
@@ -119,12 +151,12 @@ import {
   FileText, Calendar, Settings, MoreVertical, Bell, Search,
   Briefcase, Target, ArrowRight, CalendarCheck, User, UserCheck,
   Phone, Heart, ShoppingBag, Factory, GraduationCap, Car,
-  Landmark, Coffee, ShoppingCart
+  Landmark, Coffee, ShoppingCart, LogOut, Sparkles
 } from 'lucide-vue-next'
 import { useSectorStore } from '../stores/sector'
 import { useNotificationStore } from '../stores/notification'
 import PulseCenter from './PulseCenter.vue'
-import DashboardContent from './dashboard/DashboardContent.vue'
+import SectorDashboardRouter from './dashboard/SectorDashboardRouter.vue'
 import CallCenterDashboard from './CallCenterDashboard.vue'
 import SatisfactionDashboard from './SatisfactionDashboard.vue'
 import PlaceholderView from './dashboard/PlaceholderView.vue'
@@ -173,12 +205,21 @@ const userRole = computed(() => {
 })
 
 const showUserMenu = ref(false)
+const footerRef = ref(null)
+
 const toggleUserMenu = () => { showUserMenu.value = !showUserMenu.value }
 
 const handleLogout = () => {
     authStore.logout()
     showUserMenu.value = false
     router.push('/login')
+}
+
+// Click outside to close user menu
+const handleClickOutside = (e) => {
+    if (footerRef.value && !footerRef.value.contains(e.target)) {
+        showUserMenu.value = false
+    }
 }
 
 // State
@@ -197,7 +238,8 @@ const currentSectorIcon = computed(() => {
     automotive: Car,
     finance: Landmark,
     hospitality: Coffee,
-    ecommerce: ShoppingCart
+    ecommerce: ShoppingCart,
+    beauty: Sparkles
   }
   return iconMap[sectorStore.currentSectorId] || Activity
 })
@@ -214,7 +256,8 @@ const currentLogoIcon = computed(() => {
     automotive: Car,
     finance: Landmark,
     hospitality: Coffee,
-    ecommerce: ShoppingCart
+    ecommerce: ShoppingCart,
+    beauty: Sparkles
   }
   return iconMap[sectorStore.currentSectorId] || Activity
 })
@@ -270,7 +313,7 @@ const currentPageTitle = computed(() => {
 const activeComponent = computed(() => {
     // Customer Dashboard Override
     if (isCustomer.value) {
-        if (activeNav.value === 'dashboard') return PortalDashboard
+        if (activeNav.value === 'dashboard') return SectorDashboardRouter
         if (activeNav.value === 'appointments') return CalendarView
         if (activeNav.value === 'messages') return PortalMessages
         if (activeNav.value === 'calls') return PortalCalls
@@ -294,8 +337,8 @@ const activeComponent = computed(() => {
         if (activeNav.value === 'analytics') return AnalyticsView
     }
 
-    // Default Fallback
-    return PlaceholderView
+    // Default Fallback — always return a valid component, never undefined
+    return PlaceholderView ?? SectorDashboardRouter
 })
 
 // Props passed to the active component
@@ -315,9 +358,16 @@ const logoIcon = ref(null)
 const userAvatar = ref(null)
 const sectorBadge = ref(null)
 
-// Methods
+// Methods — with navigation guard to prevent rapid-switch black screen
+const isNavigating = ref(false)
 const handleNavigate = (navId) => {
-  activeNav.value = navId
+    // Prevent rapid tab switching from breaking transitions
+    if (isNavigating.value) return
+    if (activeNav.value === navId) return  // Same tab, no-op
+    isNavigating.value = true
+    activeNav.value = navId
+    // Release lock after transition completes (200ms is enough for simple fade)
+    setTimeout(() => { isNavigating.value = false }, 250)
 }
 
 // Search Logic
@@ -372,6 +422,14 @@ const handleSearchBlur = () => {
 }
 
 // Sector is auto-set from login, no manual switching needed
+
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <style scoped>
@@ -421,26 +479,25 @@ const handleSearchBlur = () => {
 }
 
 .logo-icon {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, var(--current-accent), var(--current-accent));
-  border-radius: 12px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 24px var(--current-glow-strong);
   transition: all var(--transition-slow);
-  color: #ffffff;
+}
+
+.logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .logo-text {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: var(--letter-spacing-tight);
-  background: linear-gradient(135deg, #ffffff, #a1a1aa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #ffffff;
 }
 
 .sidebar-nav {
@@ -506,6 +563,8 @@ const handleSearchBlur = () => {
 .sidebar-footer {
   padding: 16px 12px;
   border-top: 1px solid var(--border-subtle);
+  position: relative;
+  z-index: 1001; /* Ensure user menu is on top */
 }
 
 .user-profile {
@@ -516,6 +575,7 @@ const handleSearchBlur = () => {
   border-radius: 12px;
   cursor: pointer;
   transition: all var(--transition-fast);
+  background: var(--surface-elevated);
 }
 
 .user-profile:hover {
@@ -538,17 +598,33 @@ const handleSearchBlur = () => {
 
 .user-info {
   flex: 1;
+  min-width: 0;
 }
 
 .user-name {
   font-size: 14px;
   font-weight: 600;
   line-height: 1.2;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .user-role {
   font-size: 12px;
   color: var(--text-muted);
+}
+
+.more-icon {
+  color: var(--text-muted);
+  transition: transform var(--transition-fast), color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.more-icon.menu-open {
+  transform: rotate(90deg);
+  color: var(--current-accent);
 }
 
 /* Main Content */
@@ -671,6 +747,11 @@ const handleSearchBlur = () => {
   flex-direction: column;
 }
 
+/* Global Heading Fixes for Dashboard Items */
+:deep(h3) {
+  color: var(--text-primary) !important;
+}
+
 /* Transitions */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
@@ -739,27 +820,124 @@ const handleSearchBlur = () => {
   }
 }
 
-.user-menu {
-  padding: 8px;
-  margin-top: 4px;
+.user-menu-panel {
+  position: absolute;
+  bottom: 100%;
+  left: 12px;
+  right: 12px;
+  margin-bottom: 8px;
+  background: rgba(24, 24, 27, 0.97);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  overflow: hidden;
+  z-index: 100;
 }
 
-.user-menu .menu-item {
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.profile-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  color: #fff;
+  box-shadow: 0 0 20px var(--current-glow);
+  flex-shrink: 0;
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.profile-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f4f4f5;
+}
+
+.profile-role {
+  font-size: 12px;
+  color: var(--current-accent);
+  font-weight: 500;
+}
+
+.profile-details {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail-label {
+  font-size: 12px;
+  color: #71717a;
+  font-weight: 500;
+}
+
+.detail-value {
+  font-size: 12px;
+  color: #d4d4d8;
+  font-weight: 500;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-actions {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   width: 100%;
   padding: 10px 12px;
-  background: var(--surface-hover);
-  border: 1px solid var(--border-subtle);
+  background: transparent;
+  border: none;
   border-radius: 8px;
-  color: #f87171;
-  cursor: pointer;
+  color: #d4d4d8;
   font-size: 13px;
   font-weight: 500;
-  text-align: left;
+  cursor: pointer;
   transition: all 0.2s;
+  text-align: left;
 }
 
-.user-menu .menu-item:hover {
+.profile-action-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #f4f4f5;
+}
+
+.profile-action-btn.logout {
+  color: #f87171;
+}
+
+.profile-action-btn.logout:hover {
   background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
 }
 </style>
