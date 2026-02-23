@@ -1,24 +1,12 @@
 <template>
   <div class="sector-dashboard-router">
-    <component
-      :is="activeSectorComponent"
-      :key="sectorStore.currentSectorId || 'default'"
-      @navigate="$emit('navigate', $event)"
-    />
+    <PortalDashboard @navigate="$emit('navigate', $event)" />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useSectorStore } from '../../stores/sector'
 import PortalDashboard from '../../views/portal/PortalDashboard.vue'
-
-const sectorStore = useSectorStore()
-
 defineEmits(['navigate'])
-
-// Giriş sonrası Genel Bakış'ta her zaman portal görünsün (Hoş Geldiniz, istatistikler, grafik, hızlı işlemler)
-const activeSectorComponent = computed(() => PortalDashboard)
 </script>
 
 <style scoped>
