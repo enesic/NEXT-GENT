@@ -143,9 +143,60 @@ class handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps({"error": str(e)}).encode())
 
+    def do_POST(self):
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            data = json.loads(post_data.decode('utf-8'))
+
+            tenant_slug = data.get("tenant", "medical")
+            score = data.get("score")
+            feedback = data.get("feedback", "")
+
+            # Connect to database and insert feedback
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            async def save_feedback():
+                conn = await asyncpg.connect(DATABASE_URL)
+                tenant = await conn.fetchrow("SELECT id FROM tenants WHERE slug = $1", tenant_slug)
+                if not tenant:
+                    await conn.close()
+                    return False
+                
+                # Insert into vapi_calls as satisfaction update (simulated for simplicity)
+                # In a real app, this would go to 'satisfactions' table if it existed in the serverless context
+                await conn.execute(
+                    """INSERT INTO vapi_calls (tenant_id, satisfaction_score, sentiment, created_at)
+                       VALUES ($1, $2, $3, $4)""",
+                    tenant['id'], score, 'Positive' if score >= 4 else 'Neutral', datetime.now()
+                )
+                await conn.close()
+                return True
+
+            success = loop.run_until_complete(save_feedback())
+            loop.close()
+
+            if success:
+                self.send_response(201)
+            else:
+                self.send_response(404)
+                
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(json.dumps({"status": "success" if success else "error"}).encode())
+
+        except Exception as e:
+            self.send_response(500)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(json.dumps({"error": str(e)}).encode())
+
     def do_OPTIONS(self):
         self.send_response(200)
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Tenant-ID")
         self.end_headers()
