@@ -2,11 +2,11 @@
 <html lang="tr">
 
 <head>
-    <!-- [DIAGNOSTIC V2.0] AGGRESSIVE Error Shield -->
+    <!-- [DIAGNOSTIC V2.1] AGGRESSIVE Error Shield (Dogukan) -->
     <script>
         (function () {
             const shadowPatterns = [
-                'chrome-extension', 'sharebx', 'reporter', 'export', 'extension', 'browser-extension', 'syntaxerror', 'content_reporter'
+                'chrome-extension', 'sharebx', 'reporter', 'export', 'extension', 'browser-extension', 'syntaxerror', 'content_reporter', 'web-extension'
             ];
 
             const isNoise = (msg) => {
@@ -39,7 +39,7 @@
             };
             ['log', 'warn', 'error', 'info', 'debug'].forEach(hijack);
 
-            console.info("🛡️ [V2.0] Error Shield Active - Extensions Muted.");
+            console.info("🛡️ [V2.1] Error Shield Active - Console is Clean.");
         })();
     </script>
     <meta charset="UTF-8">

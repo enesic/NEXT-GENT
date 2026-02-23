@@ -142,7 +142,7 @@ class handler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            self.wfile.write(json.dumps({"error": f"[V2.0] Diagnostic Error: {str(e)}"}).encode())
+            self.wfile.write(json.dumps({"error": f("[V2.1] Diagnostic Error: " + str(e))}).encode())
 
     def do_POST(self):
         try:
@@ -169,7 +169,7 @@ class handler(BaseHTTPRequestHandler):
                     tenant = await conn.fetchrow("SELECT id FROM tenants WHERE slug = $1", tenant_slug)
                     if not tenant:
                         await conn.close()
-                        return False, "[V2.0] Tenant not found"
+                        return False, "[V2.1] Tenant not found"
                     
                     tenant_id = tenant['id']
                     if isinstance(tenant_id, str):
@@ -209,23 +209,25 @@ class handler(BaseHTTPRequestHandler):
                         cust = await conn.fetchrow("SELECT id FROM customers WHERE tenant_id = $1 LIMIT 1", tenant_id)
                         customer_id = cust['id'] if cust else None
                         
+                        # Fix: Do not provide ID, let the database generate the SERIAL/INT id
                         await conn.execute(
                             """INSERT INTO call_interactions (
-                                id, tenant_id, customer_id, interaction_type, 
+                                tenant_id, customer_id, interaction_type, 
                                 call_duration_seconds, satisfaction_score, 
                                 call_timestamp, call_summary, resolution_status
-                            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)""",
-                            uuid.uuid4(), tenant_id, customer_id, 'web_feedback',
+                            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)""",
+                            tenant_id, customer_id, 'web_feedback',
                             0, score, now, f"Web Feedback: {feedback[:50]}", 'COMPLETED'
                         )
                     except Exception as ci_err:
+                        # Fallback for call_interactions failure - we still want to report it for now
                         await conn.close()
-                        return False, f"[V2.0] DB Sync Error: {str(ci_err)}"
+                        return False, f"[V2.1] DB Sync Error: {str(ci_err)}"
 
                     await conn.close()
                     return True, None
                 except Exception as db_err:
-                    return False, f"[V2.0] Fatal DB Error: {str(db_err)}"
+                    return False, f"[V2.1] Fatal DB Error: {str(db_err)}"
 
             success, error_msg = loop.run_until_complete(save_feedback())
             loop.close()
@@ -244,7 +246,7 @@ class handler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
-            self.wfile.write(json.dumps({"error": f"[V2.0] Handler Error: {str(e)}"}).encode())
+            self.wfile.write(json.dumps({"error": f"[V2.1] Handler Error: {str(e)}"}).encode())
 
 
 
