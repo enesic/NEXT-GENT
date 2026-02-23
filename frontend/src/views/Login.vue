@@ -226,12 +226,13 @@ const handleLogin = async () => {
   }
 }
 
-const proceedToDashboard = () => {
+const proceedToDashboard = (sector = null) => {
   isLoading.value = false
   isInitializing.value = true
 
   setTimeout(() => {
-    window.location.replace('/dashboard')
+    const dashboardPath = sector ? `/dashboard/sectors/${sector}` : '/dashboard'
+    router.push(dashboardPath)
   }, 800)
 }
 

@@ -191,7 +191,7 @@ const vClickOutside = {
   right: 0;
   width: 380px;
   max-height: 500px;
-  background: var(--obsidian-black);
+  background: #030303;
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);

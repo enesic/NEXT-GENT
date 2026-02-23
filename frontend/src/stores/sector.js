@@ -10,7 +10,7 @@ import * as LucideIcons from 'lucide-vue-next'
  */
 export const useSectorStore = defineStore('sector', () => {
     // State
-    const currentSectorId = ref(sessionStorage.getItem('current_sector'))
+    const currentSectorId = ref(sessionStorage.getItem('current_sector') || 'medical')
 
     // Actions
     const setSector = (sectorId) => {

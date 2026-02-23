@@ -371,7 +371,7 @@ const sectorStore = useSectorStore()
 }
 
 .input-group input {
-  background: var(--obsidian-black);
+  background: #030303;
   border: 1px solid var(--border-subtle);
   padding: 12px 16px;
   border-radius: 10px;
@@ -392,7 +392,7 @@ const sectorStore = useSectorStore()
 }
 
 .input-group select {
-  background: var(--obsidian-black);
+  background: #030303;
   border: 1px solid var(--border-subtle);
   padding: 12px 16px;
   border-radius: 10px;
@@ -434,7 +434,7 @@ const sectorStore = useSectorStore()
 .toggle {
   width: 44px;
   height: 24px;
-  background: var(--obsidian-black);
+  background: #030303;
   border: 1px solid var(--border-subtle);
   border-radius: 99px;
   position: relative;
@@ -524,7 +524,7 @@ const sectorStore = useSectorStore()
 
 .usage-bar {
     height: 8px;
-    background: var(--obsidian-black);
+    background: #030303;
     border-radius: 4px;
     margin-bottom: 8px;
     overflow: hidden;
@@ -547,7 +547,7 @@ const sectorStore = useSectorStore()
     align-items: center;
     gap: 16px;
     padding: 12px;
-    background: var(--obsidian-black);
+    background: #030303;
     border-radius: 12px;
     border: 1px solid var(--border-subtle);
 }
