@@ -36,17 +36,17 @@ Sistemde seed edilen tüm sektörler:
 
 | Sektör | Müşteri ID | PIN | Router Path | Durum |
 |--------|-----------|-----|-------------|-------|
-| 🏥 Medical | MED-000001 | 1234 | /sectors/medical/dashboard | Seeded |
-| ⚖️ Legal | LEG-000001 | 1234 | /sectors/legal/dashboard | ✅ Test OK |
-| 💅 Beauty | BEA-000001 | 1234 | /sectors/beauty/dashboard | ✅ Test OK |
-| 🏨 Hospitality | HOS-000001 | 1234 | /sectors/hospitality/dashboard | Seeded |
-| 🏢 Real Estate | EST-000001 | 1234 | /sectors/real_estate/dashboard | Seeded |
-| 🏭 Manufacturing | MFG-000001 | 1234 | /sectors/manufacturing/dashboard | Seeded |
-| 🛒 E-commerce | ECM-000001 | 1234 | /sectors/ecommerce/dashboard | Seeded |
-| 🎓 Education | EDU-000001 | 1234 | /sectors/education/dashboard | Seeded |
-| 💰 Finance | FIN-000001 | 1234 | /sectors/finance/dashboard | Seeded |
-| 🚗 Automotive | AUT-000001 | 1234 | /sectors/automotive/dashboard | Seeded |
-| 🏪 Retail | RTL-000001 | 1234 | /sectors/retail/dashboard | Seeded |
+| 🏥 Medical | MED-000001 | 1234 | /dashboard | Seeded |
+| ⚖️ Legal | LEG-000001 | 1234 | /dashboard | ✅ Test OK |
+| 💅 Beauty | BEA-000001 | 1234 | /dashboard | ✅ Test OK |
+| 🏨 Hospitality | HOS-000001 | 1234 | /dashboard | Seeded |
+| 🏢 Real Estate | EST-000001 | 1234 | /dashboard | Seeded |
+| 🏭 Manufacturing | MFG-000001 | 1234 | /dashboard | Seeded |
+| 🛒 E-commerce | ECM-000001 | 1234 | /dashboard | Seeded |
+| 🎓 Education | EDU-000001 | 1234 | /dashboard | Seeded |
+| 💰 Finance | FIN-000001 | 1234 | /dashboard | Seeded |
+| 🚗 Automotive | AUT-000001 | 1234 | /dashboard | Seeded |
+| 🏪 Retail | RTL-000001 | 1234 | /dashboard | Seeded |
 
 ---
 

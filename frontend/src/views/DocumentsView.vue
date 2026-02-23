@@ -528,7 +528,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: 16px;
-  background: var(--obsidian-black);
+  background: #030303;
   color: var(--text-secondary);
   transition: all 0.3s;
 }
@@ -576,7 +576,7 @@ onMounted(() => {
     gap: 6px;
     font-size: 12px;
     color: var(--text-secondary);
-    background: var(--obsidian-black);
+    background: #030303;
     padding: 6px 10px;
     border-radius: 8px;
     width: fit-content;

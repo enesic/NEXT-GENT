@@ -181,13 +181,11 @@ const handleLogin = async () => {
     authStore.setUser(customer)
     authStore.setTenant(tenantId)
 
-    // E-ticaret: ExecutiveShell (/dashboard) kullan, sektör badge için sectorStore'u ayarla
-    // Diğer sektörler: /sectors/{sector}/dashboard
+    // Tüm sektörler /dashboard kullanır; sectorStore ile sektör belirlenir, ilgili dashboard yüklenir
     if (sector && sectorThemes[sector]) {
       sectorStore.setSector(sector)
     }
-    const redirectSector = sector === 'ecommerce' ? null : sector
-    proceedToDashboard(redirectSector)
+    proceedToDashboard()
     
   } catch (error) {
     isLoading.value = false
@@ -232,11 +230,9 @@ const proceedToDashboard = (sector = null) => {
   isLoading.value = false
   isInitializing.value = true
 
-  // Kısa görsel geri bildirim için 800ms bekle, sonra yönlendir
   setTimeout(() => {
-    // Sektör geçerliyse sektöre özgü dashboard'a, değilse ana dashboard'a yönlendir
-    const dashboardPath = sector ? `/sectors/${sector}/dashboard` : '/dashboard'
-    window.location.replace(dashboardPath)
+    const dashboardPath = sector ? `/dashboard/sectors/${sector}` : '/dashboard'
+    router.push(dashboardPath)
   }, 800)
 }
 

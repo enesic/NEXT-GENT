@@ -20,7 +20,7 @@
             </div>
         </div>
         <div class="stat-body">
-            <span class="stat-value" >{{ stat.value }}</span>
+            <span class="stat-value">{{ safeStr(stat.value) }}</span>
             <span v-if="stat.change" class="stat-change" :class="stat.change > 0 ? 'positive' : 'negative'">
               {{ stat.change > 0 ? '↑' : '↓' }} {{ Math.abs(stat.change) }}%
             </span>
@@ -32,8 +32,8 @@
         <!-- MAIN DRAFT: Large Chart Section -->
         <div class="chart-section glass-panel">
             <div class="section-header">
-                <h3 >{{ chartConfig?.title || 'Hasta Trafiği' }}</h3>
-                <span class="section-subtitle">{{ chartConfig?.subtitle || 'Yıllık Veriler' }}</span>
+                <h3>{{ safeStr(chartConfig?.title) || 'Hasta Trafiği' }}</h3>
+                <span class="section-subtitle">{{ safeStr(chartConfig?.subtitle) || 'Yıllık Veriler' }}</span>
             </div>
              <LuxuryChart 
                 v-if="chartConfig"
@@ -75,7 +75,7 @@
                     <div v-for="i in 3" :key="i" class="activity-row">
                         <div class="dot" :style="{ background: i === 1 ? colors.primary : colors.secondary }"></div>
                         <div class="activity-text">
-                            <strong >{{ getDummyActivity(i).title }}</strong>
+                            <strong>{{ safeStr(getDummyActivity(i).title) }}</strong>
                             <span class="time">2 saat önce</span>
                         </div>
                     </div>
@@ -166,6 +166,9 @@ const getColor = (colorName) => {
 const getGlowColor = (colorName) => {
     return getColor(colorName) + '1A' // 10% opacity
 }
+
+// Prevent [object Promise] in template if value is accidentally async
+const safeStr = (v) => (v != null && typeof v.then === 'function' ? '' : String(v ?? ''))
 
 // DEFAULT STATS (Generic Fallback)
 const defaultStats = [

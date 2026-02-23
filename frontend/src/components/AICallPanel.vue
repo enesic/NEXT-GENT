@@ -800,7 +800,7 @@ onMounted(() => {
   justify-content: center;
   font-size: 11px;
   font-weight: 700;
-  border: 2px solid var(--obsidian-black);
+  border: 2px solid #030303;
   box-shadow: 0 0 12px #ef4444;
 }
 

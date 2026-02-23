@@ -1,6 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useAdminStore } from '../stores/admin'
+import { useSectorStore } from '../stores/sector'
+import { sectorThemes } from '../config/sectorThemes'
+
+const validSectorIds = Object.keys(sectorThemes || {})
 
 const routes = [
     {
@@ -19,7 +23,127 @@ const routes = [
         path: '/dashboard',
         name: 'ExecutiveShell',
         component: () => import('../components/ExecutiveShell.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true },
+        children: [
+            {
+                path: '',
+                name: 'PortalDashboard',
+                component: () => import('../views/portal/PortalDashboard.vue'),
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'portal',
+                name: 'PortalDashboardAlt',
+                redirect: { name: 'PortalDashboard' }
+            },
+            {
+                path: 'sectors/:sectorId',
+                name: 'SectorDashboard',
+                component: () => import('../views/portal/PortalDashboard.vue'),
+                meta: { requiresAuth: true },
+                beforeEnter(to, from, next) {
+                    const id = to.params.sectorId
+                    if (validSectorIds.includes(id)) {
+                        const sectorStore = useSectorStore()
+                        sectorStore.setSector(id)
+                        next()
+                    } else {
+                        next({ name: 'PortalDashboard' })
+                    }
+                }
+            },
+            {
+                path: 'appointments',
+                name: 'Appointments',
+                component: () => import('../views/CalendarView.vue'),
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'messages',
+                name: 'PortalMessages',
+                component: () => import('../views/portal/PortalMessages.vue'),
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'calls',
+                name: 'PortalCalls',
+                component: () => import('../views/portal/PortalCalls.vue'),
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'satisfaction',
+                name: 'PortalSatisfaction',
+                component: () => import('../views/portal/PortalSatisfaction.vue'),
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'documents',
+                name: 'Documents',
+                component: () => import('../views/DocumentsView.vue'),
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'calendar',
+                name: 'Calendar',
+                component: () => import('../views/CalendarView.vue'),
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'settings',
+                name: 'Settings',
+                component: () => import('../views/SettingsView.vue'),
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'admin-dashboard',
+                name: 'ShellAdminDashboard',
+                component: () => import('../views/admin/AdminDashboard.vue'),
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'users',
+                name: 'ShellUserManagement',
+                component: () => import('../views/admin/UserManagement.vue'),
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'cards',
+                name: 'ShellCardsManagement',
+                component: () => import('../views/admin/CardsManagement.vue'),
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'flows',
+                name: 'ShellFlowEngine',
+                component: () => import('../views/admin/FlowEngine.vue'),
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'audits',
+                name: 'ShellAuditLogs',
+                component: () => import('../views/admin/AuditLogs.vue'),
+                meta: { requiresAuth: true }
+            },
+            {
+                path: 'analytics',
+                name: 'ShellAnalytics',
+                component: () => import('../views/AnalyticsView.vue'),
+                meta: { requiresAuth: true }
+            }
+        ]
+    },
+    // Legacy URL redirects
+    {
+        path: '/portal/dashboard',
+        redirect: '/dashboard/portal'
+    },
+    {
+        path: '/sectors/:sector/dashboard',
+        redirect: to => ({ path: `/dashboard/sectors/${to.params.sector}` })
+    },
+    {
+        path: '/sectors/:sector',
+        redirect: to => ({ path: `/dashboard/sectors/${to.params.sector}` })
     },
     // Admin Routes
     {
@@ -70,11 +194,6 @@ const routes = [
                 meta: { requiresAuth: true, role: 'admin', requiresAdminAuth: true }
             }
         ]
-    },
-    // Eski portal URL → ExecutiveShell /dashboard'a yönlendir (login sonrası doğru shell yüklensin)
-    {
-        path: '/portal/dashboard',
-        redirect: '/dashboard'
     }
 ]
 
@@ -85,9 +204,10 @@ const router = createRouter({
 
 // Navigation guard for authentication
 router.beforeEach((to, from, next) => {
-    // Tüm sektör URL'leri → /dashboard (sektör login bilgisine göre ilgili dashboard yüklenir)
+    // Legacy /sectors/... → nested /dashboard/sectors/...
     if (to.path.startsWith('/sectors/')) {
-        next('/dashboard')
+        const segment = to.path.replace(/^\/sectors\//, '').split('/')[0]
+        next('/dashboard/sectors/' + segment)
         return
     }
 
@@ -97,25 +217,20 @@ router.beforeEach((to, from, next) => {
     // Admin routes check - handle these first and exclusively
     if (to.meta.requiresAdminAuth) {
         if (!adminStore.isAuthenticated) {
-            // Redirect to admin login if not authenticated
             next({ name: 'AdminLogin', query: { redirect: to.fullPath } })
             return
         }
-        // Admin is authenticated, allow navigation
         next()
         return
     }
 
     // Regular user routes check - only for non-admin routes
     if (to.meta.requiresAuth) {
-        // Check Pinia store first, then fall back to sessionStorage directly
-        // (handles cases where reactive store hasn't fully hydrated yet)
         const hasToken = authStore.token || sessionStorage.getItem('auth_token')
         const hasUser = authStore.user || sessionStorage.getItem('user')
         const isAuth = !!(hasToken && hasUser)
 
         if (!isAuth) {
-            // Redirect to login if not authenticated
             next({ name: 'Login', query: { redirect: to.fullPath } })
             return
         }
@@ -133,7 +248,6 @@ router.onError((error) => {
     if (isChunkLoadFailed || error.message.includes('Failed to fetch dynamically imported module')) {
         console.error('Chunk load error detected, reloading page...', error);
 
-        // Prevent infinite reload loops
         const storageKey = 'chunk_reload_' + targetPath;
         const lastReload = sessionStorage.getItem(storageKey);
         const now = Date.now();
