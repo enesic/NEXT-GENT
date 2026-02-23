@@ -139,39 +139,51 @@ const clearFilters = () => {
   activeCategory.value = 'all'
 }
 
+// Normalize API response — backend may return array, {data:[]}, {documents:[]}, {results:[]}, etc.
+const normalizeDocumentList = (responseData) => {
+  if (Array.isArray(responseData)) return responseData
+  if (Array.isArray(responseData?.data)) return responseData.data
+  if (Array.isArray(responseData?.documents)) return responseData.documents
+  if (Array.isArray(responseData?.results)) return responseData.results
+  return []
+}
+
+const DEMO_FILES = [
+  { id: 1,  name: '2023_Yillik_Vergi_Beyannamesi.pdf',     type: 'pdf', date: '15.01.2024', size: '2.4 MB',  tag: { id: 'urgent', label: 'Acil' },       owner: 'Mali Müşavir' },
+  { id: 2,  name: 'Klinik_Analiz_Raporu_Ocak.img',          type: 'img', date: '02.02.2024', size: '4.1 MB',  tag: { id: 'new',    label: 'Yeni' },        owner: 'Dr. Ahmet' },
+  { id: 3,  name: 'Hizmet_Kullanim_Kilavuzu_v2.doc',        type: 'doc', date: '20.12.2023', size: '1.2 MB',                                               owner: 'Sistem' },
+  { id: 4,  name: 'Sektor_Analiz_Sunumu.pdf',               type: 'pdf', date: '10.02.2024', size: '8.5 MB',  tag: { id: 'shared', label: 'Paylaşıldı' },  owner: 'Analiz Ekibi' },
+  { id: 5,  name: 'Sistem_Yedekleme_Loglari.zip',           type: 'zip', date: '09.02.2024', size: '124 MB',                                               owner: 'Admin' },
+  { id: 6,  name: 'Musteri_Memnuniyet_Anketi_Sonuclari.pdf',type: 'pdf', date: '05.02.2024', size: '1.8 MB',                                               owner: 'Destek' },
+  { id: 7,  name: 'Yeni_Donem_Butce_Plani.doc',             type: 'doc', date: '01.02.2024', size: '3.2 MB',  tag: { id: 'urgent', label: 'Kritik' },      owner: 'Finans' },
+  { id: 8,  name: 'Ofis_Yerlesim_Plani_Mimari.img',         type: 'img', date: '25.01.2024', size: '12.4 MB',                                              owner: 'Projeler' },
+  { id: 9,  name: 'Hukuki_Danismanlik_Sozlesmesi.pdf',      type: 'pdf', date: '12.01.2024', size: '4.5 MB',  tag: { id: 'signed', label: 'İmzalandı' },  owner: 'Hukuk' },
+  { id: 10, name: 'Proje_Gelistirme_Yol_Haritasi.doc',      type: 'doc', date: '08.02.2024', size: '2.1 MB',                                               owner: 'PMO' },
+  { id: 11, name: 'Eski_Arsiv_Kayitlari_2022.zip',          type: 'zip', date: '15.12.2022', size: '450 MB',                                               owner: 'Arşiv' },
+  { id: 12, name: 'Sektor_Trend_Raporu_Q4.pdf',             type: 'pdf', date: '30.12.2023', size: '5.2 MB',                                               owner: 'Strateji' },
+  { id: 13, name: 'Kullanici_Deneyimi_Feedback.img',        type: 'img', date: '12.02.2024', size: '2.8 MB',  tag: { id: 'new',    label: 'Yeni' },        owner: 'UX Design' },
+  { id: 14, name: 'API_Dokumantasyonu_v3.pdf',              type: 'pdf', date: '11.02.2024', size: '6.2 MB',                                               owner: 'Dev Team' },
+  { id: 15, name: 'Girisim_Sermayesi_Sunumu.pdf',           type: 'pdf', date: '10.02.2024', size: '14.1 MB', tag: { id: 'shared', label: 'Yatırımcı' },  owner: 'CEO' },
+  { id: 16, name: 'Marketing_Asset_Library.zip',            type: 'zip', date: '09.02.2024', size: '89 MB',                                               owner: 'Pazarlama' },
+  { id: 17, name: 'Personel_Egitim_Portali_Syllabus.doc',  type: 'doc', date: '08.02.2024', size: '1.5 MB',                                               owner: 'HR' },
+  { id: 18, name: 'Sunucu_Performans_Grafikleri.img',       type: 'img', date: '07.02.2024', size: '5.5 MB',                                               owner: 'SRE' },
+  { id: 19, name: 'Musteri_Sikayetleri_Raporu.pdf',         type: 'pdf', date: '06.02.2024', size: '3.1 MB',  tag: { id: 'urgent', label: 'Acil' },        owner: 'QM' },
+  { id: 20, name: 'Yeni_Urun_Tanitim_Videosu_Script.doc',  type: 'doc', date: '05.02.2024', size: '0.8 MB',                                               owner: 'İçerik' }
+]
+
 // Fetch documents from API
 const fetchDocuments = async () => {
   loading.value = true
   error.value = null
   try {
     const response = await axios.get('/documents')
-    
-    // If API returns empty, use rich dummy data for demonstration
-    if (!response.data || response.data.length === 0) {
-      files.value = [
-        { id: 1, name: '2023_Yillik_Vergi_Beyannamesi.pdf', type: 'pdf', date: '15.01.2024', size: '2.4 MB', tag: { id: 'urgent', label: 'Acil' }, owner: 'Mali Müşavir' },
-        { id: 2, name: 'Klinik_Analiz_Raporu_Ocak.img', type: 'img', date: '02.02.2024', size: '4.1 MB', tag: { id: 'new', label: 'Yeni' }, owner: 'Dr. Ahmet' },
-        { id: 3, name: 'Hizmet_Kullanim_Kilavuzu_v2.doc', type: 'doc', date: '20.12.2023', size: '1.2 MB', owner: 'Sistem' },
-        { id: 4, name: 'Sektor_Analiz_Sunumu.pdf', type: 'pdf', date: '10.02.2024', size: '8.5 MB', tag: { id: 'shared', label: 'Paylaşıldı' }, owner: 'Analiz Ekibi' },
-        { id: 5, name: 'Sistem_Yedekleme_Loglari.zip', type: 'zip', date: '09.02.2024', size: '124 MB', owner: 'Admin' },
-        { id: 6, name: 'Musteri_Memnuniyet_Anketi_Sonuclari.pdf', type: 'pdf', date: '05.02.2024', size: '1.8 MB', owner: 'Destek' },
-        { id: 7, name: 'Yeni_Donem_Butce_Plani.doc', type: 'doc', date: '01.02.2024', size: '3.2 MB', tag: { id: 'urgent', label: 'Kritik' }, owner: 'Finans' },
-        { id: 8, name: 'Ofis_Yerlesim_Plani_Mimari.img', type: 'img', date: '25.01.2024', size: '12.4 MB', owner: 'Projeler' },
-        { id: 9, name: 'Hukuki_Danismanlik_Sozlesmesi.pdf', type: 'pdf', date: '12.01.2024', size: '4.5 MB', tag: { id: 'signed', label: 'İmzalandı' }, owner: 'Hukuk' },
-        { id: 10, name: 'Proje_Gelistirme_Yol_Haritasi.doc', type: 'doc', date: '08.02.2024', size: '2.1 MB', owner: 'PMO' },
-        { id: 11, name: 'Eski_Arsiv_Kayitlari_2022.zip', type: 'zip', date: '15.12.2022', size: '450 MB', owner: 'Arşiv' },
-        { id: 12, name: 'Sektor_Trend_Raporu_Q4.pdf', type: 'pdf', date: '30.12.2023', size: '5.2 MB', owner: 'Strateji' },
-        { id: 13, name: 'Kullanici_Deneyimi_Feedback.img', type: 'img', date: '12.02.2024', size: '2.8 MB', tag: { id: 'new', label: 'Yeni' }, owner: 'UX Design' },
-        { id: 14, name: 'API_Dokumantasyonu_v3.pdf', type: 'pdf', date: '11.02.2024', size: '6.2 MB', owner: 'Dev Team' },
-        { id: 15, name: 'Girisim_Sermayesi_Sunumu.pdf', type: 'pdf', date: '10.02.2024', size: '14.1 MB', tag: { id: 'shared', label: 'Yatırımcı' }, owner: 'CEO' },
-        { id: 16, name: 'Marketing_Asset_Library.zip', type: 'zip', date: '09.02.2024', size: '89 MB', owner: 'Pazarlama' },
-        { id: 17, name: 'Personel_Egitim_Portali_Syllabus.doc', type: 'doc', date: '08.02.2024', size: '1.5 MB', owner: 'HR' },
-        { id: 18, name: 'Sunucu_Performans_Grafikleri.img', type: 'img', date: '07.02.2024', size: '5.5 MB', owner: 'SRE' },
-        { id: 19, name: 'Musteri_Sikayetleri_Raporu.pdf', type: 'pdf', date: '06.02.2024', size: '3.1 MB', tag: { id: 'urgent', label: 'Acil' }, owner: 'QM' },
-        { id: 20, name: 'Yeni_Urun_Tanitim_Videosu_Script.doc', type: 'doc', date: '05.02.2024', size: '0.8 MB', owner: 'İçerik' }
-      ]
+    const list = normalizeDocumentList(response.data)
+
+    if (list.length === 0) {
+      // Nothing from backend — show demo content
+      files.value = DEMO_FILES
     } else {
-      files.value = response.data.map(doc => ({
+      files.value = list.map(doc => ({
         id: doc.id,
         name: doc.filename,
         type: getFileTypeFromMime(doc.file_type),
@@ -183,6 +195,8 @@ const fetchDocuments = async () => {
     }
   } catch (err) {
     console.error('Error fetching documents:', err)
+    // On network/auth error still show demo data so UI doesn't break
+    files.value = DEMO_FILES
     error.value = 'Belgeler yüklenirken bir hata oluştu'
   } finally {
     loading.value = false
