@@ -124,32 +124,27 @@
         </div>
       </header>
 
-      <!-- Content Area - Dashboard bypass: PortalDashboard doğrudan render (component :is Promise hatasını önler) -->
+      <!-- Content Area - Dashboard always explicit (no component :is) to prevent [object Promise] -->
       <div class="shell-content">
-        <Suspense>
-          <template #default>
-            <Transition name="fade-slide">
-              <PortalDashboard
-                v-if="activeNav === 'dashboard' && isCustomer"
-                :key="activeNav"
-                @navigate="handleNavigate"
-              />
-              <component
-                v-else
-                :is="resolvedComponent"
-                v-bind="activeComponentProps"
-                :key="activeNav"
-                @navigate="handleNavigate"
-              />
-            </Transition>
-          </template>
-          <template #fallback>
-            <div class="dashboard-loading-state">
-              <div class="loading-spinner-small"></div>
-              <p>Yükleniyor...</p>
-            </div>
-          </template>
-        </Suspense>
+        <Transition name="fade-slide">
+          <PortalDashboard
+            v-if="activeNav === 'dashboard' && isCustomer"
+            :key="'portal-dashboard'"
+            @navigate="handleNavigate"
+          />
+          <AdminDashboard
+            v-else-if="activeNav === 'dashboard' && !isCustomer"
+            :key="'admin-dashboard'"
+            @navigate="handleNavigate"
+          />
+          <component
+            v-else
+            :is="resolvedComponent"
+            v-bind="activeComponentProps"
+            :key="activeNav"
+            @navigate="handleNavigate"
+          />
+        </Transition>
       </div>
     </main>
 
@@ -160,7 +155,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick, onMounted, onUnmounted, inject } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { 
   Activity, Stethoscope, Scale, Building2, Home, Gavel,
   LayoutDashboard, TrendingUp, FolderKanban, Users, 
@@ -192,13 +187,16 @@ import CardsManagement from '../views/admin/CardsManagement.vue'
 import FlowEngine from '../views/admin/FlowEngine.vue'
 import AuditLogs from '../views/admin/AuditLogs.vue'
 import { useAuthStore } from '../stores/auth'
+import { useAdminStore } from '../stores/admin'
 import gsap from 'gsap'
 
 const sectorStore = useSectorStore()
 const notificationStore = useNotificationStore()
 const authStore = useAuthStore()
+const adminStore = useAdminStore()
 const axios = inject('axios')
 const router = useRouter()
+const route = useRoute()
 
 // Dynamic user info
 const userName = computed(() => {
@@ -278,11 +276,16 @@ const currentLogoIcon = computed(() => {
   return iconMap[sectorStore.currentSectorId] || Activity
 })
 
-// Helper to check if user is customer
+// Helper to check if user is customer (resilient to store hydration timing)
 const isCustomer = computed(() => {
-    // Assuming non-admin users are customers for this context
-    // You might need a more specific check based on your auth response structure
-    return authStore.user && authStore.user?.role !== 'admin'
+    const isAdmin = authStore.user?.role === 'admin'
+    const hasAdminSession = adminStore?.isAuthenticated ?? false
+    if (authStore.user && !isAdmin) return true
+    // Fallback: token exists and not admin session -> treat as customer (handles hydration delay)
+    if (authStore.token && !hasAdminSession) return true
+    // Route fallback: /dashboard is customer shell (admin uses /admin/dashboard)
+    if (route.path === '/dashboard' && authStore.token) return true
+    return false
 })
 
 // Navigation items
@@ -460,14 +463,14 @@ onUnmounted(() => {
   display: flex;
   height: 100vh;
   width: 100vw;
-  background: var(--obsidian-black);
+  background: #030303;
   overflow: hidden;
 }
 
 /* Sidebar */
 .shell-sidebar {
   width: 280px;
-  background: var(--obsidian-black);
+  background: #030303;
   border-right: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
@@ -665,7 +668,7 @@ onUnmounted(() => {
   justify-content: space-between;
   padding: 20px 32px;
   border-bottom: 1px solid var(--border-subtle);
-  background: var(--obsidian-black);
+  background: #030303;
 }
 
 .topbar-left {
@@ -789,7 +792,7 @@ onUnmounted(() => {
 }
 @keyframes shell-spin {
   to { transform: rotate(360deg); }
-  background: var(--obsidian-black);
+  background: #030303;
   width: 100%;
   display: flex;
   flex-direction: column;
