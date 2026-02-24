@@ -140,7 +140,7 @@ const handleSubmit = async () => {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -152,10 +152,10 @@ const handleSubmit = async () => {
   width: 480px;
   max-width: 90vw;
   max-height: 85vh;
-  background: rgba(24, 24, 27, 0.97);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 20px;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2), 0 0 0 1px var(--border-subtle) inset;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -167,7 +167,7 @@ const handleSubmit = async () => {
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .modal-title-group {
@@ -190,7 +190,7 @@ const handleSubmit = async () => {
 .modal-header h2 {
   font-size: 18px;
   font-weight: 600;
-  color: #f4f4f5;
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -232,7 +232,7 @@ const handleSubmit = async () => {
 .form-group label {
   font-size: 13px;
   font-weight: 500;
-  color: #a1a1aa;
+  color: var(--text-secondary);
   letter-spacing: 0.02em;
 }
 
@@ -241,10 +241,10 @@ const handleSubmit = async () => {
 .form-select {
   width: 100%;
   padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-main);
+  border: 1px solid var(--border-subtle);
   border-radius: 10px;
-  color: #f4f4f5;
+  color: var(--text-primary);
   font-size: 14px;
   outline: none;
   transition: all 0.2s;
@@ -279,7 +279,7 @@ const handleSubmit = async () => {
   gap: 12px;
   justify-content: flex-end;
   padding: 16px 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .btn-cancel {
@@ -341,7 +341,7 @@ const handleSubmit = async () => {
 .success-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(24, 24, 27, 0.97);
+  background: var(--bg-surface);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -367,7 +367,7 @@ const handleSubmit = async () => {
 .success-overlay p {
   font-size: 16px;
   font-weight: 500;
-  color: #f4f4f5;
+  color: var(--text-primary);
 }
 
 /* Transitions */

@@ -407,14 +407,14 @@ onUnmounted(() => {
   display: flex;
   height: 100vh;
   width: 100vw;
-  background: #030303;
+  background: var(--bg-main);
   overflow: hidden;
 }
 
 /* Sidebar */
 .shell-sidebar {
   width: 280px;
-  background: #030303;
+  background: var(--bg-sidebar);
   border-right: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
@@ -467,7 +467,7 @@ onUnmounted(() => {
   font-size: 18px;
   font-weight: 700;
   letter-spacing: var(--letter-spacing-tight);
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .sidebar-nav {
@@ -612,7 +612,7 @@ onUnmounted(() => {
   justify-content: space-between;
   padding: 20px 32px;
   border-bottom: 1px solid var(--border-subtle);
-  background: #030303;
+  background: var(--bg-sidebar);
 }
 
 .topbar-left {
@@ -821,11 +821,11 @@ onUnmounted(() => {
   left: 12px;
   right: 12px;
   margin-bottom: 8px;
-  background: rgba(24, 24, 27, 0.97);
+  background: var(--bg-surface);
   backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-subtle);
   border-radius: 16px;
-  box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.2), 0 0 0 1px var(--border-subtle) inset;
   overflow: hidden;
   z-index: 100;
 }
@@ -859,7 +859,7 @@ onUnmounted(() => {
 .profile-name {
   font-size: 15px;
   font-weight: 600;
-  color: #f4f4f5;
+  color: var(--text-primary);
 }
 
 .profile-role {
@@ -890,7 +890,7 @@ onUnmounted(() => {
 
 .detail-value {
   font-size: 12px;
-  color: #d4d4d8;
+  color: var(--text-primary);
   font-weight: 500;
   max-width: 140px;
   overflow: hidden;
@@ -923,8 +923,8 @@ onUnmounted(() => {
 }
 
 .profile-action-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #f4f4f5;
+  background: var(--surface-hover);
+  color: var(--text-primary);
 }
 
 .profile-action-btn.logout {

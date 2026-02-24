@@ -63,8 +63,8 @@ html, body, #app {
   width: 100%;
   margin: 0;
   padding: 0;
-  overflow-x: hidden; /* Prevent horizontal scroll */
-  background: #030303; /* Obsidian Black - consistent with design */
+  overflow-x: hidden;
+  background: var(--bg-main);
 }
 
 body {

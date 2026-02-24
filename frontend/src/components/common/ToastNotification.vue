@@ -79,16 +79,16 @@ const dismissNotification = (id) => {
 
 .toast {
   pointer-events: auto;
-  background: rgba(17, 24, 39, 0.95);
+  background: var(--bg-surface);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-subtle);
   border-radius: 12px;
   padding: 16px;
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3),
-              0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1),
+              0 0 0 1px var(--border-subtle);
   position: relative;
   overflow: hidden;
   cursor: pointer;
@@ -140,14 +140,14 @@ const dismissNotification = (id) => {
 .toast-title {
   font-size: 14px;
   font-weight: 600;
-  color: white;
+  color: var(--text-primary);
   margin: 0 0 4px 0;
   line-height: 1.4;
 }
 
 .toast-message {
   font-size: 13px;
-  color: #9ca3af;
+  color: var(--text-secondary);
   margin: 0;
   line-height: 1.5;
   word-wrap: break-word;
@@ -158,9 +158,9 @@ const dismissNotification = (id) => {
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #9ca3af;
+  background: var(--surface-hover);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -571,7 +571,7 @@ const saveEntry = async () => {
   font-size: 28px;
   font-weight: 700;
   margin-bottom: 4px;
-  color: var(--text-primary, #e2e8f0);
+  color: var(--text-primary);
 }
 
 .subtitle {
@@ -633,7 +633,7 @@ const saveEntry = async () => {
     font-size: 28px;
     font-weight: 700;
     display: block;
-    color: var(--text-primary, #e2e8f0);
+    color: var(--text-primary);
 }
 
 .stat-change {
@@ -669,7 +669,7 @@ const saveEntry = async () => {
     font-size: 18px;
     font-weight: 600;
     margin: 0;
-    color: var(--text-primary, #e2e8f0);
+    color: var(--text-primary);
 }
 
 .section-subtitle {
@@ -695,7 +695,7 @@ const saveEntry = async () => {
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 16px;
-    color: var(--text-primary, #e2e8f0);
+    color: var(--text-primary);
 }
 
 .actions-list {
@@ -720,7 +720,7 @@ const saveEntry = async () => {
 }
 
 .action-btn:hover {
-    background: var(--bg-secondary);
+    background: var(--surface-hover);
     border-color: var(--hover-color);
     transform: translateX(4px);
 }

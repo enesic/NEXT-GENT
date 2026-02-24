@@ -51,8 +51,10 @@ const props = defineProps({
   period: String
 })
 
+const isLight = computed(() => document.body.classList.contains('light-mode'))
+
 const chartOptions = computed(() => {
-  const isDark = true // Assuming dark mode for luxury theme
+  const mode = isLight.value ? 'light' : 'dark'
   
   return {
     chart: {
@@ -75,7 +77,7 @@ const chartOptions = computed(() => {
     fill: {
       type: 'gradient',
       gradient: {
-        shade: 'dark',
+        shade: mode,
         type: 'vertical',
         shadeIntensity: 0.5,
         gradientToColors: ['#8b5cf6'],
@@ -86,7 +88,7 @@ const chartOptions = computed(() => {
       }
     },
     grid: {
-      show: false, // Clean look, no grid
+      show: false,
       padding: {
         top: 0,
         right: 0,
@@ -100,7 +102,7 @@ const chartOptions = computed(() => {
       axisTicks: { show: false },
       labels: {
         style: {
-          colors: '#94a3b8',
+          colors: isLight.value ? '#64748b' : '#94a3b8',
           fontSize: '11px',
           fontFamily: 'Inter, sans-serif'
         }
@@ -111,7 +113,7 @@ const chartOptions = computed(() => {
       show: true,
       labels: {
         style: {
-          colors: '#94a3b8',
+          colors: isLight.value ? '#64748b' : '#94a3b8',
           fontSize: '11px',
           fontFamily: 'Inter, sans-serif'
         },
@@ -122,10 +124,10 @@ const chartOptions = computed(() => {
       }
     },
     theme: {
-      mode: 'dark'
+      mode: mode
     },
     tooltip: {
-      theme: 'dark',
+      theme: mode,
       style: {
         fontSize: '12px',
         fontFamily: 'Inter, sans-serif'
@@ -138,7 +140,7 @@ const chartOptions = computed(() => {
     },
     dataLabels: { enabled: false },
     legend: { show: false },
-    ...props.details // Merge extra options
+    ...props.details
   }
 })
 </script>

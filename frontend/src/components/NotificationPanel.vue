@@ -191,10 +191,10 @@ const vClickOutside = {
   right: 0;
   width: 380px;
   max-height: 500px;
-  background: #030303;
+  background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   z-index: 1000;
@@ -208,7 +208,7 @@ const vClickOutside = {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-elevated);
 }
 
 .header-content {
@@ -397,7 +397,7 @@ const vClickOutside = {
 .view-all {
   padding: 12px 16px;
   border-top: 1px solid var(--border-subtle);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface-elevated);
 }
 
 .view-all-btn {

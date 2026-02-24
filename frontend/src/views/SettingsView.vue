@@ -488,7 +488,7 @@ const toggleApp = (app) => {
 }
 
 .input-group input {
-  background: #030303;
+  background: var(--bg-sidebar);
   border: 1px solid var(--border-subtle);
   padding: 12px 16px;
   border-radius: 10px;
@@ -509,7 +509,7 @@ const toggleApp = (app) => {
 }
 
 .input-group select {
-  background: #030303;
+  background: var(--bg-sidebar);
   border: 1px solid var(--border-subtle);
   padding: 12px 16px;
   border-radius: 10px;
@@ -551,7 +551,7 @@ const toggleApp = (app) => {
 .toggle {
   width: 44px;
   height: 24px;
-  background: #030303;
+  background: var(--bg-main);
   border: 1px solid var(--border-subtle);
   border-radius: 99px;
   position: relative;
@@ -641,7 +641,7 @@ const toggleApp = (app) => {
 
 .usage-bar {
     height: 8px;
-    background: #030303;
+    background: var(--bg-main);
     border-radius: 4px;
     margin-bottom: 8px;
     overflow: hidden;
@@ -664,7 +664,7 @@ const toggleApp = (app) => {
     align-items: center;
     gap: 16px;
     padding: 12px;
-    background: #030303;
+    background: var(--bg-main);
     border-radius: 12px;
     border: 1px solid var(--border-subtle);
 }
