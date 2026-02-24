@@ -327,7 +327,25 @@ watch(settings, (newSettings) => {
   localStorage.setItem('user_settings', JSON.stringify(newSettings))
 }, { deep: true })
 
-// 4. Action Handlers
+// 4. Watch for Visual Changes and apply to Body
+watch(() => settings.appearance.darkMode, (isDark) => {
+  document.body.classList.toggle('light-mode', !isDark)
+}, { immediate: true })
+
+watch(() => settings.appearance.highContrast, (isHigh) => {
+  document.body.classList.toggle('high-contrast', isHigh)
+}, { immediate: true })
+
+watch(() => settings.appearance.compactView, (isCompact) => {
+  document.body.classList.toggle('compact-view', isCompact)
+}, { immediate: true })
+
+// 5. Watch for Locale Change
+watch(() => settings.localization.language, (newLang) => {
+  sectorStore.setLocale(newLang)
+})
+
+// 6. Action Handlers
 const saveAll = () => {
   localStorage.setItem('user_settings', JSON.stringify(settings))
   notificationStore.success('Ayarlarınız başarıyla kaydedildi.', 'Güncellendi')
@@ -342,14 +360,22 @@ const handleAction = (title, message = 'Bu işlem başarıyla başlatıldı.') =
 }
 
 const downloadData = () => {
-  const data = JSON.stringify(settings, null, 2)
+  const dataToExport = {
+    settings,
+    exportedAt: new Date().toISOString(),
+    user: authStore.user
+  }
+  const data = JSON.stringify(dataToExport, null, 2)
   const blob = new Blob([data], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `nextgent-settings-${new Date().toISOString().split('T')[0]}.json`
+  a.download = `nextgent-account-data-${new Date().toISOString().split('T')[0]}.json`
+  document.body.appendChild(a)
   a.click()
-  notificationStore.success('Kişisel verileriniz hazırlandı ve indirildi.', 'Veri İndirme')
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+  notificationStore.success('Hesap verileriniz dışa aktarıldı.', 'Veri İndirme')
 }
 
 const toggleApp = (app) => {
