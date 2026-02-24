@@ -318,7 +318,7 @@ class handler(BaseHTTPRequestHandler):
                         k, v = param.split("=", 1)
                         params[k] = v
 
-            tenant = params.get("tenant", "medical")
+            tenant = params.get("tenant") or self.headers.get("X-Tenant-ID") or "medical"
             days = int(params.get("days", "30"))
 
             # Route based on path

@@ -10,9 +10,9 @@ export default {
      * @param {number} days - Number of days to look back (default: 30)
      * @returns {Promise} Dashboard summary data
      */
-    async getQuickStats(days = 30) {
+    async getQuickStats(days = 30, tenant = 'medical') {
         const response = await apiClient.get('/analytics/quick-stats', {
-            params: { days }
+            params: { days, tenant }
         })
         return response.data
     },
@@ -37,8 +37,10 @@ export default {
      * Get sector-specific KPIs
      * @returns {Promise} Array of KPI cards
      */
-    async getSectoralKPIs() {
-        const response = await apiClient.get('/analytics/kpis')
+    async getSectoralKPIs(tenant = 'medical') {
+        const response = await apiClient.get('/analytics/kpis', {
+            params: { tenant }
+        })
         return response.data
     },
 
@@ -47,9 +49,9 @@ export default {
      * @param {number} days - Number of days to analyze (default: 30)
      * @returns {Promise} Satisfaction metrics and trends
      */
-    async getSatisfactionMetrics(days = 30) {
+    async getSatisfactionMetrics(days = 30, tenant = 'medical') {
         const response = await apiClient.get('/analytics/satisfaction', {
-            params: { days }
+            params: { days, tenant }
         })
         return response.data
     },

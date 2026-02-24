@@ -226,11 +226,12 @@ const fetchDashboardData = async () => {
         loading.value = true
         error.value = null
 
-        // Fetch data in parallel
+        // Fetch data in parallel with tenant context
+        const tenant = sectorStore.currentSectorId || 'medical'
         const [kpis, satisfaction, quickStats] = await Promise.all([
-            dashboardAPI.getSectoralKPIs().catch(() => null),
-            dashboardAPI.getSatisfactionMetrics(30).catch(() => null),
-            dashboardAPI.getQuickStats(30).catch(() => null)
+            dashboardAPI.getSectoralKPIs(tenant).catch(() => null),
+            dashboardAPI.getSatisfactionMetrics(30, tenant).catch(() => null),
+            dashboardAPI.getQuickStats(30, tenant).catch(() => null)
         ])
 
         console.log('✅ Dashboard data loaded:', { kpis, satisfaction, quickStats })
