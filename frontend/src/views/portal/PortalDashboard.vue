@@ -84,6 +84,9 @@
         </div>
     </div>
 
+    <QuickActionModal 
+      v-model="showActionModal" 
+      :action="activeAction"
       @submit="handleActionSubmit"
     />
 
@@ -254,8 +257,8 @@ const fetchDashboardData = async () => {
         const isValidJSON = (data) => data && typeof data !== 'string' && !String(data).startsWith('<!DOCTYPE')
 
         // Map KPIs to stat cards format
-        if (isValidJSON(kpis) && Array.isArray(kpis)) {
-            stats.value = kpis.map((kpi, index) => ({
+        if (isValidJSON(kpis) && Array.isArray(kpis) && kpis.length > 0) {
+            const mappedStats = kpis.map((kpi, index) => ({
                 label: kpi.label,
                 value: kpi.value,
                 change: parseFloat(kpi.trend) || 0,
@@ -263,18 +266,17 @@ const fetchDashboardData = async () => {
                 color: kpi.positive ? 'primary' : 'red',
                 description: kpi.description
             }))
+            stats.value = mappedStats
         } else if (kpis && typeof kpis === 'string') {
             console.warn('⚠️ KPIs returned HTML instead of JSON, using defaults')
         }
 
-        satisfactionData.value = isValidJSON(satisfaction) ? satisfaction : null
-        quickStatsData.value = isValidJSON(quickStats) ? quickStats : null
+        if (isValidJSON(satisfaction)) satisfactionData.value = satisfaction
+        if (isValidJSON(quickStats)) quickStatsData.value = quickStats
 
     } catch (err) {
         console.error('❌ Error fetching dashboard data:', err)
         error.value = err.message || 'Veri yüklenirken hata oluştu'
-        // Fallback to default data on error
-        stats.value = []
     } finally {
         loading.value = false
     }
