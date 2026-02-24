@@ -209,6 +209,13 @@ export const sectorThemes = {
             { label: 'Hizmet Listesi', icon: 'FileText', nav: 'documents' },
             { label: 'Mesajlar', icon: 'MessageSquare', nav: 'messages' }
         ],
+        services: [
+            { id: 1, name: 'Cilt Bakımı', price: '₺850', duration: '60 dk', icon: 'Sparkles', description: 'Derinlemesine temizlik ve nemlendirme' },
+            { id: 2, name: 'Lazer Epilasyon', price: '₺1.200', duration: '45 dk', icon: 'Zap', description: 'Son teknoloji cihazlar ile kalıcı çözüm' },
+            { id: 3, name: 'Saç Bakımı', price: '₺600', duration: '90 dk', icon: 'Scissors', description: 'Keratin bakım ve onarıcı maskeler' },
+            { id: 4, name: 'Tırnak Tasarımı', price: '₺450', duration: '60 dk', icon: 'Palette', description: 'Protez tırnak ve nail art uygulamaları' },
+            { id: 5, name: 'Medikal Masaj', price: '₺950', duration: '50 dk', icon: 'Heart', description: 'Uzman terapistler eşliğinde gevşeme' }
+        ],
         chart: {
             title: 'Randevu Trafiği',
             subtitle: 'Haftalık doluluk oranı',

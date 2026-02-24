@@ -84,18 +84,52 @@
         </div>
     </div>
 
-    <!-- Quick Action Modal -->
-    <QuickActionModal
-      :visible="showActionModal"
-      :title="activeAction.label"
-      :icon="activeAction.icon"
-      :fields="activeAction.fields"
-      :submitLabel="activeAction.submitLabel || 'Kaydet'"
-      :successMessage="activeAction.successMessage || 'İşlem başarıyla kaydedildi!'"
-      :accentColor="colors.primary"
-      @close="showActionModal = false"
       @submit="handleActionSubmit"
     />
+
+    <!-- Service List Modal -->
+    <Transition name="modal-fade">
+      <div v-if="showServiceModal" class="modal-overlay" @click.self="showServiceModal = false">
+        <div class="modal-container services-modal" :style="{ '--accent': colors.primary }">
+          <div class="modal-header">
+            <div class="modal-title-group">
+              <div class="modal-icon">
+                <FileText :size="20" />
+              </div>
+              <h2>Hizmet Listesi</h2>
+            </div>
+            <button class="close-btn" @click="showServiceModal = false">
+              <X :size="20" />
+            </button>
+          </div>
+          
+          <div class="modal-body">
+            <div class="services-list">
+              <div v-for="service in serviceList" :key="service.id" class="service-item">
+                <div class="service-icon-box" :style="{ color: colors.primary, background: getGlowColor('primary') }">
+                  <component :is="sectorStore.getIcon(service.icon || 'Sparkles')" :size="24" />
+                </div>
+                <div class="service-info">
+                  <div class="service-header">
+                    <h3>{{ service.name }}</h3>
+                    <span class="service-price">{{ service.price }}</span>
+                  </div>
+                  <p class="service-desc">{{ service.description }}</p>
+                  <div class="service-footer">
+                    <Clock :size="14" />
+                    <span>{{ service.duration }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="modal-footer">
+            <button class="btn-submit" @click="showServiceModal = false">Kapat</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -105,6 +139,7 @@ import { useSectorStore } from '../../stores/sector'
 import LuxuryChart from '../../components/LuxuryChart.vue'
 import QuickActionModal from '../../components/QuickActionModal.vue'
 import dashboardAPI from '../../config/dashboardAPI'
+import { X, FileText, Clock } from 'lucide-vue-next'
 
 const emit = defineEmits(['navigate'])
 const sectorStore = useSectorStore()
@@ -280,8 +315,13 @@ const getDummyActivity = (i) => {
     return { title: (messages[sectorId] || messages.generic)[i-1] || 'İşlem tamamlandı' }
 }
 
-// Quick Action Modal State
 const showActionModal = ref(false)
+const showServiceModal = ref(false)
+
+const serviceList = computed(() => {
+    return sectorStore.currentSector?.services || []
+})
+
 const activeAction = ref({
   label: '',
   icon: 'CalendarPlus',
@@ -406,6 +446,11 @@ const actionForms = {
 
 // Button click handler - open modal with appropriate form
 const handleActionClick = (action) => {
+    if (action.label === 'Hizmet Listesi') {
+        showServiceModal.value = true
+        return
+    }
+
     const sector = sectorStore.currentSectorId || 'medical'
     const sectorForms = actionForms[sector]
     
@@ -847,5 +892,179 @@ const saveEntry = async () => {
     .stats-grid {
         grid-template-columns: 1fr;
     }
+}
+
+/* Service Modal Styles */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.modal-container {
+  width: 550px;
+  max-width: 90vw;
+  max-height: 85vh;
+  background: rgba(24, 24, 27, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.modal-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+
+.modal-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  color: #f4f4f5;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: #a1a1aa;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  transition: color 0.2s;
+}
+
+.close-btn:hover { color: #f4f4f5; }
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.service-item {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  transition: all 0.3s;
+}
+
+.service-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
+.service-icon-box {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.service-info {
+  flex: 1;
+}
+
+.service-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.service-header h3 {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0;
+  color: #fff;
+}
+
+.service-price {
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 16px;
+}
+
+.service-desc {
+  font-size: 14px;
+  color: #a1a1aa;
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+}
+
+.service-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #71717a;
+  font-weight: 500;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-submit {
+  padding: 10px 24px;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-submit:hover { transform: translateY(-1px); filter: brightness(1.1); }
+
+.modal-fade-enter-active, .modal-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.modal-fade-enter-from, .modal-fade-leave-to {
+  opacity: 0;
 }
 </style>
