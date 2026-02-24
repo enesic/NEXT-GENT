@@ -136,6 +136,7 @@
 <script setup>
 import { ref, computed, inject, onMounted } from 'vue'
 import { useSectorStore } from '../../stores/sector'
+import { useAuthStore } from '../../stores/auth'
 import LuxuryChart from '../../components/LuxuryChart.vue'
 import QuickActionModal from '../../components/QuickActionModal.vue'
 import dashboardAPI from '../../config/dashboardAPI'
