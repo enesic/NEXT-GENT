@@ -229,14 +229,26 @@ const fetchDashboardData = async () => {
 
         // Fetch data in parallel with tenant context
         const authStore = useAuthStore()
-        const tenant = authStore.user?.tenant_slug || sectorStore.currentSectorId || 'medical'
+        
+        // Priority for tenant ID: user object -> sessionStorage -> currentSectorId
+        const tenant = authStore.user?.tenant_slug || 
+                       sessionStorage.getItem('tenant_id') || 
+                       sectorStore.currentSectorId || 
+                       'medical'
+                       
+        console.log('🔍 Fetching dashboard data for tenant:', tenant)
+        
         const [kpis, satisfaction, quickStats] = await Promise.all([
-            dashboardAPI.getSectoralKPIs(tenant).catch(() => null),
-            dashboardAPI.getSatisfactionMetrics(30, tenant).catch(() => null),
-            dashboardAPI.getQuickStats(30, tenant).catch(() => null)
+            dashboardAPI.getSectoralKPIs(tenant).catch(e => { console.error('Error fetching KPIs:', e); return null; }),
+            dashboardAPI.getSatisfactionMetrics(30, tenant).catch(e => { console.error('Error fetching satisfaction:', e); return null; }),
+            dashboardAPI.getQuickStats(30, tenant).catch(e => { console.error('Error fetching quick stats:', e); return null; })
         ])
-
-        console.log('✅ Dashboard data loaded:', { kpis, satisfaction, quickStats })
+        
+        console.log('✅ API Response Details:', { 
+            kpis: kpis ? (Array.isArray(kpis) ? `Array[${kpis.length}]` : typeof kpis) : 'null',
+            satisfaction: !!satisfaction,
+            quickStats: !!quickStats
+        })
 
         // Guard: if API returns HTML string instead of JSON, skip it
         const isValidJSON = (data) => data && typeof data !== 'string' && !String(data).startsWith('<!DOCTYPE')

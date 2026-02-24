@@ -200,7 +200,7 @@ export const sectorThemes = {
         stats: [
             { label: 'Bugünkü Randevular', value: '28', change: 12.5, icon: 'Calendar', color: 'primary' },
             { label: 'Aktif Müşteriler', value: '856', change: 5.3, icon: 'Users', color: 'accent' },
-            { label: 'Memnuniyet', value: '96%', change: 2.1, icon: 'Heart', color: 'secondary' },
+            { label: 'Memnuniyet', value: '96%', change: 2.1, icon: 'Heart', color: 'primary' },
             { label: 'Aylık Gelir', value: '₺145K', change: 8.7, icon: 'TrendingUp', color: 'green' }
         ],
         quickActions: [
