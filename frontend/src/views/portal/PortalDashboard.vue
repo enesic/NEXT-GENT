@@ -227,7 +227,8 @@ const fetchDashboardData = async () => {
         error.value = null
 
         // Fetch data in parallel with tenant context
-        const tenant = sectorStore.currentSectorId || 'medical'
+        const authStore = useAuthStore()
+        const tenant = authStore.user?.tenant_slug || sectorStore.currentSectorId || 'medical'
         const [kpis, satisfaction, quickStats] = await Promise.all([
             dashboardAPI.getSectoralKPIs(tenant).catch(() => null),
             dashboardAPI.getSatisfactionMetrics(30, tenant).catch(() => null),

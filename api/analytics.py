@@ -16,8 +16,14 @@ DATABASE_URL = "postgresql://neondb_owner:npg_leRNYA8SMiK9@ep-silent-water-ai73m
 class AnalyticsService:
     """Real analytics from database"""
 
-    async def get_tenant(self, conn, tenant_slug):
-        return await conn.fetchrow("SELECT id, name FROM tenants WHERE slug = $1", tenant_slug)
+    async def get_tenant(self, conn, tenant_id_or_slug):
+        # Try finding by ID (UUID) first if it looks like one, then by slug
+        try:
+            import uuid
+            val = uuid.UUID(tenant_id_or_slug)
+            return await conn.fetchrow("SELECT id, name FROM tenants WHERE id = $1", val)
+        except:
+            return await conn.fetchrow("SELECT id, name FROM tenants WHERE slug = $1", tenant_id_or_slug)
 
     async def get_kpis(self, tenant_slug):
         try:
