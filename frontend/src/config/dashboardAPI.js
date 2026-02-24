@@ -37,9 +37,9 @@ export default {
      * Get sector-specific KPIs
      * @returns {Promise} Array of KPI cards
      */
-    async getSectoralKPIs(tenant = 'medical') {
+    async getSectoralKPIs(tenant = 'medical', sector = '') {
         const response = await apiClient.get('/analytics/kpis', {
-            params: { tenant }
+            params: { tenant, sector }
         })
         return response.data
     },

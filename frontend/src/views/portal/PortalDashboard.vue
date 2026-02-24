@@ -242,7 +242,7 @@ const fetchDashboardData = async () => {
         console.log('🔍 Fetching dashboard data for tenant:', tenant)
         
         const [kpis, satisfaction, quickStats] = await Promise.all([
-            dashboardAPI.getSectoralKPIs(tenant).catch(e => { console.error('Error fetching KPIs:', e); return null; }),
+            dashboardAPI.getSectoralKPIs(tenant, sectorStore.currentSectorId).catch(e => { console.error('Error fetching KPIs:', e); return null; }),
             dashboardAPI.getSatisfactionMetrics(30, tenant).catch(e => { console.error('Error fetching satisfaction:', e); return null; }),
             dashboardAPI.getQuickStats(30, tenant).catch(e => { console.error('Error fetching quick stats:', e); return null; })
         ])
@@ -256,19 +256,44 @@ const fetchDashboardData = async () => {
         // Guard: if API returns HTML string instead of JSON, skip it
         const isValidJSON = (data) => data && typeof data !== 'string' && !String(data).startsWith('<!DOCTYPE')
 
-        // Map KPIs to stat cards format
+        // SMART MAPPING: Patch theme stats instead of overwriting
+        // This preserves colors (like our Pink Memnuniyet), icons, and order.
         if (isValidJSON(kpis) && Array.isArray(kpis) && kpis.length > 0) {
-            const mappedStats = kpis.map((kpi, index) => ({
-                label: kpi.label,
-                value: kpi.value,
-                change: parseFloat(kpi.trend) || 0,
-                icon: getIconForKPI(index),
-                color: kpi.positive ? 'primary' : 'red',
-                description: kpi.description
-            }))
-            stats.value = mappedStats
-        } else if (kpis && typeof kpis === 'string') {
-            console.warn('⚠️ KPIs returned HTML instead of JSON, using defaults')
+            const baseStats = JSON.parse(JSON.stringify(sectorStore.stats || defaultStats))
+            
+            // Map kpis by normalized label for fuzzy matching
+            const kpiMap = {}
+            kpis.forEach(k => {
+                if (k && k.label) kpiMap[k.label.toLowerCase().trim()] = k.value
+            })
+            
+            console.log('📊 KPI Mapping Source:', kpiMap)
+            
+            const updatedStats = baseStats.map((stat, idx) => {
+                const label = stat.label.toLowerCase().trim()
+                let value = stat.value
+                
+                // Fuzzy matching for common labels
+                if (kpiMap[label]) {
+                    value = kpiMap[label]
+                } else if (label.includes('randevu') && kpiMap['randevular']) {
+                    value = kpiMap['randevular']
+                } else if ((label.includes('müşteri') || label.includes('hasta')) && kpiMap['toplam müşteri']) {
+                    value = kpiMap['toplam müşteri']
+                } else if (label.includes('memnuniyet') && kpiMap['memnuniyet']) {
+                    value = kpiMap['memnuniyet']
+                } else if (label.includes('gelir') || label.includes('kazanç')) {
+                    // If no specific revenue match, keep theme value or use second KPI if it looks like revenue
+                    if (kpis[1] && kpis[1].label.includes('Etkileşim')) {
+                        // Keep theme value for revenue if backend only gives interactions
+                    }
+                }
+                
+                return { ...stat, value }
+            })
+            
+            stats.value = updatedStats
+            console.log('✅ Stats patched successfully')
         }
 
         if (isValidJSON(satisfaction)) satisfactionData.value = satisfaction

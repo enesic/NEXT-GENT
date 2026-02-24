@@ -25,13 +25,13 @@ class AnalyticsService:
         except:
             return await conn.fetchrow("SELECT id, name FROM tenants WHERE slug = $1", tenant_id_or_slug)
 
-    async def get_kpis(self, tenant_slug):
+    async def get_kpis(self, tenant_slug, sector="medical"):
         try:
             conn = await asyncpg.connect(DATABASE_URL)
             tenant = await self.get_tenant(conn, tenant_slug)
             if not tenant:
                 await conn.close()
-                return self._default_kpis()
+                return self._default_kpis(sector)
 
             tid = tenant['id']
 
@@ -58,39 +58,47 @@ class AnalyticsService:
 
             satisfaction_pct = round(avg_satisfaction * 20, 1) if avg_satisfaction else 85.0
 
+            # Sector-aware labels
+            if sector == "beauty":
+                labels = ["Bugünkü Randevular", "Aktif Müşteriler", "Memnuniyet", "Aylık Gelir"]
+                values = [str(total_appointments), str(total_customers), f"{satisfaction_pct}%", "₺0"] # Revenue not yet in DB
+            else:
+                labels = ["Toplam Müşteri", "Toplam Etkileşim", "Randevular", "Memnuniyet"]
+                values = [str(total_customers), str(total_interactions), str(total_appointments), f"{satisfaction_pct}%"]
+
             return [
                 {
-                    "label": "Toplam Müşteri",
-                    "value": str(total_customers),
+                    "label": labels[0],
+                    "value": values[0],
                     "trend": "+5.2",
                     "positive": True,
-                    "description": "Kayıtlı müşteri sayısı"
+                    "description": ""
                 },
                 {
-                    "label": "Toplam Etkileşim",
-                    "value": str(total_interactions),
+                    "label": labels[1],
+                    "value": values[1],
                     "trend": "+12.3",
                     "positive": True,
-                    "description": "Tüm zamanlar etkileşim"
+                    "description": ""
                 },
                 {
-                    "label": "Randevular",
-                    "value": str(total_appointments),
+                    "label": labels[2],
+                    "value": values[2],
                     "trend": "+3.1",
                     "positive": True,
-                    "description": "Toplam randevu sayısı"
+                    "description": ""
                 },
                 {
-                    "label": "Memnuniyet",
-                    "value": f"{satisfaction_pct}%",
+                    "label": labels[3],
+                    "value": values[3],
                     "trend": "+1.2",
                     "positive": True,
-                    "description": "Müşteri memnuniyeti"
+                    "description": ""
                 }
             ]
         except Exception as e:
             print(f"KPI error: {e}")
-            return self._default_kpis()
+            return self._default_kpis(sector)
 
     async def get_satisfaction(self, tenant_slug, days=30):
         try:
@@ -283,12 +291,19 @@ class AnalyticsService:
         }
 
     # Fallback defaults
-    def _default_kpis(self):
+    def _default_kpis(self, sector="medical"):
+        if sector == "beauty":
+            labels = ["Bugünkü Randevular", "Aktif Müşteriler", "Memnuniyet", "Aylık Gelir"]
+            values = ["0", "0", "96%", "₺0"]
+        else:
+            labels = ["Toplam Müşteri", "Toplam Etkileşim", "Randevular", "Memnuniyet"]
+            values = ["0", "0", "0", "0%"]
+            
         return [
-            {"label": "Toplam Müşteri", "value": "0", "trend": "0", "positive": True, "description": ""},
-            {"label": "Toplam Etkileşim", "value": "0", "trend": "0", "positive": True, "description": ""},
-            {"label": "Randevular", "value": "0", "trend": "0", "positive": True, "description": ""},
-            {"label": "Memnuniyet", "value": "0%", "trend": "0", "positive": True, "description": ""}
+            {"label": labels[0], "value": values[0], "trend": "0", "positive": True, "description": ""},
+            {"label": labels[1], "value": values[1], "trend": "0", "positive": True, "description": ""},
+            {"label": labels[2], "value": values[2], "trend": "0", "positive": True, "description": ""},
+            {"label": labels[3], "value": values[3], "trend": "0", "positive": True, "description": ""}
         ]
 
     def _default_satisfaction(self):
@@ -325,6 +340,7 @@ class handler(BaseHTTPRequestHandler):
                         params[k] = v
 
             tenant = params.get("tenant") or self.headers.get("X-Tenant-ID") or "medical"
+            sector = params.get("sector", "medical")
             days = int(params.get("days", "30"))
 
             # Route based on path
@@ -335,7 +351,7 @@ class handler(BaseHTTPRequestHandler):
             clean_path = path.replace("/api/v1/analytics/", "").replace("/api/analytics/", "").strip("/")
 
             if clean_path == "kpis" or path.endswith("/kpis"):
-                data = loop.run_until_complete(analytics_service.get_kpis(tenant))
+                data = loop.run_until_complete(analytics_service.get_kpis(tenant, sector))
             elif clean_path == "satisfaction" or path.endswith("/satisfaction"):
                 data = loop.run_until_complete(analytics_service.get_satisfaction(tenant, days))
             elif clean_path in ("quick-stats", "quickstats") or path.endswith("/quick-stats"):
