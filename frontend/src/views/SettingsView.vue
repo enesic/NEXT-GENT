@@ -5,7 +5,10 @@
         <h2>{{ sectorStore.t('settings') }}</h2>
         <p class="subtitle">Hesap ve uygulama tercihlerini yönetin</p>
       </div>
-      <button class="save-btn">Tümünü Kaydet</button>
+      <button class="save-btn" @click="saveAll">
+        <Save :size="18" />
+        Tümünü Kaydet
+      </button>
     </div>
 
     <div class="settings-grid">
@@ -18,15 +21,15 @@
         <div class="card-body">
           <div class="input-group">
             <label>Ad Soyad</label>
-            <input type="text" value="Ahmet Yılmaz" placeholder="Adınızı girin" />
+            <input type="text" v-model="settings.profile.fullName" placeholder="Adınızı girin" />
           </div>
           <div class="input-group">
             <label>Email Adresi</label>
-            <input type="email" value="info@nextgent.co" disabled />
+            <input type="email" :value="settings.profile.email" disabled />
           </div>
           <div class="input-group">
             <label>Telefon</label>
-            <input type="tel" value="+90 555 123 4567" />
+            <input type="tel" v-model="settings.profile.phone" />
           </div>
         </div>
       </div>
@@ -38,26 +41,26 @@
           <h3>Görünüm Ayarları</h3>
         </div>
         <div class="card-body">
-          <div class="toggle-group">
+          <div class="toggle-group" @click="toggle('appearance', 'darkMode')">
             <div class="toggle-info">
               <label>Koyu Mod</label>
               <p>Göz yorgunluğunu azaltan karanlık arayüz</p>
             </div>
-            <div class="toggle active"></div>
+            <div class="toggle" :class="{ active: settings.appearance.darkMode }"></div>
           </div>
-          <div class="toggle-group">
+          <div class="toggle-group" @click="toggle('appearance', 'highContrast')">
             <div class="toggle-info">
               <label>Yüksek Karşıtlık</label>
               <p>Daha belirgin metin ve bileşenler</p>
             </div>
-            <div class="toggle"></div>
+            <div class="toggle" :class="{ active: settings.appearance.highContrast }"></div>
           </div>
-          <div class="toggle-group">
+          <div class="toggle-group" @click="toggle('appearance', 'compactView')">
             <div class="toggle-info">
               <label>Kompakt Görünüm</label>
               <p>Daha fazla veriyi tek ekranda görün</p>
             </div>
-            <div class="toggle"></div>
+            <div class="toggle" :class="{ active: settings.appearance.compactView }"></div>
           </div>
         </div>
       </div>
@@ -69,19 +72,19 @@
           <h3>Bildirim Ayarları</h3>
         </div>
         <div class="card-body">
-          <div class="toggle-group">
+          <div class="toggle-group" @click="toggle('notifications', 'email')">
             <div class="toggle-info">
               <label>Email Bildirimleri</label>
               <p>Önemli güncellemeleri e-posta ile al</p>
             </div>
-            <div class="toggle active"></div>
+            <div class="toggle" :class="{ active: settings.notifications.email }"></div>
           </div>
-          <div class="toggle-group">
+          <div class="toggle-group" @click="toggle('notifications', 'sms')">
             <div class="toggle-info">
               <label>SMS Bildirimleri</label>
               <p>Randevu hatırlatmalarını SMS ile al</p>
             </div>
-            <div class="toggle active"></div>
+            <div class="toggle" :class="{ active: settings.notifications.sms }"></div>
           </div>
         </div>
       </div>
@@ -98,21 +101,21 @@
               <label>İki Faktörlü Doğrulama</label>
               <p>Ekstra güvenlik katmanı ekleyin</p>
             </div>
-            <button class="outline-btn">Etkinleştir</button>
+            <button class="outline-btn" @click="handleAction('Güvenlik', '2FA aktivasyon süreci başlatıldı.')">Etkinleştir</button>
           </div>
           <div class="action-row">
             <div class="action-info">
               <label>Şifre Güncelleme</label>
               <p>Son güncelleme: 3 ay önce</p>
             </div>
-            <button class="outline-btn">Değiştir</button>
+            <button class="outline-btn" @click="handleAction('Güvenlik', 'Şifre sıfırlama e-postası gönderildi.')">Değiştir</button>
           </div>
           <div class="action-row">
             <div class="action-info">
               <label>Hesap Kurtarma</label>
               <p>Yedek e-posta ve telefon ayarları</p>
             </div>
-            <button class="outline-btn">Yapılandır</button>
+            <button class="outline-btn" @click="handleAction('Güvenlik', 'Kurtarma ayarları yükleniyor...')">Yapılandır</button>
           </div>
         </div>
       </div>
@@ -124,19 +127,19 @@
           <h3>Gizlilik ve Veri</h3>
         </div>
         <div class="card-body">
-          <div class="toggle-group">
+          <div class="toggle-group" @click="toggle('privacy', 'dataPersonalization')">
             <div class="toggle-info">
               <label>Veri Kişiselleştirme</label>
               <p>Deneyiminizi iyileştirmek için verileri kullan</p>
             </div>
-            <div class="toggle active"></div>
+            <div class="toggle" :class="{ active: settings.privacy.dataPersonalization }"></div>
           </div>
           <div class="action-row">
             <div class="action-info">
               <label>Verilerimi İndir</label>
               <p>Tüm kişisel verilerinizin bir kopyasını alın</p>
             </div>
-            <button class="outline-btn">İndir</button>
+            <button class="outline-btn" @click="downloadData">İndir</button>
           </div>
         </div>
       </div>
@@ -158,7 +161,7 @@
             </div>
             <p class="usage-hint">En çok yer kaplayan: PDF Belgeler (%42)</p>
           </div>
-          <button class="outline-btn full-width">Plânı Yükselt</button>
+          <button class="outline-btn full-width" @click="handleAction('Paket Yükseltme', 'Ödeme sayfasına yönlendiriliyorsunuz...')">Plânı Yükselt</button>
         </div>
       </div>
 
@@ -183,7 +186,7 @@
                 <label>Slack</label>
                 <p>Bildirimleri kanala gönder</p>
             </div>
-            <button class="link-btn">Bağla</button>
+            <button class="link-btn" @click="toggleApp('Slack')">Bağla</button>
           </div>
         </div>
       </div>
@@ -219,7 +222,7 @@
         <div class="card-body">
           <div class="input-group">
             <label>Arayüz Dili</label>
-            <select class="premium-select">
+            <select class="premium-select" v-model="settings.localization.language">
               <option value="tr">Türkçe</option>
               <option value="en">English</option>
               <option value="de">Deutsch</option>
@@ -227,7 +230,7 @@
           </div>
           <div class="input-group">
             <label>Saat Dilimi</label>
-            <select class="premium-select">
+            <select class="premium-select" v-model="settings.localization.timezone">
               <option value="europe/istanbul">İstanbul (GMT+3)</option>
               <option value="europe/london">London (GMT+0)</option>
               <option value="america/new_york">New York (GMT-5)</option>
@@ -243,19 +246,19 @@
           <h3>Gelişmiş Ayarlar</h3>
         </div>
         <div class="card-body">
-          <div class="toggle-group">
+          <div class="toggle-group" @click="toggle('privacy', 'betaFeatures')">
             <div class="toggle-info">
               <label>Beta Özellikler</label>
               <p>Yeni özellikleri herkesten önce deneyin</p>
             </div>
-            <div class="toggle"></div>
+            <div class="toggle" :class="{ active: settings.privacy.betaFeatures }"></div>
           </div>
-          <div class="toggle-group">
+          <div class="toggle-group" @click="toggle('privacy', 'analyticsSharing')">
             <div class="toggle-info">
               <label>Analitik Paylaşımı</label>
               <p>Hata raporlarını otomatik olarak gönder</p>
             </div>
-            <div class="toggle active"></div>
+            <div class="toggle" :class="{ active: settings.privacy.analyticsSharing }"></div>
           </div>
         </div>
       </div>
@@ -264,9 +267,94 @@
 </template>
 
 <script setup>
-import { User, Palette, Bell, ShieldCheck, Globe, Cpu, Eye, HardDrive, Link, CreditCard } from 'lucide-vue-next'
+import { ref, reactive, onMounted, watch } from 'vue'
+import { 
+  User, Palette, Bell, ShieldCheck, Globe, Cpu, Eye, 
+  HardDrive, Link, CreditCard, Save, Download, Shield,
+  Lock, RefreshCw, Smartphone, Key
+} from 'lucide-vue-next'
 import { useSectorStore } from '../stores/sector'
+import { useNotificationStore } from '../stores/notification'
+import { useAuthStore } from '../stores/auth'
+
 const sectorStore = useSectorStore()
+const notificationStore = useNotificationStore()
+const authStore = useAuthStore()
+
+// 1. Reactive State
+const settings = reactive({
+  profile: {
+    fullName: authStore.user?.name || 'Ahmet Yılmaz',
+    email: authStore.user?.email || 'info@nextgent.co',
+    phone: '+90 555 123 4567'
+  },
+  appearance: {
+    darkMode: true,
+    highContrast: false,
+    compactView: false
+  },
+  notifications: {
+    email: true,
+    sms: true,
+    push: false
+  },
+  privacy: {
+    dataPersonalization: true,
+    betaFeatures: false,
+    analyticsSharing: true
+  },
+  localization: {
+    language: 'tr',
+    timezone: 'europe/istanbul'
+  }
+})
+
+// 2. Load from LocalStorage on mount
+onMounted(() => {
+  const savedSettings = localStorage.getItem('user_settings')
+  if (savedSettings) {
+    try {
+      const parsed = JSON.parse(savedSettings)
+      Object.assign(settings, parsed)
+    } catch (e) {
+      console.error('Failed to parse settings:', e)
+    }
+  }
+})
+
+// 3. Auto-save preference (optional, but good for UX)
+watch(settings, (newSettings) => {
+  localStorage.setItem('user_settings', JSON.stringify(newSettings))
+}, { deep: true })
+
+// 4. Action Handlers
+const saveAll = () => {
+  localStorage.setItem('user_settings', JSON.stringify(settings))
+  notificationStore.success('Ayarlarınız başarıyla kaydedildi.', 'Güncellendi')
+}
+
+const toggle = (category, key) => {
+  settings[category][key] = !settings[category][key]
+}
+
+const handleAction = (title, message = 'Bu işlem başarıyla başlatıldı.') => {
+  notificationStore.info(message, title)
+}
+
+const downloadData = () => {
+  const data = JSON.stringify(settings, null, 2)
+  const blob = new Blob([data], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `nextgent-settings-${new Date().toISOString().split('T')[0]}.json`
+  a.click()
+  notificationStore.success('Kişisel verileriniz hazırlandı ve indirildi.', 'Veri İndirme')
+}
+
+const toggleApp = (app) => {
+  handleAction(`${app} Bağlantısı`, `${app} bağlantı ayarları güncelleniyor...`)
+}
 </script>
 
 <style scoped>
@@ -306,6 +394,9 @@ const sectorStore = useSectorStore()
   cursor: pointer;
   transition: all 0.3s;
   box-shadow: 0 4px 12px var(--current-glow);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .save-btn:hover {
