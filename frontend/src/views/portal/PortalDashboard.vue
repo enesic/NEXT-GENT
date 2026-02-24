@@ -256,12 +256,11 @@ const fetchDashboardData = async () => {
         // Guard: if API returns HTML string instead of JSON, skip it
         const isValidJSON = (data) => data && typeof data !== 'string' && !String(data).startsWith('<!DOCTYPE')
 
-        // SMART MAPPING: Patch theme stats instead of overwriting
-        // This preserves colors (like our Pink Memnuniyet), icons, and order.
+        // SMART MAPPING: Multi-layered matching (Exact -> Fuzzy -> Positional)
         if (isValidJSON(kpis) && Array.isArray(kpis) && kpis.length > 0) {
             const baseStats = JSON.parse(JSON.stringify(sectorStore.stats || defaultStats))
             
-            // Map kpis by normalized label for fuzzy matching
+            // Build KPI Map for fast lookup (lowercase and trim)
             const kpiMap = {}
             kpis.forEach(k => {
                 if (k && k.label) kpiMap[k.label.toLowerCase().trim()] = k.value
@@ -271,29 +270,36 @@ const fetchDashboardData = async () => {
             
             const updatedStats = baseStats.map((stat, idx) => {
                 const label = stat.label.toLowerCase().trim()
-                let value = stat.value
+                let newValue = undefined
                 
-                // Fuzzy matching for common labels
-                if (kpiMap[label]) {
-                    value = kpiMap[label]
-                } else if (label.includes('randevu') && kpiMap['randevular']) {
-                    value = kpiMap['randevular']
-                } else if ((label.includes('müşteri') || label.includes('hasta')) && kpiMap['toplam müşteri']) {
-                    value = kpiMap['toplam müşteri']
-                } else if (label.includes('memnuniyet') && kpiMap['memnuniyet']) {
-                    value = kpiMap['memnuniyet']
-                } else if (label.includes('gelir') || label.includes('kazanç')) {
-                    // If no specific revenue match, keep theme value or use second KPI if it looks like revenue
-                    if (kpis[1] && kpis[1].label.includes('Etkileşim')) {
-                        // Keep theme value for revenue if backend only gives interactions
-                    }
+                // 1. Exact matching
+                if (kpiMap[label] !== undefined) {
+                    newValue = kpiMap[label]
+                } 
+                // 2. Fuzzy/Fragment matching
+                else if (label.includes('randevu') && kpiMap['randevular'] !== undefined) {
+                    newValue = kpiMap['randevular']
+                } 
+                else if ((label.includes('müşteri') || label.includes('hasta')) && kpiMap['toplam müşteri'] !== undefined) {
+                    newValue = kpiMap['toplam müşteri']
+                } 
+                else if (label.includes('memnuniyet') && kpiMap['memnuniyet'] !== undefined) {
+                    newValue = kpiMap['memnuniyet']
+                }
+                // 3. Positional fallback (if indexes likely align)
+                else if (kpis[idx] && kpis[idx].value !== undefined) {
+                    newValue = kpis[idx].value
                 }
                 
-                return { ...stat, value }
+                // Apply update if we found anything (including "0"), else keep theme value
+                return { 
+                    ...stat, 
+                    value: newValue !== undefined ? newValue : stat.value 
+                }
             })
             
             stats.value = updatedStats
-            console.log('✅ Stats patched successfully')
+            console.log('✅ Stats merged successfully:', stats.value)
         }
 
         if (isValidJSON(satisfaction)) satisfactionData.value = satisfaction
@@ -320,15 +326,11 @@ onMounted(() => {
 
 // Computed Display Data (Merges Defaults if Sector Data Missing)
 const displayStats = computed(() => {
-    // Priority: 1. API data, 2. Sector store data, 3. Default fallback
-    if (stats.value && stats.value.length > 0) {
-        return stats.value
-    }
-    
-    if (sectorStore.stats && sectorStore.stats.length > 0) {
-        return sectorStore.stats
-    }
-    
+    // If we have API-loaded stats, use them
+    if (stats.value && stats.value.length > 0) return stats.value
+    // Fallback to sector-specific theme stats
+    if (sectorStore.stats && sectorStore.stats.length > 0) return sectorStore.stats
+    // Ultimate fallback
     return defaultStats
 })
 
