@@ -69,7 +69,7 @@
 
 /* Light Mode */
 body.light-mode {
-  background: #f1f5f9 !important;
+  background: var(--bg-main) !important;
   --bg-main: #f1f5f9;
   --bg-sidebar: #ffffff;
   --bg-surface: #ffffff;
@@ -83,11 +83,20 @@ body.light-mode {
   --surface-hover: #f8fafc;
 }
 
+/* Theme-aware logo harmony */
+body.light-mode .logo-image {
+  filter: invert(1) brightness(0.2);
+}
+
 body.light-mode .executive-shell,
 body.light-mode .shell-sidebar,
 body.light-mode .shell-topbar,
 body.light-mode .shell-main {
-  background: #f8fafc !important;
+  background: var(--bg-main);
+}
+
+body.light-mode .shell-sidebar {
+  background: var(--bg-sidebar);
 }
 
 /* High Contrast */

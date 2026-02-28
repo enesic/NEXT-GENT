@@ -475,7 +475,7 @@ onMounted(fetchEvents)
 }
 
 .calendar-day {
-  background: #030303;
+  background: var(--bg-main);
   min-height: 120px;
   padding: 12px;
   display: flex;
@@ -581,7 +581,7 @@ onMounted(fetchEvents)
     gap: 16px;
     align-items: center;
     padding: 12px;
-    background: #030303;
+    background: var(--bg-main);
     border-radius: 16px;
     border: 1px solid var(--border-subtle);
     transition: all 0.3s;
@@ -645,7 +645,7 @@ onMounted(fetchEvents)
 
 .storage-bar {
     height: 6px;
-    background: #030303;
+    background: var(--bg-main);
     border-radius: 3px;
     overflow: hidden;
 }
@@ -816,7 +816,7 @@ onMounted(fetchEvents)
   display: flex;
   gap: 20px;
   padding: 16px;
-  background: #030303;
+  background: var(--bg-main);
   border-radius: 16px;
   border: 1px solid var(--border-subtle);
   transition: all 0.3s;

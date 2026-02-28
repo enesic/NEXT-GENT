@@ -529,7 +529,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: 16px;
-  background: #030303;
+  background: var(--bg-main);
   color: var(--text-secondary);
   transition: all 0.3s;
 }
@@ -577,7 +577,7 @@ onMounted(() => {
     gap: 6px;
     font-size: 12px;
     color: var(--text-secondary);
-    background: #030303;
+    background: var(--bg-main);
     padding: 6px 10px;
     border-radius: 8px;
     width: fit-content;

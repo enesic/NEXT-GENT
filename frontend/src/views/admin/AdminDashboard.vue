@@ -230,7 +230,7 @@ onMounted(() => {
     min-width: 100%; /* Ensure it doesn't shrink */
     max-width: none !important; /* Force override any hidden limits */
     padding: 32px 40px; 
-    background: #030303; 
+    background: var(--bg-main); 
     color: #fff;
     font-family: 'Inter', sans-serif;
     min-height: 100vh;
@@ -338,7 +338,7 @@ onMounted(() => {
 }
 
 .stat-card {
-    background: #0f0f11;
+    background: var(--bg-surface);
     border: 1px solid #1f1f23;
     border-radius: 16px;
     padding: 24px;
@@ -433,7 +433,7 @@ onMounted(() => {
 }
 
 .chart-card {
-    background: #0f0f11;
+    background: var(--bg-surface);
     border: 1px solid #1f1f23;
     border-radius: 16px;
     padding: 24px;

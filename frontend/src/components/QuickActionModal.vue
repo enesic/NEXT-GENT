@@ -1,14 +1,14 @@
 <template>
   <Transition name="modal-fade">
     <div v-if="visible" class="modal-overlay" @click.self="close">
-      <div class="modal-container" :style="{ '--accent': accentColor }">
+      <div class="modal-container" :style="{ '--accent': resolvedAccent }">
         <!-- Header -->
         <div class="modal-header">
           <div class="modal-title-group">
             <div class="modal-icon">
               <component :is="iconComponent" :size="20" :stroke-width="2" />
             </div>
-            <h2>{{ title }}</h2>
+            <h2>{{ resolvedTitle }}</h2>
           </div>
           <button class="close-btn" @click="close">
             <X :size="20" :stroke-width="2" />
@@ -17,7 +17,7 @@
 
         <!-- Form Content -->
         <div class="modal-body">
-          <div v-for="(field, index) in fields" :key="index" class="form-group">
+          <div v-for="(field, index) in resolvedFields" :key="index" class="form-group">
             <label>{{ field.label }}</label>
             <input
               v-if="field.type === 'text' || field.type === 'email' || field.type === 'tel' || field.type === 'number'"
@@ -57,7 +57,7 @@
           <button class="btn-cancel" @click="close">İptal</button>
           <button class="btn-submit" @click="handleSubmit" :disabled="submitting">
             <span v-if="submitting" class="spinner-small"></span>
-            {{ submitting ? 'İşleniyor...' : submitLabel }}
+            {{ submitting ? 'İşleniyor...' : resolvedSubmitLabel }}
           </button>
         </div>
 
@@ -65,7 +65,7 @@
         <Transition name="success-fade">
           <div v-if="showSuccess" class="success-overlay">
             <div class="success-icon">✓</div>
-            <p>{{ successMessage }}</p>
+            <p>{{ resolvedSuccessMessage }}</p>
           </div>
         </Transition>
       </div>
@@ -74,20 +74,38 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import { X, CalendarPlus, UserPlus, FileText, Activity, ShoppingCart, Package, Truck, Tag } from 'lucide-vue-next'
+import { useSectorStore } from '../stores/sector'
 
 const props = defineProps({
-  visible: { type: Boolean, default: false },
+  // v-model support
+  modelValue: { type: Boolean, default: false },
+  // action object (used by PortalDashboard)
+  action: { type: Object, default: null },
+  // fallback individual props
   title: { type: String, default: 'İşlem' },
   icon: { type: String, default: 'CalendarPlus' },
   fields: { type: Array, default: () => [] },
   submitLabel: { type: String, default: 'Kaydet' },
   successMessage: { type: String, default: 'İşlem başarıyla kaydedildi!' },
-  accentColor: { type: String, default: '#6366f1' }
+  accentColor: { type: String, default: '' }
 })
 
-const emit = defineEmits(['close', 'submit'])
+const emit = defineEmits(['update:modelValue', 'submit'])
+
+const sectorStore = useSectorStore()
+
+// Resolve values from action prop (priority) or individual props
+const resolvedTitle = computed(() => props.action?.label || props.title)
+const resolvedIcon = computed(() => props.action?.icon || props.icon)
+const resolvedFields = computed(() => props.action?.fields || props.fields)
+const resolvedSubmitLabel = computed(() => props.action?.submitLabel || props.submitLabel)
+const resolvedSuccessMessage = computed(() => props.action?.successMessage || props.successMessage)
+const resolvedAccent = computed(() => props.accentColor || sectorStore.theme?.primary || '#6366f1')
+
+// Visibility: support both v-model and visible prop
+const visible = computed(() => props.modelValue)
 
 const formData = reactive({})
 const submitting = ref(false)
@@ -96,40 +114,30 @@ const showSuccess = ref(false)
 const iconMap = {
   CalendarPlus, UserPlus, FileText, Activity, ShoppingCart, Package, Truck, Tag, X
 }
-const iconComponent = ref(iconMap[props.icon] || CalendarPlus)
+const iconComponent = computed(() => iconMap[resolvedIcon.value] || CalendarPlus)
 
-watch(() => props.icon, (newIcon) => {
-  iconComponent.value = iconMap[newIcon] || CalendarPlus
-})
-
-// Initialize form data when fields change
-watch(() => props.fields, (newFields) => {
+// Initialize/reset form data when fields change
+watch(resolvedFields, (newFields) => {
+  // Clear old keys
+  Object.keys(formData).forEach(k => delete formData[k])
+  // Init new keys
   newFields.forEach(field => {
-    if (!(field.key in formData)) {
-      formData[field.key] = field.default || ''
-    }
+    formData[field.key] = field.default || ''
   })
 }, { immediate: true })
 
 const close = () => {
   showSuccess.value = false
-  emit('close')
+  emit('update:modelValue', false)
 }
 
 const handleSubmit = async () => {
   submitting.value = true
-  
-  // Simulate save (in production, this would call an API)
   await new Promise(resolve => setTimeout(resolve, 800))
-  
   submitting.value = false
   showSuccess.value = true
-  
   emit('submit', { ...formData })
-  
-  // Auto-close after success
   setTimeout(() => {
-    // Reset form
     Object.keys(formData).forEach(key => { formData[key] = '' })
     close()
   }, 1500)
