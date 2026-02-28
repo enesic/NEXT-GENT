@@ -18,7 +18,7 @@
       </div>
 
       <div v-else-if="messages.length === 0" class="empty-state">
-        <component :is="sectorStore.getIcon('MessageSquare')" :size="48" :color="colors.secondary" />
+        <component :is="sectorStore.getIcon('MessageSquare')" :size="48" :color="colors.primary" />
         <p>Henüz bir mesajınız bulunmuyor.</p>
       </div>
 

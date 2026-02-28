@@ -36,7 +36,7 @@
                     :series="[{ name: 'Oran', data: [20, 30, 40, 80, 20, 80] }]" 
                     :categories="['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt']" 
                     height="300"
-                    :color="colors.secondary"
+                    :color="colors.accent"
                 />
             </div>
        </div>

@@ -18,7 +18,7 @@
       </div>
 
       <div v-else-if="calls.length === 0" class="empty-state">
-        <component :is="sectorStore.getIcon('Phone')" :size="48" :color="colors.secondary" />
+        <component :is="sectorStore.getIcon('Phone')" :size="48" :color="colors.primary" />
         <p>Henüz bir arama kaydı bulunmuyor.</p>
       </div>
 

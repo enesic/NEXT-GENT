@@ -73,7 +73,7 @@
                 <h3 >Son Aktiviteler</h3>
                 <div class="activity-list">
                     <div v-for="i in 3" :key="i" class="activity-row">
-                        <div class="dot" :style="{ background: i === 1 ? colors.primary : colors.secondary }"></div>
+                        <div class="dot" :style="{ background: i === 1 ? colors.primary : colors.accent }"></div>
                         <div class="activity-text">
                             <strong>{{ safeStr(getDummyActivity(i).title) }}</strong>
                             <span class="time">2 saat önce</span>

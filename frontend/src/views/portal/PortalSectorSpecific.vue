@@ -8,7 +8,7 @@
     <!-- Generic List Layout for "Sector Specific" Items -->
     <div class="content-card">
          <div v-if="items.length === 0" class="empty-state">
-            <component :is="sectorStore.getIcon(pageIcon)" :size="48" :color="colors.secondary" />
+            <component :is="sectorStore.getIcon(pageIcon)" :size="48" :color="colors.primary" />
             <p>Henüz kayıt bulunamadı.</p>
          </div>
 
@@ -21,7 +21,7 @@
                     <strong>{{ item.title }}</strong>
                     <span>{{ item.desc }}</span>
                  </div>
-                 <div class="row-status" :style="{ color: colors.secondary }">
+                 <div class="row-status" :style="{ color: colors.primary }">
                     {{ item.status }}
                  </div>
             </div>
