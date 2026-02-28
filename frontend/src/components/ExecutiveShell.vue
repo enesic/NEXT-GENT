@@ -135,7 +135,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onMounted, onUnmounted, inject } from 'vue'
+import { ref, computed, watch, watchEffect, nextTick, onMounted, onUnmounted, inject } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { 
   Activity, Stethoscope, Scale, Building2, Home, Gavel,
@@ -393,9 +393,33 @@ const handleSearchBlur = () => {
 
 // Sector is auto-set from login, no manual switching needed
 
+// Dynamic Sector Theme → CSS Variables
+// Keeps --current-accent, --current-glow etc in sync with sectorStore globally,
+// so CalendarView, DocumentsView, SettingsView etc all pick up the sector color.
+const applyThemeVars = () => {
+    const theme = sectorStore.theme
+    if (!theme) return
+    const root = document.documentElement
+    root.style.setProperty('--current-accent', theme.primary || '#6366f1')
+    root.style.setProperty('--current-glow', (theme.primary || '#6366f1') + '26')   // ~15% opacity
+    root.style.setProperty('--current-glow-strong', (theme.primary || '#6366f1') + '40') // ~25% opacity
+    // RGB for rgba() usage
+    const hex = (theme.primary || '#6366f1').replace('#', '')
+    const r = parseInt(hex.substring(0, 2), 16)
+    const g = parseInt(hex.substring(2, 4), 16)
+    const b = parseInt(hex.substring(4, 6), 16)
+    root.style.setProperty('--current-rgb', `${r}, ${g}, ${b}`)
+}
+
 onMounted(() => {
     document.addEventListener('click', handleClickOutside)
+    applyThemeVars()
 })
+
+// Re-apply whenever sector changes
+watch(() => sectorStore.currentSectorId, () => {
+    applyThemeVars()
+}, { immediate: true })
 
 onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside)
