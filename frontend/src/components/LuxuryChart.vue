@@ -17,7 +17,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   title: {
@@ -51,7 +51,19 @@ const props = defineProps({
   period: String
 })
 
-const isLight = computed(() => document.body.classList.contains('light-mode'))
+// Reactive light-mode detection via MutationObserver
+// (document.body.classList.contains is evaluated once at component creation;
+//  we need a ref that updates whenever the body class changes)
+const isLight = ref(document.body.classList.contains('light-mode'))
+
+let observer = null
+onMounted(() => {
+  observer = new MutationObserver(() => {
+    isLight.value = document.body.classList.contains('light-mode')
+  })
+  observer.observe(document.body, { attributes: true, attributeFilter: ['class'] })
+})
+onUnmounted(() => { observer?.disconnect() })
 
 const chartOptions = computed(() => {
   const mode = isLight.value ? 'light' : 'dark'
@@ -131,6 +143,30 @@ const chartOptions = computed(() => {
       style: {
         fontSize: '12px',
         fontFamily: 'Inter, sans-serif'
+      },
+      custom: function({ series, seriesIndex, dataPointIndex, w }) {
+        const val = series[seriesIndex][dataPointIndex]
+        const label = w.globals.labels?.[dataPointIndex] || w.globals.categoryLabels?.[dataPointIndex] || ''
+        const color = w.globals.colors?.[seriesIndex] || '#6366f1'
+        // Explicit colors: dark bg + white text in dark mode; white bg + dark text in light mode
+        const bg   = isLight.value ? '#ffffff' : '#1e293b'
+        const text = isLight.value ? '#1e293b' : '#f1f5f9'
+        const sub  = isLight.value ? '#64748b' : '#94a3b8'
+        const border = isLight.value ? '#e2e8f0' : '#334155'
+        return `<div style="
+          padding: 10px 14px;
+          background: ${bg};
+          border: 1px solid ${border};
+          border-radius: 10px;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+          min-width: 110px;
+        ">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;"></div>
+            <span style="font-size:11px;color:${sub};font-weight:500;">${label}</span>
+          </div>
+          <div style="font-size:16px;font-weight:700;color:${text};">${val >= 1000 ? (val/1000).toFixed(1)+'k' : val}</div>
+        </div>`
       },
       x: { show: true },
       y: {
