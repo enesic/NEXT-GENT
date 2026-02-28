@@ -15,6 +15,34 @@ if (import.meta.env.DEV) {
     console.log('🚀 NextGent System v3.0 - Loaded')
 }
 
+// ── Settings Bootstrap ──────────────────────────────────────────────────────
+// Apply saved user settings BEFORE Vue mounts so body classes are set
+// immediately on every page load/refresh (not just when SettingsView is open).
+; (function applyBootstrapSettings() {
+    try {
+        const raw = localStorage.getItem('user_settings')
+        if (!raw) return
+        const saved = JSON.parse(raw)
+        const appearance = saved?.appearance || {}
+
+        // Dark / light mode
+        if (appearance.darkMode === false) {
+            document.body.classList.add('light-mode')
+        } else {
+            document.body.classList.remove('light-mode')
+        }
+
+        // High contrast
+        document.body.classList.toggle('high-contrast', !!appearance.highContrast)
+
+        // Compact view
+        document.body.classList.toggle('compact-view', !!appearance.compactView)
+    } catch (e) {
+        // Silently ignore corrupt data
+    }
+})()
+// ────────────────────────────────────────────────────────────────────────────
+
 const app = createApp(App)
 const pinia = createPinia()
 

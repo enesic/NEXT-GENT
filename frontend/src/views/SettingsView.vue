@@ -310,16 +310,29 @@ const settings = reactive({
 })
 
 // 2. Load from LocalStorage on mount
+const applyAppearance = (appearance) => {
+    document.body.classList.toggle('light-mode', !appearance.darkMode)
+    document.body.classList.toggle('high-contrast', !!appearance.highContrast)
+    document.body.classList.toggle('compact-view', !!appearance.compactView)
+}
+
 onMounted(() => {
-  const savedSettings = localStorage.getItem('user_settings')
-  if (savedSettings) {
-    try {
-      const parsed = JSON.parse(savedSettings)
-      Object.assign(settings, parsed)
-    } catch (e) {
-      console.error('Failed to parse settings:', e)
+    const savedSettings = localStorage.getItem('user_settings')
+    if (savedSettings) {
+        try {
+            const parsed = JSON.parse(savedSettings)
+            // Deep merge nested objects instead of shallow Object.assign
+            if (parsed.profile)      Object.assign(settings.profile, parsed.profile)
+            if (parsed.appearance)   Object.assign(settings.appearance, parsed.appearance)
+            if (parsed.notifications) Object.assign(settings.notifications, parsed.notifications)
+            if (parsed.privacy)      Object.assign(settings.privacy, parsed.privacy)
+            if (parsed.localization) Object.assign(settings.localization, parsed.localization)
+            // Re-apply appearance immediately after loading
+            applyAppearance(settings.appearance)
+        } catch (e) {
+            console.error('Failed to parse settings:', e)
+        }
     }
-  }
 })
 
 // 3. Auto-save preference (optional, but good for UX)
@@ -347,8 +360,9 @@ watch(() => settings.localization.language, (newLang) => {
 
 // 6. Action Handlers
 const saveAll = () => {
-  localStorage.setItem('user_settings', JSON.stringify(settings))
-  notificationStore.success('Ayarlarınız başarıyla kaydedildi.', 'Güncellendi')
+    localStorage.setItem('user_settings', JSON.stringify(settings))
+    applyAppearance(settings.appearance)
+    notificationStore.success('Ayarlarınız başarıyla kaydedildi.', 'Güncellendi')
 }
 
 const toggle = (category, key) => {
