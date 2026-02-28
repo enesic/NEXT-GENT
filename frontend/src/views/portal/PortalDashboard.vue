@@ -266,40 +266,51 @@ const fetchDashboardData = async () => {
                 if (k && k.label) kpiMap[k.label.toLowerCase().trim()] = k.value
             })
             
-            console.log('📊 KPI Mapping Source:', kpiMap)
+            // Helper: is the API value meaningful? (not zero, not empty)
+            const isMeaningful = (v) => {
+                if (v === undefined || v === null || v === '' || v === 0 || v === '0') return false
+                // Check for numeric zero in string form like '0', '0.0', '0%'
+                const stripped = String(v).replace('%', '').replace(',', '.').trim()
+                const num = parseFloat(stripped)
+                if (!isNaN(num) && num === 0) return false
+                return true
+            }
             
             const updatedStats = baseStats.map((stat, idx) => {
                 const label = stat.label.toLowerCase().trim()
                 let newValue = undefined
                 
                 // 1. Exact matching
-                if (kpiMap[label] !== undefined) {
+                if (kpiMap[label] !== undefined && isMeaningful(kpiMap[label])) {
                     newValue = kpiMap[label]
                 } 
                 // 2. Fuzzy/Fragment matching
-                else if (label.includes('randevu') && kpiMap['randevular'] !== undefined) {
+                else if (label.includes('randevu') && isMeaningful(kpiMap['randevular'])) {
                     newValue = kpiMap['randevular']
                 } 
-                else if ((label.includes('müşteri') || label.includes('hasta')) && kpiMap['toplam müşteri'] !== undefined) {
+                else if ((label.includes('müşteri') || label.includes('hasta')) && isMeaningful(kpiMap['toplam müşteri'])) {
                     newValue = kpiMap['toplam müşteri']
                 } 
-                else if (label.includes('memnuniyet') && kpiMap['memnuniyet'] !== undefined) {
+                else if (label.includes('memnuniyet') && isMeaningful(kpiMap['memnuniyet'])) {
                     newValue = kpiMap['memnuniyet']
                 }
-                // 3. Positional fallback (if indexes likely align)
-                else if (kpis[idx] && kpis[idx].value !== undefined) {
-                    newValue = kpis[idx].value
-                }
+                // NOTE: positional fallback removed - it caused 0s to override theme defaults
                 
-                // Apply update if we found anything (including "0"), else keep theme value
+                // Only use API value if meaningful; otherwise keep the theme's default
                 return { 
                     ...stat, 
-                    value: newValue !== undefined ? newValue : stat.value 
+                    value: (newValue !== undefined) ? newValue : stat.value 
                 }
             })
             
-            stats.value = updatedStats
-            console.log('✅ Stats merged successfully:', stats.value)
+            // Only update stats if at least one value was actually improved by the API
+            const hasRealData = updatedStats.some((s, i) => s.value !== baseStats[i].value)
+            if (hasRealData) {
+                stats.value = updatedStats
+                console.log('✅ Stats updated from API:', stats.value)
+            } else {
+                console.log('ℹ️ API returned no meaningful KPI data, keeping theme defaults')
+            }
         }
 
         if (isValidJSON(satisfaction)) satisfactionData.value = satisfaction
