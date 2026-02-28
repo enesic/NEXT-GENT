@@ -1,20 +1,20 @@
 <template>
   <div class="portal-page">
     <div class="page-header">
-      <h1>Mesajlar</h1>
+      <h1 :style="{ color: colors.primary }">Mesajlar</h1>
       <p class="subtitle">Gelen kutusu ve mesaj geçmişiniz <span v-if="totalMessages > 0" class="msg-count">({{ totalMessages }} mesaj)</span></p>
     </div>
 
     <div class="content-card">
       <div v-if="loading" class="loading-state">
-        <div class="spinner"></div>
+        <div class="spinner" :style="{ borderTopColor: colors.primary }"></div>
         <span>Mesajlar yükleniyor...</span>
       </div>
       
       <div v-else-if="errorMsg" class="empty-state">
         <component :is="sectorStore.getIcon('AlertCircle')" :size="48" color="#ef4444" />
         <p>{{ errorMsg }}</p>
-        <button class="retry-btn" @click="loadMessages">Tekrar Dene</button>
+        <button class="retry-btn" :style="{ borderColor: colors.primary, color: colors.primary }" @click="loadMessages">Tekrar Dene</button>
       </div>
 
       <div v-else-if="messages.length === 0" class="empty-state">
@@ -45,9 +45,9 @@
 
         <!-- Pagination -->
         <div v-if="totalMessages > pageSize" class="pagination">
-          <button :disabled="currentPage <= 1" @click="goToPage(currentPage - 1)" class="page-btn">← Önceki</button>
-          <span class="page-info">Sayfa {{ currentPage }} / {{ totalPages }}</span>
-          <button :disabled="currentPage >= totalPages" @click="goToPage(currentPage + 1)" class="page-btn">Sonraki →</button>
+          <button :disabled="currentPage <= 1" @click="goToPage(currentPage - 1)" class="page-btn" :style="{ '--page-accent': colors.primary }">← Önceki</button>
+          <span class="page-info" :style="{ color: colors.primary }">Sayfa {{ currentPage }} / {{ totalPages }}</span>
+          <button :disabled="currentPage >= totalPages" @click="goToPage(currentPage + 1)" class="page-btn" :style="{ '--page-accent': colors.primary }">Sonraki →</button>
         </div>
       </div>
     </div>
@@ -194,7 +194,7 @@ onUnmounted(() => { destroyed = true; isFetching.value = false })
     width: 36px;
     height: 36px;
     border: 3px solid var(--border-subtle);
-    border-top-color: var(--text-primary);
+    border-top-color: var(--text-primary); /* overridden by inline :style */
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
 }
@@ -305,7 +305,8 @@ onUnmounted(() => { destroyed = true; isFetching.value = false })
 }
 .page-btn:hover:not(:disabled) {
     background: var(--surface-hover);
-    border-color: var(--border-hover);
+    border-color: var(--page-accent, var(--border-hover));
+    color: var(--page-accent, var(--text-primary));
 }
 .page-btn:disabled {
     opacity: 0.4;
@@ -319,14 +320,15 @@ onUnmounted(() => { destroyed = true; isFetching.value = false })
 
 .retry-btn {
     padding: 8px 20px;
-    background: var(--surface-elevated);
-    border: 1px solid var(--border-subtle);
+    background: transparent;
+    border: 1px solid;
     border-radius: 8px;
-    color: var(--text-primary);
     cursor: pointer;
+    font-weight: 600;
     transition: all 0.2s;
 }
 .retry-btn:hover {
-    background: var(--surface-hover);
+    opacity: 0.8;
+    transform: translateY(-1px);
 }
 </style>

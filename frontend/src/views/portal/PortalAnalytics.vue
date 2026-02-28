@@ -25,6 +25,7 @@
                     :series="[44, 55, 41, 17]" 
                     :labels="['Randevu', 'Bilgi', 'Şikayet', 'Diğer']" 
                     height="300" 
+                    :color="colors.primary"
                 />
             </div>
 

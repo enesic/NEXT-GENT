@@ -18,8 +18,8 @@
             <div class="feedback-list">
                  <h3>Son Geri Bildirimleriniz</h3>
                  <div v-for="i in 3" :key="i" class="feedback-item">
-                    <div class="feedback-icon" :style="{ background: colors.background }">
-                        <component :is="sectorStore.getIcon('MessageCircle')" :size="18" :color="colors.text" />
+                    <div class="feedback-icon" :style="{ background: getGlowColor('primary'), color: colors.primary }">
+                        <component :is="sectorStore.getIcon('MessageCircle')" :size="18" />
                     </div>
                     <div class="feedback-text">
                         <strong>Hizmet Kalitesi</strong>
@@ -38,7 +38,7 @@
     <!-- Feedback Modal -->
     <Teleport to="body">
       <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
-        <div class="modal-container">
+        <div class="modal-container" :style="{ '--modal-accent': colors.primary }">
           <div class="modal-header">
             <h3>Yeni Geri Bildirim</h3>
             <button class="close-btn" @click="showModal = false">
@@ -292,12 +292,13 @@ const submitFeedback = async () => {
 }
 
 .modal-container {
-    background: #0f172a;
+    background: var(--bg-surface, #0f172a);
     width: 90%;
     max-width: 500px;
     border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--modal-accent, rgba(255, 255, 255, 0.1));
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                0 0 0 1px var(--modal-accent, transparent) inset;
     overflow: hidden;
 }
 
@@ -382,7 +383,8 @@ const submitFeedback = async () => {
 
 .form-group textarea:focus {
     outline: none;
-    border-color: var(--indigo-primary);
+    border-color: var(--modal-accent, #6366f1);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--modal-accent, #6366f1) 15%, transparent);
 }
 
 .modal-footer {
