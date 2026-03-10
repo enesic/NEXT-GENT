@@ -14,7 +14,7 @@
         :style="{ borderTop: `4px solid ${getColor(stat.color)}` }"
       >
         <div class="stat-header">
-            <span class="stat-label">{{ stat.label }}</span>
+            <span class="stat-label">{{ tLoc(stat.label) }}</span>
             <div class="stat-icon" :style="{ color: getColor(stat.color), background: getGlowColor(stat.color) }">
                 <component :is="sectorStore.getIcon(stat.icon)" :size="20" />
             </div>
@@ -32,8 +32,8 @@
         <!-- MAIN DRAFT: Large Chart Section -->
         <div class="chart-section glass-panel">
             <div class="section-header">
-                <h3>{{ safeStr(chartConfig?.title) || 'Hasta Trafiği' }}</h3>
-                <span class="section-subtitle">{{ safeStr(chartConfig?.subtitle) || 'Yıllık Veriler' }}</span>
+                <h3>{{ tLoc(chartConfig?.title) || 'Veri Akışı' }}</h3>
+                <span class="section-subtitle">{{ tLoc(chartConfig?.subtitle) || 'Detaylı İstatistikler' }}</span>
             </div>
              <LuxuryChart 
                 v-if="chartConfig"
@@ -62,7 +62,7 @@
                         <div class="action-icon" :style="{ background: getGlowColor('primary'), color: colors.primary }">
                              <component :is="sectorStore.getIcon(action.icon)" :size="18" />
                         </div>
-                        <span>{{ action.label }}</span>
+                        <span>{{ tLoc(action.label) }}</span>
                         <div class="post-icon">→</div>
                     </button>
                 </div>
@@ -194,6 +194,13 @@ const colors = computed(() => sectorStore.theme || {
 const t = (key) => {
     if (sectorStore.t) return sectorStore.t(key)
     return key
+}
+
+const tLoc = (obj) => {
+    if (!obj) return ''
+    if (typeof obj === 'string') return obj
+    const locale = sectorStore.currentLocale || 'tr'
+    return obj[locale] || obj['tr'] || ''
 }
 
 // Helpers
@@ -385,144 +392,33 @@ const activeAction = ref({
   successMessage: 'İşlem başarıyla kaydedildi!'
 })
 
-// Sector-specific Quick Action form definitions
-const actionForms = {
-  beauty: {
-    'Randevu Ekle': {
-      icon: 'CalendarPlus',
-      submitLabel: 'Randevu Oluştur',
-      successMessage: 'Randevu başarıyla oluşturuldu!',
-      fields: [
-        { key: 'customerName', label: 'Müşteri Adı', type: 'text', placeholder: 'Müşteri adını girin' },
-        { key: 'service', label: 'Hizmet', type: 'select', placeholder: 'Hizmet seçin', options: [
-          { value: 'ciltBakimi', label: 'Cilt Bakımı' },
-          { value: 'lazerEpilasyon', label: 'Lazer Epilasyon' },
-          { value: 'sacBakimi', label: 'Saç Bakımı' },
-          { value: 'tirnak', label: 'Tırnak Bakımı' },
-          { value: 'masaj', label: 'Masaj' }
-        ]},
-        { key: 'date', label: 'Tarih ve Saat', type: 'datetime-local' },
-        { key: 'notes', label: 'Notlar', type: 'textarea', placeholder: 'Ek notlar...' }
-      ]
-    },
-    'Müşteri Kaydı': {
-      icon: 'UserPlus',
-      submitLabel: 'Müşteri Ekle',
-      successMessage: 'Müşteri başarıyla kaydedildi!',
-      fields: [
-        { key: 'firstName', label: 'Ad', type: 'text', placeholder: 'Ad' },
-        { key: 'lastName', label: 'Soyad', type: 'text', placeholder: 'Soyad' },
-        { key: 'phone', label: 'Telefon', type: 'tel', placeholder: '+90 5XX XXX XX XX' },
-        { key: 'email', label: 'E-posta', type: 'email', placeholder: 'ornek@email.com' },
-        { key: 'skinType', label: 'Cilt Tipi', type: 'select', placeholder: 'Cilt tipi seçin', options: [
-          { value: 'normal', label: 'Normal' },
-          { value: 'kuru', label: 'Kuru' },
-          { value: 'yagli', label: 'Yağlı' },
-          { value: 'karma', label: 'Karma' },
-          { value: 'hassas', label: 'Hassas' }
-        ]}
-      ]
-    },
-    'İşlem Notu': {
-      icon: 'FileText',
-      submitLabel: 'Notu Kaydet',
-      successMessage: 'İşlem notu kaydedildi!',
-      fields: [
-        { key: 'customerName', label: 'Müşteri', type: 'text', placeholder: 'Müşteri adı' },
-        { key: 'treatmentType', label: 'İşlem Türü', type: 'text', placeholder: 'Yapılan işlem' },
-        { key: 'notes', label: 'Detaylı Not', type: 'textarea', placeholder: 'İşlem detaylarını yazın...' }
-      ]
-    },
-    'Lab Sonuçları': {
-      icon: 'Activity',
-      submitLabel: 'Sonuç Kaydet',
-      successMessage: 'Lab sonuçları kaydedildi!',
-      fields: [
-        { key: 'customerName', label: 'Müşteri', type: 'text', placeholder: 'Müşteri adı' },
-        { key: 'testType', label: 'Test Türü', type: 'text', placeholder: 'Örn: Alerji Testi' },
-        { key: 'result', label: 'Sonuç', type: 'textarea', placeholder: 'Test sonuçlarını girin...' },
-        { key: 'date', label: 'Test Tarihi', type: 'date' }
-      ]
-    }
-  },
-  ecommerce: {
-    'Sipariş Oluştur': {
-      icon: 'ShoppingCart',
-      submitLabel: 'Sipariş Oluştur',
-      successMessage: 'Sipariş başarıyla oluşturuldu!',
-      fields: [
-        { key: 'customerName', label: 'Müşteri Adı', type: 'text', placeholder: 'Müşteri adını girin' },
-        { key: 'product', label: 'Ürün', type: 'text', placeholder: 'Ürün adı veya SKU' },
-        { key: 'quantity', label: 'Adet', type: 'number', placeholder: '1' },
-        { key: 'address', label: 'Teslimat Adresi', type: 'textarea', placeholder: 'Adres bilgilerini girin...' }
-      ]
-    },
-    'Ürün Ekle': {
-      icon: 'Package',
-      submitLabel: 'Ürün Ekle',
-      successMessage: 'Ürün başarıyla eklendi!',
-      fields: [
-        { key: 'productName', label: 'Ürün Adı', type: 'text', placeholder: 'Ürün adı' },
-        { key: 'sku', label: 'SKU', type: 'text', placeholder: 'SKU-001' },
-        { key: 'price', label: 'Fiyat (₺)', type: 'number', placeholder: '0.00' },
-        { key: 'stock', label: 'Stok Adedi', type: 'number', placeholder: '0' },
-        { key: 'description', label: 'Açıklama', type: 'textarea', placeholder: 'Ürün açıklaması...' }
-      ]
-    },
-    'Kargo Takip': {
-      icon: 'Truck',
-      submitLabel: 'Kargo Takip Sorgula',
-      successMessage: 'Kargo bilgileri yüklendi!',
-      fields: [
-        { key: 'trackingNo', label: 'Takip Numarası', type: 'text', placeholder: 'Kargo takip numarası' },
-        { key: 'carrier', label: 'Kargo Firması', type: 'select', placeholder: 'Firma seçin', options: [
-          { value: 'yurtici', label: 'Yurtiçi Kargo' },
-          { value: 'aras', label: 'Aras Kargo' },
-          { value: 'mng', label: 'MNG Kargo' },
-          { value: 'ptt', label: 'PTT Kargo' },
-          { value: 'ups', label: 'UPS' }
-        ]}
-      ]
-    },
-    'Kampanya': {
-      icon: 'Tag',
-      submitLabel: 'Kampanya Oluştur',
-      successMessage: 'Kampanya başarıyla oluşturuldu!',
-      fields: [
-        { key: 'campaignName', label: 'Kampanya Adı', type: 'text', placeholder: 'Kampanya adı' },
-        { key: 'discount', label: 'İndirim Oranı (%)', type: 'number', placeholder: '10' },
-        { key: 'startDate', label: 'Başlangıç Tarihi', type: 'date' },
-        { key: 'endDate', label: 'Bitiş Tarihi', type: 'date' },
-        { key: 'description', label: 'Açıklama', type: 'textarea', placeholder: 'Kampanya detayları...' }
-      ]
-    }
-  }
-}
-
-// Button click handler - open modal with appropriate form
+// Sector-specific Quick Action logic is now handled dynamically from sectorThemes config
 const handleActionClick = (action) => {
-    if (action.label === 'Hizmet Listesi') {
-        showServiceModal.value = true
-        return
-    }
-
-    const sector = sectorStore.currentSectorId || 'medical'
-    const sectorForms = actionForms[sector]
+    const translatedLabel = tLoc(action.label)
     
-    if (sectorForms && sectorForms[action.label]) {
-        const form = sectorForms[action.label]
+    // Check if this action has specific form fields defined in sectorThemes
+    if (action.fields && action.fields.length > 0) {
         activeAction.value = {
-            label: action.label,
-            icon: form.icon,
-            fields: form.fields,
-            submitLabel: form.submitLabel,
-            successMessage: form.successMessage
+            label: action.label, // Pass object to modal for internal tLoc
+            icon: action.icon,
+            fields: action.fields,
+            submitLabel: { tr: 'Kaydet', en: 'Save', de: 'Speichern' },
+            successMessage: { tr: 'İşlem başarıyla kaydedildi!', en: 'Action saved successfully!', de: 'Vorgang erfolgreich gespeichert!' }
         }
         showActionModal.value = true
     } else {
-        // Fallback: navigate for sectors without defined forms
-        const target = action.nav || 'dashboard'
-        emit('navigate', target)
+        // Fallback: Generic Action Form for ALL other actions (ensures every button works!)
+        activeAction.value = {
+            label: action.label,
+            icon: action.icon || 'Activity',
+            fields: [
+                { key: 'title', label: {tr: 'Başlık', en: 'Title', de: 'Titel'}, type: 'text', placeholder: {tr: 'İşlem başlığı', en: 'Process title', de: 'Vorgangstitel'} },
+                { key: 'desc', label: {tr: 'Açıklama', en: 'Description', de: 'Beschreibung'}, type: 'textarea', placeholder: {tr: 'Detaylar...', en: 'Details...', de: 'Details...'} }
+            ],
+            submitLabel: {tr: 'Tamamla', en: 'Complete', de: 'Abschließen'},
+            successMessage: {tr: 'İşlem başarıyla kaydedildi!', en: 'Saved optimally!', de: 'Erfolgreich gespeichert!'}
+        }
+        showActionModal.value = true
     }
 }
 

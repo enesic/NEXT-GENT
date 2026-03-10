@@ -1,25 +1,25 @@
 <template>
   <div class="portal-page">
     <div class="page-header">
-      <h1 :style="{ color: colors.primary }">Mesajlar</h1>
-      <p class="subtitle">Gelen kutusu ve mesaj geçmişiniz <span v-if="totalMessages > 0" class="msg-count">({{ totalMessages }} mesaj)</span></p>
+      <h1 :style="{ color: colors.primary }">{{ t('messages_title') }}</h1>
+      <p class="subtitle">{{ t('messages_subtitle') }} <span v-if="totalMessages > 0" class="msg-count">({{ totalMessages }} {{ t('messages_title').toLowerCase() }})</span></p>
     </div>
 
     <div class="content-card">
       <div v-if="loading" class="loading-state">
         <div class="spinner" :style="{ borderTopColor: colors.primary }"></div>
-        <span>Mesajlar yükleniyor...</span>
+        <span>{{ t('loading_messages') }}</span>
       </div>
       
       <div v-else-if="errorMsg" class="empty-state">
         <component :is="sectorStore.getIcon('AlertCircle')" :size="48" color="#ef4444" />
         <p>{{ errorMsg }}</p>
-        <button class="retry-btn" :style="{ borderColor: colors.primary, color: colors.primary }" @click="loadMessages">Tekrar Dene</button>
+        <button class="retry-btn" :style="{ borderColor: colors.primary, color: colors.primary }" @click="loadMessages">{{ t('retry') }}</button>
       </div>
 
       <div v-else-if="messages.length === 0" class="empty-state">
         <component :is="sectorStore.getIcon('MessageSquare')" :size="48" :color="colors.primary" />
-        <p>Henüz bir mesajınız bulunmuyor.</p>
+        <p>{{ t('no_messages') }}</p>
       </div>
 
       <div v-else class="list-container">
@@ -45,9 +45,9 @@
 
         <!-- Pagination -->
         <div v-if="totalMessages > pageSize" class="pagination">
-          <button :disabled="currentPage <= 1" @click="goToPage(currentPage - 1)" class="page-btn" :style="{ '--page-accent': colors.primary }">← Önceki</button>
-          <span class="page-info" :style="{ color: colors.primary }">Sayfa {{ currentPage }} / {{ totalPages }}</span>
-          <button :disabled="currentPage >= totalPages" @click="goToPage(currentPage + 1)" class="page-btn" :style="{ '--page-accent': colors.primary }">Sonraki →</button>
+          <button :disabled="currentPage <= 1" @click="goToPage(currentPage - 1)" class="page-btn" :style="{ '--page-accent': colors.primary }">← {{ t('previous') }}</button>
+          <span class="page-info" :style="{ color: colors.primary }">{{ t('page') }} {{ currentPage }} / {{ totalPages }}</span>
+          <button :disabled="currentPage >= totalPages" @click="goToPage(currentPage + 1)" class="page-btn" :style="{ '--page-accent': colors.primary }">{{ t('next') }} →</button>
         </div>
       </div>
     </div>
@@ -62,6 +62,8 @@ import { useAuthStore } from '../../stores/auth'
 const sectorStore = useSectorStore()
 const authStore = useAuthStore()
 const axios = inject('axios')
+
+const t = (key) => sectorStore.t(key)
 
 const messages = ref([])
 const loading = ref(true)
@@ -85,20 +87,25 @@ const getGlowColor = (name) => getColor(name) + '1A'
 
 // Filter out 'Sistem' and similar system names
 const cleanName = (name) => {
-    if (!name) return 'Müşteri'
+    if (!name) return t('customer_fallback')
     const lower = name.trim().toLowerCase()
-    if (['sistem', 'system', 'admin', 'test', ''].includes(lower)) return 'Müşteri'
+    if (['sistem', 'system', 'admin', 'test', ''].includes(lower)) return t('customer_fallback')
     return name.trim()
 }
 
 const statusLabel = (status) => {
-    const labels = { read: 'Okundu', unread: 'Okunmadı', replied: 'Yanıtlandı' }
+    const labels = { 
+        read: t('status_read'), 
+        unread: t('status_unread'), 
+        replied: t('status_replied') 
+    }
     return labels[status] || status
 }
 
 const formatTime = (d) => {
     if (!d) return ''
-    return new Date(d).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
+    const locale = sectorStore.currentLocale === 'tr' ? 'tr-TR' : (sectorStore.currentLocale === 'de' ? 'de-DE' : 'en-US')
+    return new Date(d).toLocaleDateString(locale, { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
 }
 
 const loadMessages = async () => {

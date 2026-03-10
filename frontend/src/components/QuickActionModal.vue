@@ -8,7 +8,7 @@
             <div class="modal-icon">
               <component :is="iconComponent" :size="20" :stroke-width="2" />
             </div>
-            <h2>{{ resolvedTitle }}</h2>
+            <h2>{{ tLoc(resolvedTitle) }}</h2>
           </div>
           <button class="close-btn" @click="close">
             <X :size="20" :stroke-width="2" />
@@ -18,18 +18,18 @@
         <!-- Form Content -->
         <div class="modal-body">
           <div v-for="(field, index) in resolvedFields" :key="index" class="form-group">
-            <label>{{ field.label }}</label>
+            <label>{{ tLoc(field.label) }}</label>
             <input
               v-if="field.type === 'text' || field.type === 'email' || field.type === 'tel' || field.type === 'number'"
               v-model="formData[field.key]"
               :type="field.type"
-              :placeholder="field.placeholder"
+              :placeholder="tLoc(field.placeholder)"
               class="form-input"
             />
             <textarea
               v-else-if="field.type === 'textarea'"
               v-model="formData[field.key]"
-              :placeholder="field.placeholder"
+              :placeholder="tLoc(field.placeholder)"
               class="form-textarea"
               rows="3"
             ></textarea>
@@ -38,9 +38,9 @@
               v-model="formData[field.key]"
               class="form-select"
             >
-              <option value="" disabled>{{ field.placeholder }}</option>
+              <option value="" disabled>{{ tLoc(field.placeholder) }}</option>
               <option v-for="opt in field.options" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
+                {{ tLoc(opt.label) }}
               </option>
             </select>
             <input
@@ -54,10 +54,10 @@
 
         <!-- Footer -->
         <div class="modal-footer">
-          <button class="btn-cancel" @click="close">İptal</button>
+          <button class="btn-cancel" @click="close">{{ t('cancel') }}</button>
           <button class="btn-submit" @click="handleSubmit" :disabled="submitting">
             <span v-if="submitting" class="spinner-small"></span>
-            {{ submitting ? 'İşleniyor...' : resolvedSubmitLabel }}
+            {{ submitting ? t('processing') : tLoc(resolvedSubmitLabel) }}
           </button>
         </div>
 
@@ -65,7 +65,7 @@
         <Transition name="success-fade">
           <div v-if="showSuccess" class="success-overlay">
             <div class="success-icon">✓</div>
-            <p>{{ resolvedSuccessMessage }}</p>
+            <p>{{ tLoc(resolvedSuccessMessage) }}</p>
           </div>
         </Transition>
       </div>
@@ -95,6 +95,8 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'submit'])
 
 const sectorStore = useSectorStore()
+const t = (key) => sectorStore.t(key)
+const tLoc = (obj) => sectorStore.tLoc(obj)
 
 // Resolve values from action prop (priority) or individual props
 const resolvedTitle = computed(() => props.action?.label || props.title)

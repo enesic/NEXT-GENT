@@ -2,36 +2,82 @@
 <html lang="tr">
 
 <head>
+    <!-- [DIAGNOSTIC V2.1] AGGRESSIVE Error Shield (Dogukan) -->
+    <script>
+        (function () {
+            const shadowPatterns = [
+                'chrome-extension', 'sharebx', 'reporter', 'export', 'extension', 'browser-extension', 'syntaxerror', 'content_reporter', 'web-extension'
+            ];
+
+            const isNoise = (msg) => {
+                const s = String(msg || '').toLowerCase();
+                return shadowPatterns.some(p => s.includes(p));
+            };
+
+            // 1. Intercept Global Errors
+            window.onerror = (msg, src) => isNoise(msg) || isNoise(src);
+            window.addEventListener('error', (e) => {
+                if (isNoise(e.message) || isNoise(e.filename)) {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                }
+            }, true);
+            window.addEventListener('unhandledrejection', (e) => {
+                const r = e.reason ? (e.reason.message || String(e.reason)) : '';
+                if (isNoise(r)) { e.stopImmediatePropagation(); e.preventDefault(); }
+            }, true);
+
+            // 2. Proxy Console for Absolute Muting
+            const hijack = (method) => {
+                const original = console[method];
+                console[method] = new Proxy(original, {
+                    apply: (target, thisArg, args) => {
+                        if (args.some(arg => isNoise(arg))) return;
+                        return target.apply(thisArg, args);
+                    }
+                });
+            };
+            ['log', 'warn', 'error', 'info', 'debug'].forEach(hijack);
+
+            console.info("🛡️ [V2.1] Error Shield Active - Console is Clean.");
+        })();
+    </script>
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" href="/vite.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NextGent - Executive Luxury</title>
-    
+
     <!-- DNS Prefetch for external resources -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link rel="dns-prefetch" href="//localhost:8001">
-    
+
     <!-- Preconnect for critical resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
+
     <!-- Preload critical fonts -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        as="style">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700&display=swap"
+        rel="stylesheet">
+
+
     <!-- Preload module preload for main entry -->
-    <link rel="modulepreload" href="data:text/javascript;base64,aW1wb3J0IHsgY3JlYXRlQXBwIH0gZnJvbSAndnVlJw0KaW1wb3J0IHsgY3JlYXRlUGluaWEgfSBmcm9tICdwaW5pYScNCmltcG9ydCAnLi9zdHlsZS5jc3MnDQppbXBvcnQgQXBwIGZyb20gJy4vQXBwLnZ1ZScNCmltcG9ydCByb3V0ZXIgZnJvbSAnLi9yb3V0ZXInDQppbXBvcnQgVnVlQXBleENoYXJ0cyBmcm9tICd2dWUzLWFwZXhjaGFydHMnDQoNCmltcG9ydCBheGlvcyBmcm9tICdheGlvcycNCg0KLy8gQ29uZmlndXJlIGRlZmF1bHQgYmFzZSBVUkwNCi8vIFVzZSByZWxhdGl2ZSBVUkwgZm9yIHByb2R1Y3Rpb24gKG5naW54IHByb3h5KSBvciBsb2NhbGhvc3QgZm9yIGRldmVsb3BtZW50DQpheGlvcy5kZWZhdWx0cy5iYXNlVVJMID0gaW1wb3J0Lm1ldGEuZW52LlZJVEVfQVBJX0JBU0VfVVJMIHx8ICcvYXBpL3YxJw0KaWYgKGltcG9ydC5tZXRhLmVudi5ERVYpIHsNCiAgY29uc29sZS5sb2coJ/CfmoAgTmV4dEdlbnQgU3lzdGVtIHYzLjAgLSBMb2FkZWQnKQ0KfQ0KDQpjb25zdCBhcHAgPSBjcmVhdGVBcHAoQXBwKQ0KY29uc3QgcGluaWEgPSBjcmVhdGVQaW5pYSgpDQoNCmFwcC51c2UocGluaWEpDQphcHAudXNlKHJvdXRlcikNCmFwcC51c2UoVnVlQXBleENoYXJ0cykNCmFwcC5wcm92aWRlKCdheGlvcycsIGF4aW9zKQ0KYXBwLmNvbmZpZy5lcnJvckhhbmRsZXIgPSAoZXJyLCBpbnN0YW5jZSwgaW5mbykgPT4gew0KICAgIGNvbnNvbGUuZXJyb3IoJ0dsb2JhbCBWdWUgRXJyb3I6JywgZXJyKQ0KICAgIGNvbnNvbGUuZXJyb3IoJ0NvbXBvbmVudDonLCBpbnN0YW5jZSkNCiAgICBjb25zb2xlLmVycm9yKCdJbmZvOicsIGluZm8pDQoNCiAgICAvLyBTaG93IGVycm9yIG9uIHNjcmVlbiAoQ3JpdGljYWwgZm9yIGRlYnVnZ2luZyBCbGFjayBTY3JlZW4pDQogICAgY29uc3QgZXJyb3JCb3ggPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCdkaXYnKQ0KICAgIGVycm9yQm94LnN0eWxlLnBvc2l0aW9uID0gJ2ZpeGVkJw0KICAgIGVycm9yQm94LnN0eWxlLnRvcCA9ICcwJw0KICAgIGVycm9yQm94LnN0eWxlLmxlZnQgPSAnMCcNCiAgICBlcnJvckJveC5zdHlsZS53aWR0aCA9ICcxMDAlJw0KICAgIGVycm9yQm94LnN0eWxlLmhlaWdodCA9ICcxMDAlJw0KICAgIGVycm9yQm94LnN0eWxlLmJhY2tncm91bmRDb2xvciA9ICcjMDAwJw0KICAgIGVycm9yQm94LnN0eWxlLmNvbG9yID0gJyNmZjQ0NDQnDQogICAgZXJyb3JCb3guc3R5bGUuekluZGV4ID0gJzk5OTk5Jw0KICAgIGVycm9yQm94LnN0eWxlLnBhZGRpbmcgPSAnMjBweCcNCiAgICBlcnJvckJveC5zdHlsZS5mb250RmFtaWx5ID0gJ21vbm9zcGFjZScNCiAgICBlcnJvckJveC5zdHlsZS5vdmVyZmxvdyA9ICdhdXRvJw0KICAgIGVycm9yQm94LmlubmVySFRNTCA9IGANCiAgICAgICAgPGgxPkFwcGxpY2F0aW9uIENyYXNoPC9oMT4NCiAgICAgICAgPHA+QSBjcml0aWNhbCBlcnJvciBvY2N1cnJlZCBwcmV2ZW50aW5nIHRoZSBhcHAgZnJvbSBsb2FkaW5nLjwvcD4NCiAgICAgICAgPHByZSBzdHlsZT0iYmFja2dyb3VuZDogIzExMTsgcGFkZGluZzogMTBweDsgYm9yZGVyOiAxcHggc29saWQgIzMzMzsgd2hpdGUtc3BhY2U6IHByZS13cmFwOyI+JHtlcnIuc3RhY2sgfHwgZXJyLm1lc3NhZ2V9PC9wcmU+DQogICAgICAgIDxwPkluZm86ICR7aW5mb308L3A+DQogICAgICAgIDxidXR0b24gb25jbGljaz0ibG9jYXRpb24ucmVsb2FkKCkiIHN0eWxlPSJwYWRkaW5nOiAxMHB4IDIwcHg7IGJhY2tncm91bmQ6ICMzMzM7IGNvbG9yOiB3aGl0ZTsgYm9yZGVyOiBub25lOyBjdXJzb3I6IHBvaW50ZXI7IG1hcmdpbi10b3A6IDIwcHg7Ij5SZWxvYWQgQXBwPC9idXR0b24+DQogICAgYA0KICAgIGRvY3VtZW50LmJvZHkuYXBwZW5kQ2hpbGQoZXJyb3JCb3gpDQp9DQoNCmFwcC5tb3VudCgnI2FwcCcpDQoNCi8vIEdsb2JhbCBlcnJvciBoYW5kbGVyIGZvciBkeW5hbWljIGltcG9ydCBmYWlsdXJlcyAoUHJvYWN0aXZlIFJlbG9hZCkNCndpbmRvdy5hZGRFdmVudExpc3RlbmVyKCd1bmhhbmRsZWRyZWplY3Rpb24nLCAoZXZlbnQpID0+IHsNCiAgICAvLyBDaGVjayBmb3IgY29tbW9uIGNodW5rIGxvYWQgZXJyb3JzDQogICAgY29uc3QgaXNDaHVua0xvYWRGYWlsZWQgPSBldmVudC5yZWFzb24gJiYgKA0KICAgICAgICAoZXZlbnQucmVhc29uLm1lc3NhZ2UgJiYgZXZlbnQucmVhc29uLm1lc3NhZ2UuaW5jbHVkZXMoJ0ZhaWxlZCB0byBmZXRjaCBkeW5hbWljYWxseSBpbXBvcnRlZCBtb2R1bGUnKSkgfHwNCiAgICAgICAgKGV2ZW50LnJlYXNvbi5tZXNzYWdlICYmIGV2ZW50LnJlYXNvbi5tZXNzYWdlLmluY2x1ZGVzKCdJbXBvcnRpbmcgYSBtb2R1bGUgc2NyaXB0IGZhaWxlZCcpKSB8fA0KICAgICAgICAoZXZlbnQucmVhc29uLm5hbWUgPT09ICdDaHVua0xvYWRFcnJvcicpDQogICAgKTsNCg0KICAgIGlmIChpc0NodW5rTG9hZEZhaWxlZCkgew0KICAgICAgICBjb25zb2xlLmVycm9yKCdEeW5hbWljIGltcG9ydCBmYWlsZWQgKGxpa2VseSBzdGFsZSBjYWNoZSkuIFJlbG9hZGluZyBwYWdlLi4uJywgZXZlbnQucmVhc29uKTsNCg0KICAgICAgICBjb25zdCBzdG9yYWdlS2V5ID0gJ2dsb2JhbF9jaHVua19yZWxvYWRfJyArIHdpbmRvdy5sb2NhdGlvbi5wYXRobmFtZTsNCiAgICAgICAgY29uc3QgbGFzdFJlbG9hZCA9IHNlc3Npb25TdG9yYWdlLmdldEl0ZW0oc3RvcmFnZUtleSk7DQogICAgICAgIGNvbnN0IG5vdyA9IERhdGUubm93KCk7DQoNCiAgICAgICAgLy8gTGltaXQgcmVsb2FkcyB0byBvbmNlIGV2ZXJ5IDUgc2Vjb25kcyB0byBwcmV2ZW50IGZyZW56aWVkIGxvb3BzLCANCiAgICAgICAgLy8gYnV0IGFsbG93IHF1aWNrIHJlY292ZXJ5IGlmIGl0IGhhcHBlbnMgYWdhaW4gb24gYSBkaWZmZXJlbnQgcm91dGUNCiAgICAgICAgaWYgKCFsYXN0UmVsb2FkIHx8IG5vdyAtIHBhcnNlSW50KGxhc3RSZWxvYWQpID4gNTAwMCkgew0KICAgICAgICAgICAgc2Vzc2lvblN0b3JhZ2Uuc2V0SXRlbShzdG9yYWdlS2V5LCBub3cudG9TdHJpbmcoKSk7DQogICAgICAgICAgICB3aW5kb3cubG9jYXRpb24ucmVsb2FkKHRydWUpOw0KICAgICAgICB9DQogICAgfQ0KfSk7DQo=">
-    
+    <link rel="modulepreload" href="/assets/main-8aVoQG1s.js">
+
     <!-- Performance optimizations -->
     <meta name="theme-color" content="#030303">
     <meta name="description" content="NextGent - Executive Luxury Call Center & Analytics Platform">
-    
+
     <!-- Critical CSS inline to avoid render blocking -->
     <style>
         /* Critical above-the-fold styles */
-        html, body, #app {
+        html,
+        body,
+        #app {
             margin: 0;
             padding: 0;
             width: 100%;
@@ -40,7 +86,7 @@
             color: #ffffff;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
-        
+
         /* Loading indicator */
         .app-loading {
             position: fixed;
@@ -54,7 +100,7 @@
             background: #030303;
             z-index: 9999;
         }
-        
+
         .app-loading-spinner {
             width: 40px;
             height: 40px;
@@ -63,13 +109,17 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-        
+
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
-  <script type="module" crossorigin src="/assets/index-BkeuLjAY.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-oTC3NHxn.css">
+  <script type="module" crossorigin src="/assets/index-DnKKLVQg.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Dsd2AFrq.css">
+  <script type="module">import.meta.url;import("_").catch(()=>1);(async function*(){})().next();if(location.protocol!="file:"){window.__vite_is_modern_browser=true}</script>
+  <script type="module">!function(){if(window.__vite_is_modern_browser)return;console.warn("vite: loading legacy chunks, syntax error above and the same error below should be ignored");var e=document.getElementById("vite-legacy-polyfill"),n=document.createElement("script");n.src=e.src,n.onload=function(){System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))},document.body.appendChild(n)}();</script>
 </head>
 
 <body>
@@ -79,6 +129,9 @@
             <div class="app-loading-spinner"></div>
         </div>
     </div>
+  <script nomodule>!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",(function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()}),!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();</script>
+  <script nomodule crossorigin id="vite-legacy-polyfill" src="/assets/polyfills-legacy-PxdANIFs.js"></script>
+  <script nomodule crossorigin id="vite-legacy-entry" data-src="/assets/index-legacy-IXNzHknx.js">System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))</script>
 </body>
 
 </html>

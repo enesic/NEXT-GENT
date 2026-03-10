@@ -1,8 +1,8 @@
 <template>
   <div class="portal-page">
     <div class="page-header">
-      <h1 :style="{ color: colors.primary }">{{ pageTitle }}</h1>
-      <p class="subtitle">{{ pageSubtitle }}</p>
+      <h1 :style="{ color: colors.primary }">{{ tLoc(pageTitle) }}</h1>
+      <p class="subtitle">{{ tLoc(pageSubtitle) }}</p>
     </div>
 
     <!-- Stats Row -->
@@ -13,7 +13,7 @@
         :key="stat.label"
         :style="{ borderTopColor: colors.primary }"
       >
-        <span class="stat-label">{{ stat.label }}</span>
+        <span class="stat-label">{{ tLoc(stat.label) }}</span>
         <span class="stat-value" :style="{ color: colors.primary }">{{ stat.value }}</span>
         <span class="stat-change" :class="stat.change > 0 ? 'up' : 'down'">
           {{ stat.change > 0 ? '+' : '' }}{{ stat.change }}%
@@ -27,10 +27,10 @@
     <!-- Main List -->
     <div class="content-card">
       <div class="card-header-row">
-        <h3>{{ listTitle }}</h3>
+        <h3>{{ tLoc(listTitle) }}</h3>
         <button class="btn-refresh" @click="fetchData" :disabled="loading">
           <RefreshCw :size="14" :class="{ spinning: loading }" />
-          Yenile
+          {{ tLoc({ tr: 'Yenile', en: 'Refresh', de: 'Aktualisieren' }) }}
         </button>
       </div>
 
@@ -42,14 +42,14 @@
       <!-- Empty State -->
       <div v-else-if="items.length === 0" class="empty-state">
         <component :is="sectorStore.getIcon(pageIcon)" :size="48" :style="{ color: colors.primary, opacity: 0.5 }" />
-        <p>Henüz kayıt bulunamadı.</p>
+        <p>{{ tLoc({ tr: 'Henüz kayıt bulunamadı.', en: 'No records found yet.', de: 'Noch keine Einträge gefunden.' }) }}</p>
       </div>
 
       <!-- Error State -->
       <div v-else-if="fetchError" class="error-state">
         <AlertCircle :size="32" color="#ef4444" />
-        <p>Veriler yüklenemedi.</p>
-        <button @click="fetchData">Tekrar Dene</button>
+        <p>{{ tLoc({ tr: 'Veriler yüklenemedi.', en: 'Failed to load data.', de: 'Daten konnten nicht geladen werden.' }) }}</p>
+        <button @click="fetchData">{{ tLoc({ tr: 'Tekrar Dene', en: 'Try Again', de: 'Erneut versuchen' }) }}</button>
       </div>
 
       <!-- Data List -->
@@ -63,7 +63,7 @@
             <span>{{ item.desc || item.description || item.summary || '' }}</span>
           </div>
           <div class="row-badge" :class="statusClass(item.status)">
-            {{ statusLabel(item.status) }}
+            {{ tLoc(statusLabel(item.status)) }}
           </div>
         </div>
       </div>
@@ -79,6 +79,13 @@ import api from '@/config/api'
 
 const sectorStore = useSectorStore()
 
+const tLoc = (obj) => {
+    if (!obj) return ''
+    if (typeof obj === 'string') return obj
+    const locale = sectorStore.currentLocale || 'tr'
+    return obj[locale] || obj['tr'] || ''
+}
+
 const colors = computed(() => sectorStore.theme || {
   primary: '#0ea5e9',
   secondary: '#0f766e',
@@ -89,18 +96,18 @@ const glowColor = computed(() => (colors.value.primary || '#0ea5e9') + '1A')
 
 // ── Sector Config ──────────────────────────────────────────────────────────
 const sectorConfigs = {
-  medical:       { title: 'Tıbbi Raporlar',       subtitle: 'Lab ve Görüntüleme Sonuçları',  icon: 'FileText',  listTitle: 'Son Tıbbi Kayıtlar',       endpoint: '/portal/interactions' },
-  legal:         { title: 'Dava Dosyaları',        subtitle: 'Aktif ve Arşivlenmiş Dosyalar', icon: 'Briefcase', listTitle: 'Aktif Davalar',             endpoint: '/portal/interactions' },
-  real_estate:   { title: 'Portföy Yönetimi',      subtitle: 'İlan ve Müşteri Kayıtları',     icon: 'Home',      listTitle: 'Son Portföy Hareketleri',   endpoint: '/portal/interactions' },
-  technology:    { title: 'Sistem Durumu',          subtitle: 'Server Hizmet Raporları',       icon: 'Server',    listTitle: 'Son Olaylar',               endpoint: '/portal/interactions' },
-  finance:       { title: 'Bütçe Raporları',       subtitle: 'Aylık Gelir/Gider Tabloları',   icon: 'PieChart',  listTitle: 'Son Finansal İşlemler',     endpoint: '/portal/interactions' },
-  education:     { title: 'Ders Programı',          subtitle: 'Haftalık Ders Çizelgesi',       icon: 'Calendar',  listTitle: 'Aktif Dersler',             endpoint: '/portal/interactions' },
-  automotive:    { title: 'Servis Kayıtları',       subtitle: 'Araç Servis Takibi',            icon: 'Activity',  listTitle: 'Aktif Servis İşlemleri',    endpoint: '/portal/interactions' },
-  beauty:        { title: 'Hizmet Kayıtları',       subtitle: 'Randevu ve Hizmet Takibi',      icon: 'Sparkles',  listTitle: 'Son Randevular',            endpoint: '/portal/interactions' },
-  hospitality:   { title: 'Rezervasyon Yönetimi',  subtitle: 'Oda ve Misafir Takibi',         icon: 'Home',      listTitle: 'Aktif Rezervasyonlar',      endpoint: '/portal/interactions' },
-  manufacturing: { title: 'Üretim Takibi',          subtitle: 'Sipariş ve Stok Durumu',        icon: 'Activity',  listTitle: 'Güncel Üretim Emirleri',    endpoint: '/portal/interactions' },
-  retail:        { title: 'Satış Kayıtları',        subtitle: 'Günlük Satış ve Stok',          icon: 'TrendingUp', listTitle: 'Son Satışlar',             endpoint: '/portal/interactions' },
-  ecommerce:     { title: 'Sipariş Yönetimi',       subtitle: 'Sipariş ve Kargo Takibi',       icon: 'TrendingUp', listTitle: 'Son Siparişler',           endpoint: '/portal/interactions' },
+  medical:       { title: { tr: 'Tıbbi Raporlar', en: 'Medical Reports', de: 'Medizinische Berichte' }, subtitle: { tr: 'Lab ve Görüntüleme Sonuçları', en: 'Lab & Imaging Results', de: 'Labor- & Bildgebungsberichte' }, icon: 'FileText', listTitle: { tr: 'Son Tıbbi Kayıtlar', en: 'Recent Medical Records', de: 'Letzte med. Aufzeichnungen' }, endpoint: '/portal/interactions' },
+  legal:         { title: { tr: 'Dava Dosyaları', en: 'Case Files', de: 'Fallakten' }, subtitle: { tr: 'Aktif ve Arşivlenmiş Dosyalar', en: 'Active & Archived Cases', de: 'Aktive & archivierte Fälle' }, icon: 'Briefcase', listTitle: { tr: 'Aktif Davalar', en: 'Active Cases', de: 'Aktive Fälle' }, endpoint: '/portal/interactions' },
+  real_estate:   { title: { tr: 'Portföy Yönetimi', en: 'Portfolio Mgmt', de: 'Portfolio-Mgmt' }, subtitle: { tr: 'İlan ve Müşteri Kayıtları', en: 'Listings & Clients', de: 'Inserate & Kunden' }, icon: 'Home', listTitle: { tr: 'Son Portföy Hareketleri', en: 'Recent Portfolio Moves', de: 'Letzte Portfolio-Änderungen' }, endpoint: '/portal/interactions' },
+  technology:    { title: { tr: 'Sistem Durumu', en: 'System Status', de: 'Systemstatus' }, subtitle: { tr: 'Server Hizmet Raporları', en: 'Server Service Reports', de: 'Server-Serviceberichte' }, icon: 'Server', listTitle: { tr: 'Son Olaylar', en: 'Recent Events', de: 'Letzte Ereignisse' }, endpoint: '/portal/interactions' },
+  finance:       { title: { tr: 'Bütçe Raporları', en: 'Budget Reports', de: 'Budgetberichte' }, subtitle: { tr: 'Aylık Gelir/Gider Tabloları', en: 'Monthly Income/Expenses', de: 'Monatl. Einn./Ausg.' }, icon: 'PieChart', listTitle: { tr: 'Son Finansal İşlemler', en: 'Recent Financial Tx', de: 'Letzte Finanztransaktionen' }, endpoint: '/portal/interactions' },
+  education:     { title: { tr: 'Ders Programı', en: 'Class Schedule', de: 'Stundenplan' }, subtitle: { tr: 'Haftalık Ders Çizelgesi', en: 'Weekly Class Layout', de: 'Wöchentliche Kursübersicht' }, icon: 'Calendar', listTitle: { tr: 'Aktif Dersler', en: 'Active Classes', de: 'Aktive Klassen' }, endpoint: '/portal/interactions' },
+  automotive:    { title: { tr: 'Servis Kayıtları', en: 'Service Records', de: 'Serviceprotokolle' }, subtitle: { tr: 'Araç Servis Takibi', en: 'Vehicle Tracking', de: 'Fahrzeugverfolgung' }, icon: 'Activity', listTitle: { tr: 'Aktif Servis İşlemleri', en: 'Active Services', de: 'Aktive Dienste' }, endpoint: '/portal/interactions' },
+  beauty:        { title: { tr: 'Hizmet Kayıtları', en: 'Service Records', de: 'Serviceprotokolle' }, subtitle: { tr: 'Randevu ve Hizmet Takibi', en: 'Appts & Services', de: 'Termine & Dienstl.' }, icon: 'Sparkles', listTitle: { tr: 'Son Randevular', en: 'Recent Appointments', de: 'Letzte Termine' }, endpoint: '/portal/interactions' },
+  hospitality:   { title: { tr: 'Rezervasyon Yönetimi', en: 'Reservation Mgmt', de: 'Reservierungs-Mgmt' }, subtitle: { tr: 'Oda ve Misafir Takibi', en: 'Rooms & Guests', de: 'Zimmer & Gäste' }, icon: 'Home', listTitle: { tr: 'Aktif Rezervasyonlar', en: 'Active Reservations', de: 'Aktive Reservierungen' }, endpoint: '/portal/interactions' },
+  manufacturing: { title: { tr: 'Üretim Takibi', en: 'Prod Tracking', de: 'Prod-Verfolgung' }, subtitle: { tr: 'Sipariş ve Stok Durumu', en: 'Orders & Inventory', de: 'Bestellungen & Inventar' }, icon: 'Activity', listTitle: { tr: 'Güncel Üretim Emirleri', en: 'Current Work Orders', de: 'Aktuelle Arbeitsaufträge' }, endpoint: '/portal/interactions' },
+  retail:        { title: { tr: 'Satış Kayıtları', en: 'Sales Records', de: 'Verkaufsaufz.' }, subtitle: { tr: 'Günlük Satış ve Stok', en: 'Daily Sales & Inv', de: 'Tägl. Verkäufe & Bestand' }, icon: 'TrendingUp', listTitle: { tr: 'Son Satışlar', en: 'Recent Sales', de: 'Letzte Verkäufe' }, endpoint: '/portal/interactions' },
+  ecommerce:     { title: { tr: 'Sipariş Yönetimi', en: 'Order Mgmt', de: 'Bestell-Mgmt' }, subtitle: { tr: 'Sipariş ve Kargo Takibi', en: 'Orders & Shipping', de: 'Bestellungen & Versand' }, icon: 'TrendingUp', listTitle: { tr: 'Son Siparişler', en: 'Recent Orders', de: 'Letzte Bestellungen' }, endpoint: '/portal/interactions' },
 }
 
 const pageConfig = computed(() => {
@@ -143,12 +150,12 @@ const fetchData = async () => {
 
 // ── Status Helpers ─────────────────────────────────────────────────────────
 const STATUS_MAP = {
-  CONFIRMED: { label: 'Onaylandı',  cls: 'status-confirmed' },
-  PENDING:   { label: 'Beklemede',  cls: 'status-pending'   },
-  CANCELLED: { label: 'İptal',      cls: 'status-cancelled' },
-  COMPLETED: { label: 'Tamamlandı', cls: 'status-completed' },
-  ACTIVE:    { label: 'Aktif',      cls: 'status-confirmed' },
-  INACTIVE:  { label: 'Pasif',      cls: 'status-cancelled' },
+  CONFIRMED: { label: { tr: 'Onaylandı', en: 'Confirmed', de: 'Bestätigt' },  cls: 'status-confirmed' },
+  PENDING:   { label: { tr: 'Beklemede', en: 'Pending', de: 'Ausstehend' },  cls: 'status-pending'   },
+  CANCELLED: { label: { tr: 'İptal', en: 'Cancelled', de: 'Abgebrochen' },      cls: 'status-cancelled' },
+  COMPLETED: { label: { tr: 'Tamamlandı', en: 'Completed', de: 'Abgeschlossen' }, cls: 'status-completed' },
+  ACTIVE:    { label: { tr: 'Aktif', en: 'Active', de: 'Aktiv' },      cls: 'status-confirmed' },
+  INACTIVE:  { label: { tr: 'Pasif', en: 'Inactive', de: 'Inaktiv' },      cls: 'status-cancelled' },
 }
 
 const statusLabel = (s) => STATUS_MAP[s?.toUpperCase()]?.label || s || '-'

@@ -1,8 +1,8 @@
 <template>
   <div class="portal-page">
     <div class="page-header">
-      <h1 :style="{ color: colors.primary }">Memnuniyet</h1>
-      <p class="subtitle">Geri bildirimleriniz bizim için değerli</p>
+      <h1 :style="{ color: colors.primary }">{{ t('satisfaction_title') }}</h1>
+      <p class="subtitle">{{ t('satisfaction_subtitle') }}</p>
     </div>
 
     <div class="content-card">
@@ -16,7 +16,7 @@
             </div>
 
             <div class="feedback-list">
-                 <h3>Son Geri Bildirimleriniz</h3>
+                 <h3>{{ t('recent_feedbacks') }}</h3>
                  <div v-for="i in 3" :key="i" class="feedback-item">
                     <div class="feedback-icon" :style="{ background: getGlowColor('primary'), color: colors.primary }">
                         <component :is="sectorStore.getIcon('MessageCircle')" :size="18" />
@@ -30,7 +30,7 @@
             </div>
 
             <button class="action-btn-primary" :style="{ background: colors.primary }" @click="showModal = true">
-                Yeni Geri Bildirim Gönder
+                {{ t('send_new_feedback') }}
             </button>
        </div>
     </div>
@@ -40,7 +40,7 @@
       <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
         <div class="modal-container" :style="{ '--modal-accent': colors.primary }">
           <div class="modal-header">
-            <h3>Yeni Geri Bildirim</h3>
+            <h3>{{ t('new_feedback_title') }}</h3>
             <button class="close-btn" @click="showModal = false">
               <X :size="20" />
             </button>
@@ -48,7 +48,7 @@
           
           <div class="modal-body">
             <div class="rating-section">
-              <label>Hizmetimizi puanlayın</label>
+              <label>{{ t('rate_service') }}</label>
               <div class="rating-stars">
                 <button 
                   v-for="i in 5" 
@@ -66,25 +66,25 @@
             </div>
 
             <div class="form-group">
-              <label>Düşünceleriniz</label>
+              <label>{{ t('your_thoughts') }}</label>
               <textarea 
                 v-model="form.feedback" 
-                placeholder="Hizmetimiz hakkında her türlü görüş, öneri veya şikayetinizi yazabilirsiniz..."
+                :placeholder="t('feedback_placeholder')"
                 rows="4"
               ></textarea>
             </div>
           </div>
 
           <div class="modal-footer">
-            <button class="cancel-btn" @click="showModal = false">İptal</button>
+            <button class="cancel-btn" @click="showModal = false">{{ t('cancel') }}</button>
             <button 
               class="submit-btn" 
               :disabled="!form.score || isSubmitting"
               :style="{ background: colors.primary }"
               @click="submitFeedback"
             >
-              <span v-if="isSubmitting">Gönderiliyor...</span>
-              <span v-else>Gönder</span>
+              <span v-if="isSubmitting">{{ t('sending') }}</span>
+              <span v-else>{{ t('send') }}</span>
             </button>
           </div>
         </div>
@@ -120,6 +120,8 @@ const colors = computed(() => sectorStore.theme || {
 const getColor = (name) => (sectorStore.theme || {})[name] || colors.value.primary
 const getGlowColor = (name) => getColor(name) + '1A'
 
+const t = (key) => sectorStore.t(key)
+
 const submitFeedback = async () => {
     isSubmitting.value = true
     try {
@@ -131,8 +133,8 @@ const submitFeedback = async () => {
         })
         
         notificationStore.success(
-            'Geri bildiriminiz başarıyla iletildi. Teşekkür ederiz!',
-            'Geri Bildirim Alındı'
+            t('feedback_success'),
+            t('feedback_success_title')
         )
         
         showModal.value = false
@@ -141,8 +143,8 @@ const submitFeedback = async () => {
         console.error('Feedback error:', err)
         const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message
         notificationStore.error(
-            `Geri bildirim gönderilirken bir hata oluştu: ${errorMsg}`,
-            'Sistem Hatası'
+            `${t('feedback_error')}: ${errorMsg}`,
+            t('system_error')
         )
     } finally {
         isSubmitting.value = false

@@ -2,8 +2,8 @@
   <div class="portal-page">
     <div class="page-header">
       <div>
-        <h1 :style="{ color: colors.primary }">Performans Analizi</h1>
-        <p class="subtitle">Detaylı istatistik ve raporlar</p>
+        <h1 :style="{ color: colors.primary }">{{ t('performance_analysis') }}</h1>
+        <p class="subtitle">{{ t('analytics_subtitle') }}</p>
       </div>
       <!-- Date Range Picker -->
       <div class="date-picker">
@@ -11,20 +11,20 @@
           v-for="range in dateRanges"
           :key="range.label"
           class="picker-btn"
-          :class="{ active: selectedRange === range.label }"
+          :class="{ active: selectedRange === range.label.tr }"
           @click="selectRange(range)"
         >
-          {{ range.label }}
+          {{ tLoc(range.label) }}
         </button>
       </div>
     </div>
 
     <!-- KPI Summary Cards -->
     <div class="kpi-row" v-if="!loadingSummary">
-      <div class="kpi-card" v-for="kpi in kpiCards" :key="kpi.label">
-        <span class="kpi-label">{{ kpi.label }}</span>
+      <div class="kpi-card" v-for="kpi in kpiCards" :key="tLoc(kpi.label)">
+        <span class="kpi-label">{{ tLoc(kpi.label) }}</span>
         <span class="kpi-value" :style="{ color: colors.primary }">{{ kpi.value }}</span>
-        <span class="kpi-sub">{{ kpi.sub }}</span>
+        <span class="kpi-sub">{{ tLoc(kpi.sub) }}</span>
       </div>
     </div>
     <div class="kpi-row" v-else>
@@ -35,10 +35,10 @@
       <div class="analytics-grid">
         <!-- Aylık Etkileşim Grafiği -->
         <div class="chart-container large">
-          <h3>Aylık Etkileşim Hacmi</h3>
+          <h3>{{ t('monthly_interaction') }}</h3>
           <div v-if="loadingConversation" class="chart-loading">
             <div class="spinner" :style="{ borderTopColor: colors.primary }"></div>
-            <span>Veri yükleniyor...</span>
+            <span>{{ t('data_loading') }}</span>
           </div>
           <LuxuryChart
             v-else
@@ -52,10 +52,10 @@
 
         <!-- Dağılım / Durum Pie -->
         <div class="chart-container">
-          <h3>Randevu Dağılımı</h3>
+          <h3>{{ t('appointment_distribution') }}</h3>
           <div v-if="loadingStatus" class="chart-loading">
             <div class="spinner" :style="{ borderTopColor: colors.primary }"></div>
-            <span>Veri yükleniyor...</span>
+            <span>{{ t('data_loading') }}</span>
           </div>
           <LuxuryChart
             v-else
@@ -69,10 +69,10 @@
 
         <!-- Dönüşüm Oranı Bar -->
         <div class="chart-container">
-          <h3>Dönüşüm Oranı</h3>
+          <h3>{{ t('conversion_rate') }}</h3>
           <div v-if="loadingConversion" class="chart-loading">
             <div class="spinner" :style="{ borderTopColor: colors.accent || colors.primary }"></div>
-            <span>Veri yükleniyor...</span>
+            <span>{{ t('data_loading') }}</span>
           </div>
           <LuxuryChart
             v-else
@@ -89,7 +89,7 @@
     <!-- Error State -->
     <div v-if="error" class="error-banner">
       <span>⚠️ {{ error }}</span>
-      <button @click="fetchAll">Tekrar Dene</button>
+      <button @click="fetchAll">{{ t('retry') }}</button>
     </div>
   </div>
 </template>
@@ -100,7 +100,8 @@ import { useSectorStore } from '../../stores/sector'
 import LuxuryChart from '../../components/LuxuryChart.vue'
 import api from '@/config/api'
 
-const sectorStore = useSectorStore()
+const t = (key) => sectorStore.t(key)
+const tLoc = (obj) => sectorStore.tLoc(obj)
 
 const colors = computed(() => sectorStore.theme || {
   primary: '#0ea5e9',
@@ -111,9 +112,9 @@ const colors = computed(() => sectorStore.theme || {
 
 // ── Date Range ──────────────────────────────────────────────────────────────
 const dateRanges = [
-  { label: 'Son 7 Gün',  days: 7 },
-  { label: 'Son 30 Gün', days: 30 },
-  { label: 'Son 90 Gün', days: 90 },
+  { label: { tr: 'Son 7 Gün', en: 'Last 7 Days', de: 'Letzte 7 Tage' },  days: 7 },
+  { label: { tr: 'Son 30 Gün', en: 'Last 30 Days', de: 'Letzte 30 Tage' }, days: 30 },
+  { label: { tr: 'Son 90 Gün', en: 'Last 90 Days', de: 'Letzte 90 Tage' }, days: 90 },
 ]
 const selectedRange = ref('Son 30 Gün')
 
@@ -126,7 +127,7 @@ const getDateRange = (days) => {
 }
 
 const selectRange = (range) => {
-  selectedRange.value = range.label
+  selectedRange.value = range.label.tr
   fetchAll(range.days)
 }
 
@@ -147,10 +148,10 @@ const kpiCards = computed(() => {
   if (!summaryData.value) return []
   const s = summaryData.value
   return [
-    { label: 'Toplam Randevu',  value: s.total_appointments ?? '-',  sub: 'dönem içinde' },
-    { label: 'Onaylanan',       value: s.confirmed_appointments ?? '-', sub: 'randevu' },
-    { label: 'Müşteri',         value: s.total_customers ?? '-',  sub: 'benzersiz kişi' },
-    { label: 'Dönüşüm Oranı',  value: s.conversion_rate != null ? `${s.conversion_rate}%` : '-', sub: 'onay/toplam' },
+    { label: { tr: 'Toplam Randevu', en: 'Total Appts', de: 'Gesamte Termine' },  value: s.total_appointments ?? '-',  sub: { tr: 'dönem içinde', en: 'in period', de: 'im Zeitraum' } },
+    { label: { tr: 'Onaylanan', en: 'Confirmed', de: 'Bestätigt' },       value: s.confirmed_appointments ?? '-', sub: { tr: 'randevu', en: 'appt', de: 'termin' } },
+    { label: { tr: 'Müşteri', en: 'Customer', de: 'Kunde' },         value: s.total_customers ?? '-',  sub: { tr: 'benzersiz kişi', en: 'unique people', de: 'einzigartige Personen' } },
+    { label: { tr: 'Dönüşüm Oranı', en: 'Conv Rate', de: 'Konv. Rate' },  value: s.conversion_rate != null ? `${s.conversion_rate}%` : '-', sub: { tr: 'onay/toplam', en: 'conf/total', de: 'best/ges' } },
   ]
 })
 

@@ -123,7 +123,65 @@ export const useSectorStore = defineStore('sector', () => {
             beta_features: 'Beta Özellikler',
             beta_desc: 'Yeni özellikleri herkesten önce deneyin',
             analytics_sharing: 'Analitik Paylaşımı',
-            analytics_desc: 'Hata raporlarını otomatik olarak gönder'
+            analytics_desc: 'Hata raporlarını otomatik olarak gönder',
+
+            // Messages & Calls
+            messages_title: 'Mesajlar',
+            messages_subtitle: 'Gelen kutusu ve mesaj geçmişiniz',
+            calls_title: 'Aramalar',
+            calls_subtitle: 'Çağrı geçmişi ve detayları',
+            loading_messages: 'Mesajlar yükleniyor...',
+            loading_calls: 'Aramalar yükleniyor...',
+            no_messages: 'Henüz bir mesajınız bulunmuyor.',
+            no_calls: 'Henüz bir arama kaydı bulunmuyor.',
+            previous: 'Önceki',
+            next: 'Sonraki',
+            page: 'Sayfa',
+            total_items: 'toplam',
+
+            // Statuses
+            status_read: 'Okundu',
+            status_unread: 'Okunmadı',
+            status_replied: 'Yanıtlandı',
+            status_answered: 'Cevaplandı',
+            status_missed: 'Kaçırıldı',
+            status_busy: 'Meşgul',
+            status_resolved: 'Çözüldü',
+            status_closed: 'Kapatıldı',
+            status_open: 'Açık',
+            customer_fallback: 'Müşteri',
+            cancel: 'İptal',
+            save: 'Kaydet',
+            processing: 'İşleniyor...',
+            success_saved: 'İşlem başarıyla kaydedildi!',
+            complete_action: 'İşlemi Tamamla',
+
+            // Analytics View
+            performance_analysis: 'Performans Analizi',
+            analytics_subtitle: 'Detaylı istatistik ve raporlar',
+            monthly_interaction: 'Aylık Etkileşim Hacmi',
+            appointment_distribution: 'Randevu Dağılımı',
+            conversion_rate: 'Dönüşüm Oranı',
+            data_loading: 'Veri yükleniyor...',
+            retry: 'Tekrar Dene',
+
+            // Satisfaction View
+            satisfaction_title: 'Memnuniyet',
+            satisfaction_subtitle: 'Geri bildirimleriniz bizim için değerli',
+            overall_satisfaction: 'Genel Memnuniyet',
+            recent_feedbacks: 'Son Geri Bildirimleriniz',
+            send_new_feedback: 'Yeni Geri Bildirim Gönder',
+            new_feedback_title: 'Yeni Geri Bildirim',
+            rate_service: 'Hizmetimizi puanlayın',
+            your_thoughts: 'Düşünceleriniz',
+            feedback_placeholder: 'Hizmetimiz hakkında her türlü görüş, öneri veya şikayetinizi yazabilirsiniz...',
+            cancel: 'İptal',
+            send: 'Gönder',
+            sending: 'Gönderiliyor...',
+            feedback_success: 'Geri bildiriminiz başarıyla iletildi. Teşekkür ederiz!',
+            feedback_success_title: 'Geri Bildirim Alındı',
+            system_error: 'Sistem Hatası',
+            feedback_error: 'Geri bildirim gönderilirken bir hata oluştu'
         },
         en: {
             // General
@@ -203,7 +261,65 @@ export const useSectorStore = defineStore('sector', () => {
             beta_features: 'Beta Features',
             beta_desc: 'Try new features before everyone else',
             analytics_sharing: 'Analytics Sharing',
-            analytics_desc: 'Automatically send crash reports'
+            analytics_desc: 'Automatically send crash reports',
+
+            // Messages & Calls
+            messages_title: 'Messages',
+            messages_subtitle: 'Inbox and message history',
+            calls_title: 'Calls',
+            calls_subtitle: 'Call history and details',
+            loading_messages: 'Loading messages...',
+            loading_calls: 'Loading calls...',
+            no_messages: 'You don\'t have any messages yet.',
+            no_calls: 'No call records found yet.',
+            previous: 'Previous',
+            next: 'Next',
+            page: 'Page',
+            total_items: 'total',
+
+            // Statuses
+            status_read: 'Read',
+            status_unread: 'Unread',
+            status_replied: 'Replied',
+            status_answered: 'Answered',
+            status_missed: 'Missed',
+            status_busy: 'Busy',
+            status_resolved: 'Resolved',
+            status_closed: 'Closed',
+            status_open: 'Open',
+            customer_fallback: 'Customer',
+            cancel: 'Cancel',
+            save: 'Save',
+            processing: 'Processing...',
+            success_saved: 'Action saved successfully!',
+            complete_action: 'Complete Action',
+
+            // Analytics View
+            performance_analysis: 'Performance Analysis',
+            analytics_subtitle: 'Detailed statistics and reports',
+            monthly_interaction: 'Monthly Interaction Volume',
+            appointment_distribution: 'Appointment Distribution',
+            conversion_rate: 'Conversion Rate',
+            data_loading: 'Loading data...',
+            retry: 'Try Again',
+
+            // Satisfaction View
+            satisfaction_title: 'Satisfaction',
+            satisfaction_subtitle: 'Your feedback is valuable to us',
+            overall_satisfaction: 'Overall Satisfaction',
+            recent_feedbacks: 'Your Recent Feedbacks',
+            send_new_feedback: 'Send New Feedback',
+            new_feedback_title: 'New Feedback',
+            rate_service: 'Rate our service',
+            your_thoughts: 'Your thoughts',
+            feedback_placeholder: 'You can write any opinions, suggestions or complaints about our service...',
+            cancel: 'Cancel',
+            send: 'Send',
+            sending: 'Sending...',
+            feedback_success: 'Your feedback has been successfully delivered. Thank you!',
+            feedback_success_title: 'Feedback Received',
+            system_error: 'System Error',
+            feedback_error: 'An error occurred while sending feedback'
         },
         de: {
             // General
@@ -283,7 +399,65 @@ export const useSectorStore = defineStore('sector', () => {
             beta_features: 'Beta-Funktionen',
             beta_desc: 'Neue Funktionen als Erster testen',
             analytics_sharing: 'Analysefreigabe',
-            analytics_desc: 'Fehlerberichte automatisch senden'
+            analytics_desc: 'Fehlerberichte automatisch senden',
+
+            // Messages & Calls
+            messages_title: 'Nachrichten',
+            messages_subtitle: 'Posteingang und Nachrichtenverlauf',
+            calls_title: 'Anrufe',
+            calls_subtitle: 'Anrufverlauf und Details',
+            loading_messages: 'Nachrichten werden geladen...',
+            loading_calls: 'Anrufe werden geladen...',
+            no_messages: 'Sie haben noch keine Nachrichten.',
+            no_calls: 'Noch keine Anrufprotokolle gefunden.',
+            previous: 'Zurück',
+            next: 'Weiter',
+            page: 'Seite',
+            total_items: 'insgesamt',
+
+            // Statuses
+            status_read: 'Gelesen',
+            status_unread: 'Ungelesen',
+            status_replied: 'Beantwortet',
+            status_answered: 'Angenommen',
+            status_missed: 'Verpasst',
+            status_busy: 'Besetzt',
+            status_resolved: 'Gelöst',
+            status_closed: 'Geschlossen',
+            status_open: 'Offen',
+            customer_fallback: 'Kunde',
+            cancel: 'Abbrechen',
+            save: 'Speichern',
+            processing: 'Wird verarbeitet...',
+            success_saved: 'Vorgang erfolgreich gespeichert!',
+            complete_action: 'Vorgang abschließen',
+
+            // Analytics View
+            performance_analysis: 'Leistungsanalyse',
+            analytics_subtitle: 'Detaillierte Statistiken und Berichte',
+            monthly_interaction: 'Monatliches Interaktionsvolumen',
+            appointment_distribution: 'Terminverteilung',
+            conversion_rate: 'Konversionsrate',
+            data_loading: 'Daten werden geladen...',
+            retry: 'Erneut versuchen',
+
+            // Satisfaction View
+            satisfaction_title: 'Zufriedenheit',
+            satisfaction_subtitle: 'Ihr Feedback ist uns wichtig',
+            overall_satisfaction: 'Gesamtzufriedenheit',
+            recent_feedbacks: 'Ihre letzten Rückmeldungen',
+            send_new_feedback: 'Neues Feedback senden',
+            new_feedback_title: 'Neues Feedback',
+            rate_service: 'Bewerten Sie unseren Service',
+            your_thoughts: 'Ihre Gedanken',
+            feedback_placeholder: 'Sie können Meinungen, Vorschläge oder Beschwerden zu unserem Service schreiben...',
+            cancel: 'Abbrechen',
+            send: 'Senden',
+            sending: 'Senden...',
+            feedback_success: 'Ihr Feedback wurde erfolgreich übermittelt. Vielen Dank!',
+            feedback_success_title: 'Feedback erhalten',
+            system_error: 'Systemfehler',
+            feedback_error: 'Beim Senden des Feedbacks ist ein Fehler aufgetreten'
         }
     }
 
@@ -296,6 +470,12 @@ export const useSectorStore = defineStore('sector', () => {
             currentLocale.value = lang
             localStorage.setItem('user_language', lang)
         }
+    }
+
+    const tLoc = (obj) => {
+        if (!obj) return ''
+        if (typeof obj === 'string') return obj
+        return obj[currentLocale.value] || obj['tr'] || ''
     }
 
     // Computed Data exposure
@@ -313,6 +493,7 @@ export const useSectorStore = defineStore('sector', () => {
         setSector,
         getIcon,
         t,
+        tLoc,
         currentLocale,
         setLocale
     }

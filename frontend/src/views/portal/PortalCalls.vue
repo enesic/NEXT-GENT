@@ -1,25 +1,25 @@
 <template>
   <div class="portal-page">
     <div class="page-header">
-      <h1 :style="{ color: colors.primary }">Aramalar</h1>
-      <p class="subtitle">Çağrı geçmişi ve detayları <span v-if="totalCalls > 0" class="call-count">({{ totalCalls }} arama)</span></p>
+      <h1 :style="{ color: colors.primary }">{{ t('calls_title') }}</h1>
+      <p class="subtitle">{{ t('calls_subtitle') }} <span v-if="totalCalls > 0" class="call-count">({{ totalCalls }} {{ t('calls_title').toLowerCase() }})</span></p>
     </div>
 
     <div class="content-card">
       <div v-if="loading" class="loading-state">
         <div class="spinner" :style="{ borderTopColor: colors.primary }"></div>
-        <span>Aramalar yükleniyor...</span>
+        <span>{{ t('loading_calls') }}</span>
       </div>
       
       <div v-else-if="errorMsg" class="empty-state">
         <component :is="sectorStore.getIcon('AlertCircle')" :size="48" color="#ef4444" />
         <p>{{ errorMsg }}</p>
-        <button class="retry-btn" :style="{ borderColor: colors.primary, color: colors.primary }" @click="loadCalls">Tekrar Dene</button>
+        <button class="retry-btn" :style="{ borderColor: colors.primary, color: colors.primary }" @click="loadCalls">{{ t('retry') }}</button>
       </div>
 
       <div v-else-if="calls.length === 0" class="empty-state">
         <component :is="sectorStore.getIcon('Phone')" :size="48" :color="colors.primary" />
-        <p>Henüz bir arama kaydı bulunmuyor.</p>
+        <p>{{ t('no_calls') }}</p>
       </div>
 
       <div v-else class="list-container">
@@ -51,9 +51,9 @@
 
         <!-- Pagination -->
         <div v-if="totalCalls > pageSize" class="pagination">
-          <button :disabled="currentPage <= 1" @click="goToPage(currentPage - 1)" class="page-btn" :style="{ '--page-accent': colors.primary }">← Önceki</button>
-          <span class="page-info" :style="{ color: colors.primary }">Sayfa {{ currentPage }} / {{ totalPages }}</span>
-          <button :disabled="currentPage >= totalPages" @click="goToPage(currentPage + 1)" class="page-btn" :style="{ '--page-accent': colors.primary }">Sonraki →</button>
+          <button :disabled="currentPage <= 1" @click="goToPage(currentPage - 1)" class="page-btn" :style="{ '--page-accent': colors.primary }">← {{ t('previous') }}</button>
+          <span class="page-info" :style="{ color: colors.primary }">{{ t('page') }} {{ currentPage }} / {{ totalPages }}</span>
+          <button :disabled="currentPage >= totalPages" @click="goToPage(currentPage + 1)" class="page-btn" :style="{ '--page-accent': colors.primary }">{{ t('next') }} →</button>
         </div>
       </div>
     </div>
@@ -68,6 +68,8 @@ import { useAuthStore } from '../../stores/auth'
 const sectorStore = useSectorStore()
 const authStore = useAuthStore()
 const axios = inject('axios')
+
+const t = (key) => sectorStore.t(key)
 
 const calls = ref([])
 const loading = ref(true)
@@ -92,22 +94,23 @@ const getGlowColor = (name) => getColor(name) + '1A'
 
 // Filter out 'Sistem' and similar system names
 const cleanName = (name) => {
-    if (!name) return 'Müşteri'
+    if (!name) return t('customer_fallback')
     const lower = name.trim().toLowerCase()
-    if (['sistem', 'system', 'admin', 'test', ''].includes(lower)) return 'Müşteri'
+    if (['sistem', 'system', 'admin', 'test', ''].includes(lower)) return t('customer_fallback')
     return name.trim()
 }
 
 const statusLabel = (status) => {
+    const s = String(status || '').toLowerCase()
     const labels = {
-        resolved: 'Çözüldü',
-        closed: 'Kapatıldı',
-        pending: 'Beklemede',
-        missed: 'Cevapsız',
-        completed: 'Tamamlandı',
-        open: 'Açık'
+        resolved: t('status_resolved'),
+        closed: t('status_closed'),
+        pending: t('status_pending'),
+        missed: t('status_missed'),
+        completed: t('status_read'), // Calls use 'read' label for completed
+        open: t('status_open')
     }
-    return labels[status] || status || 'Tamamlandı'
+    return labels[s] || status || t('status_read')
 }
 
 const statusClass = (status) => {
@@ -118,7 +121,8 @@ const statusClass = (status) => {
 
 const formatTime = (d) => {
     if (!d) return ''
-    return new Date(d).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
+    const locale = sectorStore.currentLocale === 'tr' ? 'tr-TR' : (sectorStore.currentLocale === 'de' ? 'de-DE' : 'en-US')
+    return new Date(d).toLocaleDateString(locale, { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
 }
 
 const loadCalls = async () => {
