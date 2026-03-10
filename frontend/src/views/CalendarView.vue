@@ -151,12 +151,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-vue-next'
 import { useSectorStore } from '../stores/sector'
 import AppointmentModal from '../components/common/AppointmentModal.vue'
+import api from '@/config/api'
 
-const axios = inject('axios')
 const sectorStore = useSectorStore()
 
 const currentDate = ref(new Date())
@@ -258,7 +258,7 @@ const fetchEvents = async () => {
     const isCustomer = !sessionStorage.getItem('user')?.includes('admin')
     const endpoint = isCustomer ? '/portal/appointments' : '/interactions'
 
-    const response = await axios.get(endpoint, { params: { limit: 100 } })
+    const response = await api.get(endpoint, { params: { limit: 100 } })
     const arr = toEventsArray(response?.data ?? {})
 
     if (arr.length === 0) {
@@ -330,12 +330,15 @@ onMounted(fetchEvents)
 
 <style scoped>
 .calendar-layout {
-  height: 100%;
+  width: 100%;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 28px;
+  padding: 24px;
+  box-sizing: border-box;
   color: var(--text-primary);
-  overflow: hidden;  /* prevents calendar expanding parent */
+  overflow-x: hidden;
   min-width: 0;
 }
 
@@ -438,11 +441,11 @@ onMounted(fetchEvents)
 
 .calendar-content-grid {
   display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 32px;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
   flex: 1;
-  overflow: hidden;  /* key: don't let children expand the grid */
   min-width: 0;
+  min-height: 600px;
 }
 
 .calendar-wrapper {
@@ -875,5 +878,12 @@ onMounted(fetchEvents)
   padding: 40px;
   color: var(--text-muted);
   font-style: italic;
+}
+
+@media (max-width: 1024px) {
+  .calendar-content-grid {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
 }
 </style>

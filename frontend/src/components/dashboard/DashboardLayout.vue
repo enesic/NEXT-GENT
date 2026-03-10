@@ -152,7 +152,7 @@ onMounted(() => {
 
 <style scoped>
 .dashboard-layout {
-  min-height: 100vh;
+  min-height: 100dvh;
   background: #030712;
   color: white;
   font-family: 'Inter', sans-serif;

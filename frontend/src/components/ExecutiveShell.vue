@@ -429,7 +429,7 @@ onUnmounted(() => {
 <style scoped>
 .executive-shell {
   display: flex;
-  height: 100vh;
+  height: 100dvh;
   width: 100vw;
   background: var(--bg-main);
   overflow: hidden;
