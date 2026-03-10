@@ -3,11 +3,11 @@
     <div class="header">
       <div class="title-group">
         <h2>{{ sectorStore.t('settings') }}</h2>
-        <p class="subtitle">Hesap ve uygulama tercihlerini yönetin</p>
+        <p class="subtitle">{{ sectorStore.t('settings_desc') }}</p>
       </div>
       <button class="save-btn" @click="saveAll">
         <Save :size="18" />
-        Tümünü Kaydet
+        {{ sectorStore.t('save_all') }}
       </button>
     </div>
 
@@ -16,19 +16,19 @@
       <div class="settings-card" :style="{ animationDelay: '0.1s' }">
         <div class="card-header">
           <User :size="20" />
-          <h3>Profil Ayarları</h3>
+          <h3>{{ sectorStore.t('profile_settings') }}</h3>
         </div>
         <div class="card-body">
           <div class="input-group">
-            <label>Ad Soyad</label>
-            <input type="text" v-model="settings.profile.fullName" placeholder="Adınızı girin" />
+            <label>{{ sectorStore.t('full_name') }}</label>
+            <input type="text" v-model="settings.profile.fullName" />
           </div>
           <div class="input-group">
-            <label>Email Adresi</label>
+            <label>{{ sectorStore.t('email_address') }}</label>
             <input type="email" :value="settings.profile.email" disabled />
           </div>
           <div class="input-group">
-            <label>Telefon</label>
+            <label>{{ sectorStore.t('phone') }}</label>
             <input type="tel" v-model="settings.profile.phone" />
           </div>
         </div>
@@ -38,27 +38,27 @@
       <div class="settings-card" :style="{ animationDelay: '0.2s' }">
         <div class="card-header">
           <Palette :size="20" />
-          <h3>Görünüm Ayarları</h3>
+          <h3>{{ sectorStore.t('appearance') }}</h3>
         </div>
         <div class="card-body">
           <div class="toggle-group" @click="toggle('appearance', 'darkMode')">
             <div class="toggle-info">
-              <label>Koyu Mod</label>
-              <p>Göz yorgunluğunu azaltan karanlık arayüz</p>
+              <label>{{ sectorStore.t('dark_mode') }}</label>
+              <p>{{ sectorStore.t('dark_mode_desc') }}</p>
             </div>
             <div class="toggle" :class="{ active: settings.appearance.darkMode }"></div>
           </div>
           <div class="toggle-group" @click="toggle('appearance', 'highContrast')">
             <div class="toggle-info">
-              <label>Yüksek Karşıtlık</label>
-              <p>Daha belirgin metin ve bileşenler</p>
+              <label>{{ sectorStore.t('high_contrast') }}</label>
+              <p>{{ sectorStore.t('high_contrast_desc') }}</p>
             </div>
             <div class="toggle" :class="{ active: settings.appearance.highContrast }"></div>
           </div>
           <div class="toggle-group" @click="toggle('appearance', 'compactView')">
             <div class="toggle-info">
-              <label>Kompakt Görünüm</label>
-              <p>Daha fazla veriyi tek ekranda görün</p>
+              <label>{{ sectorStore.t('compact_view') }}</label>
+              <p>{{ sectorStore.t('compact_view_desc') }}</p>
             </div>
             <div class="toggle" :class="{ active: settings.appearance.compactView }"></div>
           </div>
@@ -69,20 +69,20 @@
       <div class="settings-card" :style="{ animationDelay: '0.3s' }">
         <div class="card-header">
           <Bell :size="20" />
-          <h3>Bildirim Ayarları</h3>
+          <h3>{{ sectorStore.t('notifications') }}</h3>
         </div>
         <div class="card-body">
           <div class="toggle-group" @click="toggle('notifications', 'email')">
             <div class="toggle-info">
-              <label>Email Bildirimleri</label>
-              <p>Önemli güncellemeleri e-posta ile al</p>
+              <label>{{ sectorStore.t('email_notif') }}</label>
+              <p>{{ sectorStore.t('email_notif_desc') }}</p>
             </div>
             <div class="toggle" :class="{ active: settings.notifications.email }"></div>
           </div>
           <div class="toggle-group" @click="toggle('notifications', 'sms')">
             <div class="toggle-info">
-              <label>SMS Bildirimleri</label>
-              <p>Randevu hatırlatmalarını SMS ile al</p>
+              <label>{{ sectorStore.t('sms_notif') }}</label>
+              <p>{{ sectorStore.t('sms_notif_desc') }}</p>
             </div>
             <div class="toggle" :class="{ active: settings.notifications.sms }"></div>
           </div>
@@ -93,29 +93,29 @@
       <div class="settings-card" :style="{ animationDelay: '0.4s' }">
         <div class="card-header">
           <ShieldCheck :size="20" />
-          <h3>Güvenlik Ayarları</h3>
+          <h3>{{ sectorStore.t('security_settings') }}</h3>
         </div>
         <div class="card-body">
           <div class="action-row">
             <div class="action-info">
-              <label>İki Faktörlü Doğrulama</label>
-              <p>Ekstra güvenlik katmanı ekleyin</p>
+              <label>{{ sectorStore.t('two_factor') }}</label>
+              <p>{{ sectorStore.t('two_factor_desc') }}</p>
             </div>
-            <button class="outline-btn" @click="handleAction('Güvenlik', '2FA aktivasyon süreci başlatıldı.')">Etkinleştir</button>
+            <button class="outline-btn" @click="openModal('2fa')">{{ sectorStore.t('enable') }}</button>
           </div>
           <div class="action-row">
             <div class="action-info">
-              <label>Şifre Güncelleme</label>
-              <p>Son güncelleme: 3 ay önce</p>
+              <label>{{ sectorStore.t('password_update') }}</label>
+              <p>{{ sectorStore.t('password_desc') }}</p>
             </div>
-            <button class="outline-btn" @click="handleAction('Güvenlik', 'Şifre sıfırlama e-postası gönderildi.')">Değiştir</button>
+            <button class="outline-btn" @click="openModal('password')">{{ sectorStore.t('change') }}</button>
           </div>
           <div class="action-row">
             <div class="action-info">
-              <label>Hesap Kurtarma</label>
-              <p>Yedek e-posta ve telefon ayarları</p>
+              <label>{{ sectorStore.t('account_recovery') }}</label>
+              <p>{{ sectorStore.t('account_recovery_desc') }}</p>
             </div>
-            <button class="outline-btn" @click="handleAction('Güvenlik', 'Kurtarma ayarları yükleniyor...')">Yapılandır</button>
+            <button class="outline-btn" @click="openModal('recovery')">{{ sectorStore.t('configure') }}</button>
           </div>
         </div>
       </div>
@@ -124,22 +124,22 @@
       <div class="settings-card" :style="{ animationDelay: '0.5s' }">
         <div class="card-header">
           <Eye :size="20" />
-          <h3>Gizlilik ve Veri</h3>
+          <h3>{{ sectorStore.t('privacy_data') }}</h3>
         </div>
         <div class="card-body">
           <div class="toggle-group" @click="toggle('privacy', 'dataPersonalization')">
             <div class="toggle-info">
-              <label>Veri Kişiselleştirme</label>
-              <p>Deneyiminizi iyileştirmek için verileri kullan</p>
+              <label>{{ sectorStore.t('data_personalization') }}</label>
+              <p>{{ sectorStore.t('data_pers_desc') }}</p>
             </div>
             <div class="toggle" :class="{ active: settings.privacy.dataPersonalization }"></div>
           </div>
           <div class="action-row">
             <div class="action-info">
-              <label>Verilerimi İndir</label>
-              <p>Tüm kişisel verilerinizin bir kopyasını alın</p>
+              <label>{{ sectorStore.t('download_data') }}</label>
+              <p>{{ sectorStore.t('download_data_desc') }}</p>
             </div>
-            <button class="outline-btn" @click="downloadData">İndir</button>
+            <button class="outline-btn" @click="downloadData">{{ sectorStore.t('download') }}</button>
           </div>
         </div>
       </div>
@@ -148,12 +148,12 @@
       <div class="settings-card" :style="{ animationDelay: '0.6s' }">
         <div class="card-header">
           <HardDrive :size="20" />
-          <h3>Depolama Yönetimi</h3>
+          <h3>{{ sectorStore.t('storage') }}</h3>
         </div>
         <div class="card-body">
           <div class="storage-usage">
             <div class="usage-stats">
-              <span>6.5 GB / 10 GB Kullanıldı</span>
+              <span>{{ sectorStore.t('used_storage') }}</span>
               <span class="usage-pct">%65</span>
             </div>
             <div class="usage-bar">
@@ -161,7 +161,7 @@
             </div>
             <p class="usage-hint">En çok yer kaplayan: PDF Belgeler (%42)</p>
           </div>
-          <button class="outline-btn full-width" @click="handleAction('Paket Yükseltme', 'Ödeme sayfasına yönlendiriliyorsunuz...')">Plânı Yükselt</button>
+          <button class="outline-btn full-width" @click="openModal('billing')">{{ sectorStore.t('upgrade_plan') }}</button>
         </div>
       </div>
 
@@ -169,7 +169,7 @@
       <div class="settings-card" :style="{ animationDelay: '0.7s' }">
         <div class="card-header">
           <Link :size="20" />
-          <h3>Bağlı Uygulamalar</h3>
+          <h3>{{ sectorStore.t('connected_apps') }}</h3>
         </div>
         <div class="card-body">
           <div class="app-item">
@@ -178,7 +178,7 @@
                 <label>Google Drive</label>
                 <p>Dosyaları otomatik yedekle</p>
             </div>
-            <span class="status-badge connected">Bağlı</span>
+            <span class="status-badge connected">{{ sectorStore.t('connected') }}</span>
           </div>
           <div class="app-item">
             <div class="app-icon slack">S</div>
@@ -186,7 +186,8 @@
                 <label>Slack</label>
                 <p>Bildirimleri kanala gönder</p>
             </div>
-            <button class="link-btn" @click="toggleApp('Slack')">Bağla</button>
+            <button v-if="!settings.apps.slackConnected" class="link-btn" @click="openModal('slack')">{{ sectorStore.t('connect') }}</button>
+            <span v-else class="status-badge connected">{{ sectorStore.t('connected') }}</span>
           </div>
         </div>
       </div>
@@ -195,7 +196,7 @@
       <div class="settings-card" :style="{ animationDelay: '0.8s' }">
         <div class="card-header">
           <CreditCard :size="20" />
-          <h3>Ödeme ve Faturalandırma</h3>
+          <h3>{{ sectorStore.t('billing') }}</h3>
         </div>
         <div class="card-body">
           <div class="billing-card-preview">
@@ -205,7 +206,7 @@
           </div>
           <div class="action-row">
             <div class="action-info">
-                <label>Mevcut Paket</label>
+                <label>{{ sectorStore.t('current_plan') }}</label>
                 <p>Kurumsal Pro Plus</p>
             </div>
             <span class="price-tag">49$/Ay</span>
@@ -217,11 +218,11 @@
       <div class="settings-card" :style="{ animationDelay: '0.9s' }">
         <div class="card-header">
           <Globe :size="20" />
-          <h3>Dil ve Bölge</h3>
+          <h3>{{ sectorStore.t('lang_region') }}</h3>
         </div>
         <div class="card-body">
           <div class="input-group">
-            <label>Arayüz Dili</label>
+            <label>{{ sectorStore.t('interface_lang') }}</label>
             <select class="premium-select" v-model="settings.localization.language">
               <option value="tr">Türkçe</option>
               <option value="en">English</option>
@@ -229,7 +230,7 @@
             </select>
           </div>
           <div class="input-group">
-            <label>Saat Dilimi</label>
+            <label>{{ sectorStore.t('timezone') }}</label>
             <select class="premium-select" v-model="settings.localization.timezone">
               <option value="europe/istanbul">İstanbul (GMT+3)</option>
               <option value="europe/london">London (GMT+0)</option>
@@ -243,26 +244,117 @@
       <div class="settings-card" :style="{ animationDelay: '0.6s' }">
         <div class="card-header">
           <Cpu :size="20" />
-          <h3>Gelişmiş Ayarlar</h3>
+          <h3>{{ sectorStore.t('advanced') }}</h3>
         </div>
         <div class="card-body">
           <div class="toggle-group" @click="toggle('privacy', 'betaFeatures')">
             <div class="toggle-info">
-              <label>Beta Özellikler</label>
-              <p>Yeni özellikleri herkesten önce deneyin</p>
+              <label>{{ sectorStore.t('beta_features') }}</label>
+              <p>{{ sectorStore.t('beta_desc') }}</p>
             </div>
             <div class="toggle" :class="{ active: settings.privacy.betaFeatures }"></div>
           </div>
           <div class="toggle-group" @click="toggle('privacy', 'analyticsSharing')">
             <div class="toggle-info">
-              <label>Analitik Paylaşımı</label>
-              <p>Hata raporlarını otomatik olarak gönder</p>
+              <label>{{ sectorStore.t('analytics_sharing') }}</label>
+              <p>{{ sectorStore.t('analytics_desc') }}</p>
             </div>
             <div class="toggle" :class="{ active: settings.privacy.analyticsSharing }"></div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Ayarlar Modali -->
+    <Transition name="modal-fade">
+      <div v-if="activeModal" class="modal-overlay" @click.self="activeModal = null">
+        <div class="modal-container" :style="{ '--accent': sectorStore.theme?.primary || '#6366f1' }">
+          <div class="modal-header">
+            <div class="modal-title-group">
+              <div class="modal-icon">
+                <component :is="activeModalData.icon" :size="20" />
+              </div>
+              <h2>{{ activeModalData.title }}</h2>
+            </div>
+            <button class="close-btn" @click="activeModal = null">
+              <X :size="20" />
+            </button>
+          </div>
+          
+          <div class="modal-body">
+            <template v-if="activeModal === 'password'">
+              <div class="input-group">
+                <label>Mevcut Şifre</label>
+                <input type="password" placeholder="••••••••" />
+              </div>
+              <div class="input-group">
+                <label>Yeni Şifre</label>
+                <input type="password" placeholder="••••••••" />
+              </div>
+              <div class="input-group">
+                <label>Yeni Şifre (Tekrar)</label>
+                <input type="password" placeholder="••••••••" />
+              </div>
+            </template>
+            
+            <template v-else-if="activeModal === '2fa'">
+              <p class="modal-desc">Hesabınızı güvence altına almak için Authenticator uygulamanızla aşağıdaki kodu girin.</p>
+              <div class="input-group">
+                <label>Doğrulama Kodu</label>
+                <input type="text" placeholder="123 456" style="text-align: center; font-size: 20px; letter-spacing: 4px;" />
+              </div>
+            </template>
+            
+            <template v-else-if="activeModal === 'recovery'">
+              <div class="input-group">
+                <label>Yedek E-posta Adresi</label>
+                <input type="email" placeholder="backup@example.com" />
+              </div>
+              <div class="input-group">
+                <label>Kurtarma Telefonu</label>
+                <input type="tel" placeholder="+90 5XX XXX XX XX" />
+              </div>
+            </template>
+            
+            <template v-else-if="activeModal === 'billing'">
+              <div class="billing-preview">
+                <div class="billing-plan active">
+                  <h4>Kurumsal Pro Plus</h4>
+                  <span class="price">49$/Ay</span>
+                  <ul>
+                    <li>✓ Sınırsız Randevu</li>
+                    <li>✓ 50 GB Bulut Alanı</li>
+                    <li>✓ Öncelikli Destek</li>
+                  </ul>
+                </div>
+                <div class="billing-plan upgrade">
+                  <h4>Sınırsız Enterprise</h4>
+                  <span class="price">99$/Ay</span>
+                  <ul>
+                    <li>✓ Sınırsız Kullanıcı</li>
+                    <li>✓ 500 GB Bulut Alanı</li>
+                    <li>✓ Özel Müşteri Temsilcisi</li>
+                  </ul>
+                </div>
+              </div>
+            </template>
+
+            <template v-else-if="activeModal === 'slack'">
+              <p class="modal-desc">Workspace bilginizi girerek bildirimleri Slack'e bağlayabilirsiniz.</p>
+              <div class="input-group">
+                <label>Slack Webhook URL</label>
+                <input type="url" placeholder="https://hooks.slack.com/services/..." />
+              </div>
+            </template>
+          </div>
+          
+          <div class="modal-footer">
+            <button class="btn-cancel" @click="activeModal = null">İptal</button>
+            <button class="btn-submit" @click="submitModal">Kaydet</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -306,8 +398,48 @@ const settings = reactive({
   localization: {
     language: 'tr',
     timezone: 'europe/istanbul'
+  },
+  apps: {
+    slackConnected: false
   }
 })
+
+// 1.5. Modal State
+const activeModal = ref(null)
+const activeModalData = ref({
+  title: '',
+  icon: 'Settings'
+})
+
+const getModalConfig = (modalType) => {
+  const configs = {
+    password: { title: 'Şifre Değiştir', icon: 'Key' },
+    '2fa': { title: 'İki Faktörlü Doğrulama', icon: 'ShieldCheck' },
+    recovery: { title: 'Hesap Kurtarma Ayarları', icon: 'RefreshCw' },
+    billing: { title: 'Paket Yükseltme', icon: 'CreditCard' },
+    slack: { title: 'Slack Entegrasyonu', icon: 'Link' }
+  }
+  return configs[modalType] || { title: 'Ayarlar', icon: 'Settings' }
+}
+
+const openModal = (modalType) => {
+  activeModalData.value = getModalConfig(modalType)
+  activeModal.value = modalType
+}
+
+const submitModal = () => {
+  if (activeModal.value === 'slack') {
+    settings.apps.slackConnected = true
+    notificationStore.success('Slack başarıyla bağlandı!', 'Entegrasyon')
+  } else if (activeModal.value === 'billing') {
+    notificationStore.success('Yeni pakete geçiş işleminiz alındı.', 'Ödeme')
+  } else {
+    notificationStore.success(`${activeModalData.value.title} işleminiz kaydedildi.`, 'Başarılı')
+  }
+  // save globally
+  saveAll()
+  activeModal.value = null
+}
 
 // 2. Load from LocalStorage on mount
 const applyAppearance = (appearance) => {
@@ -327,6 +459,7 @@ onMounted(() => {
             if (parsed.notifications) Object.assign(settings.notifications, parsed.notifications)
             if (parsed.privacy)      Object.assign(settings.privacy, parsed.privacy)
             if (parsed.localization) Object.assign(settings.localization, parsed.localization)
+            if (parsed.apps)         Object.assign(settings.apps, parsed.apps)
             // Re-apply appearance immediately after loading
             applyAppearance(settings.appearance)
         } catch (e) {
@@ -768,6 +901,218 @@ const toggleApp = (app) => {
     font-size: 16px;
     font-weight: 700;
     color: var(--current-accent);
+}
+
+/* Settings Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-container {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  padding: 24px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.modal-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--current-glow);
+  color: var(--current-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-title-group h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modal-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.modal-footer {
+  padding: 20px 24px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.btn-cancel {
+  padding: 10px 20px;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-primary);
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+  background: var(--surface-hover);
+}
+
+.btn-submit {
+  padding: 10px 24px;
+  border: none;
+  background: var(--current-accent);
+  color: white;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px var(--current-glow);
+}
+
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px var(--current-glow-strong);
+}
+
+.billing-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.billing-plan {
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-hover);
+  position: relative;
+  transition: all 0.2s;
+}
+
+.billing-plan.active {
+  border-color: var(--current-accent);
+  background: var(--current-glow);
+}
+
+.billing-plan.active::after {
+  content: 'Mevcut';
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--current-accent);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.billing-plan h4 {
+  margin: 0 0 8px 0;
+  color: var(--text-primary);
+  font-size: 16px;
+}
+
+.billing-plan .price {
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.billing-plan ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.billing-plan li {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+.modal-fade-enter-active .modal-container,
+.modal-fade-leave-active .modal-container {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-fade-enter-from .modal-container,
+.modal-fade-leave-to .modal-container {
+  transform: scale(0.95) translateY(20px);
 }
 
 @keyframes appear {

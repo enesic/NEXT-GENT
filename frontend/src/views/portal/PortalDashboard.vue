@@ -50,7 +50,7 @@
         <!-- MAIN DRAFT: Right Side Quick Actions -->
         <div class="side-panel">
             <div class="quick-actions-card">
-                <h3 >Hızlı İşlemler</h3>
+                <h3 >{{ sectorStore.t('quick_actions') }}</h3>
                 <div class="actions-list">
                     <button 
                         v-for="(action, index) in displayActions" 
@@ -70,7 +70,7 @@
 
             <!-- MAIN DRAFT: Recent Activity Widget -->
              <div class="activity-card">
-                <h3 >Son Aktiviteler</h3>
+                <h3 >{{ sectorStore.t('recent_activity') }}</h3>
                 <div class="activity-list">
                     <div v-for="i in 3" :key="i" class="activity-row">
                         <div class="dot" :style="{ background: i === 1 ? colors.primary : colors.accent }"></div>

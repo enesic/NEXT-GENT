@@ -273,22 +273,22 @@ const mainNavigation = computed(() => {
   // Customer Navigation (Restore original)
   if (isCustomer.value) {
       return [
-        { id: 'dashboard', label: 'Genel Bakış', icon: LayoutDashboard },
-        { id: 'appointments', label: 'Randevularım', icon: CalendarCheck },
-        { id: 'messages', label: 'Mesajlar', icon: Briefcase },
-        { id: 'calls', label: 'Aramalar', icon: Phone },
-        { id: 'satisfaction', label: 'Memnuniyet', icon: Heart }
+        { id: 'dashboard', label: sectorStore.t('dashboard'), icon: LayoutDashboard },
+        { id: 'appointments', label: sectorStore.t('appointments'), icon: CalendarCheck },
+        { id: 'messages', label: sectorStore.t('messages'), icon: Briefcase },
+        { id: 'calls', label: sectorStore.t('calls'), icon: Phone },
+        { id: 'satisfaction', label: sectorStore.t('satisfaction'), icon: Heart }
       ]
   }
 
   // Admin Navigation (Classic)
   return [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'users', label: 'Kullanıcılar', icon: Users },
-    { id: 'cards', label: 'Kartlar', icon: FileText }, // Using FileText as credit card placeholder
-    { id: 'flows', label: 'Akış Motoru', icon: Activity },
-    { id: 'audits', label: 'Audit Logları', icon: FileText },
-    { id: 'analytics', label: 'Analitik', icon: TrendingUp }
+    { id: 'dashboard', label: sectorStore.t('admin_dashboard'), icon: LayoutDashboard },
+    { id: 'users', label: sectorStore.t('users'), icon: Users },
+    { id: 'cards', label: sectorStore.t('cards'), icon: FileText }, // Using FileText as credit card placeholder
+    { id: 'flows', label: sectorStore.t('flows'), icon: Activity },
+    { id: 'audits', label: sectorStore.t('audits'), icon: FileText },
+    { id: 'analytics', label: sectorStore.t('analytics'), icon: TrendingUp }
   ]
 })
 
