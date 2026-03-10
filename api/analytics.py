@@ -16,22 +16,16 @@ DATABASE_URL = "postgresql://neondb_owner:npg_leRNYA8SMiK9@ep-silent-water-ai73m
 class AnalyticsService:
     """Real analytics from database"""
 
-    async def get_tenant(self, conn, tenant_id_or_slug):
-        # Try finding by ID (UUID) first if it looks like one, then by slug
-        try:
-            import uuid
-            val = uuid.UUID(tenant_id_or_slug)
-            return await conn.fetchrow("SELECT id, name FROM tenants WHERE id = $1", val)
-        except:
-            return await conn.fetchrow("SELECT id, name FROM tenants WHERE slug = $1", tenant_id_or_slug)
+    async def get_tenant(self, conn, tenant_slug):
+        return await conn.fetchrow("SELECT id, name FROM tenants WHERE slug = $1", tenant_slug)
 
-    async def get_kpis(self, tenant_slug, sector="medical"):
+    async def get_kpis(self, tenant_slug):
         try:
             conn = await asyncpg.connect(DATABASE_URL)
             tenant = await self.get_tenant(conn, tenant_slug)
             if not tenant:
                 await conn.close()
-                return self._default_kpis(sector)
+                return self._default_kpis()
 
             tid = tenant['id']
 
@@ -58,38 +52,39 @@ class AnalyticsService:
 
             satisfaction_pct = round(avg_satisfaction * 20, 1) if avg_satisfaction else 85.0
 
-            # Sector-aware labels and realistic mock values if real data is 0
-            if sector == "beauty":
-                labels = ["Bugünkü Randevular", "Aktif Müşteriler", "Memnuniyet", "Aylık Gelir"]
-                # If truly 0 in DB, maybe they are new? But if they expect data, we show it.
-                # For now, let's just use real data if > 0, else theme-compatible defaults
-                values = [
-                    str(total_appointments) if total_appointments > 0 else "28",
-                    str(total_customers) if total_customers > 0 else "856",
-                    f"{satisfaction_pct}%",
-                    "₺145K" if total_appointments == 0 else "₺0" # Mock if new
-                ]
-            elif sector == "medical":
-                labels = ["Bugünkü Randevular", "Aktif Hastalar", "Acil Durumlar", "Müşteri Memnuniyeti"]
-                values = [
-                    str(total_appointments) if total_appointments > 0 else "124",
-                    str(total_customers) if total_customers > 0 else "1,284",
-                    "0", # Real emergency count preferred
-                    f"{satisfaction_pct}%"
-                ]
-            else:
-                labels = ["Toplam Müşteri", "Toplam Etkileşim", "Randevular", "Memnuniyet"]
-                values = [str(total_customers), str(total_interactions), str(total_appointments), f"{satisfaction_pct}%"]
-
             return [
-                {"label": labels[0], "value": values[0], "trend": "+5.2", "positive": True, "description": ""},
-                {"label": labels[1], "value": values[1], "trend": "+12.3", "positive": True, "description": ""},
-                {"label": labels[2], "value": values[2], "trend": "+3.1", "positive": True, "description": ""},
-                {"label": labels[3], "value": values[3], "trend": "+1.2", "positive": True, "description": ""}
+                {
+                    "label": "Toplam Müşteri",
+                    "value": str(total_customers),
+                    "trend": "+5.2",
+                    "positive": True,
+                    "description": "Kayıtlı müşteri sayısı"
+                },
+                {
+                    "label": "Toplam Etkileşim",
+                    "value": str(total_interactions),
+                    "trend": "+12.3",
+                    "positive": True,
+                    "description": "Tüm zamanlar etkileşim"
+                },
+                {
+                    "label": "Randevular",
+                    "value": str(total_appointments),
+                    "trend": "+3.1",
+                    "positive": True,
+                    "description": "Toplam randevu sayısı"
+                },
+                {
+                    "label": "Memnuniyet",
+                    "value": f"{satisfaction_pct}%",
+                    "trend": "+1.2",
+                    "positive": True,
+                    "description": "Müşteri memnuniyeti"
+                }
             ]
         except Exception as e:
             print(f"KPI error: {e}")
-            return self._default_kpis(sector)
+            return self._default_kpis()
 
     async def get_satisfaction(self, tenant_slug, days=30):
         try:
@@ -281,23 +276,13 @@ class AnalyticsService:
             "satisfaction": quick.get("conversion_rate", 0)
         }
 
-    # Fallback defaults that EXACTLY match sectorThemes.js
-    def _default_kpis(self, sector="medical"):
-        if sector == "beauty":
-            labels = ["Bugünkü Randevular", "Aktif Müşteriler", "Memnuniyet", "Aylık Gelir"]
-            values = ["28", "856", "96%", "₺145K"]
-        elif sector == "medical":
-            labels = ["Bugünkü Randevular", "Aktif Hastalar", "Acil Durumlar", "Müşteri Memnuniyeti"]
-            values = ["124", "1,284", "3", "98%"]
-        else:
-            labels = ["Toplam Müşteri", "Toplam Etkileşim", "Randevular", "Memnuniyet"]
-            values = ["0", "0", "0", "95%"]
-            
+    # Fallback defaults
+    def _default_kpis(self):
         return [
-            {"label": labels[0], "value": values[0], "trend": "0", "positive": True, "description": ""},
-            {"label": labels[1], "value": values[1], "trend": "0", "positive": True, "description": ""},
-            {"label": labels[2], "value": values[2], "trend": "0", "positive": True, "description": ""},
-            {"label": labels[3], "value": values[3], "trend": "0", "positive": True, "description": ""}
+            {"label": "Toplam Müşteri", "value": "0", "trend": "0", "positive": True, "description": ""},
+            {"label": "Toplam Etkileşim", "value": "0", "trend": "0", "positive": True, "description": ""},
+            {"label": "Randevular", "value": "0", "trend": "0", "positive": True, "description": ""},
+            {"label": "Memnuniyet", "value": "0%", "trend": "0", "positive": True, "description": ""}
         ]
 
     def _default_satisfaction(self):
@@ -333,8 +318,7 @@ class handler(BaseHTTPRequestHandler):
                         k, v = param.split("=", 1)
                         params[k] = v
 
-            tenant = params.get("tenant") or self.headers.get("X-Tenant-ID") or "medical"
-            sector = params.get("sector", "medical")
+            tenant = params.get("tenant", "medical")
             days = int(params.get("days", "30"))
 
             # Route based on path
@@ -345,7 +329,7 @@ class handler(BaseHTTPRequestHandler):
             clean_path = path.replace("/api/v1/analytics/", "").replace("/api/analytics/", "").strip("/")
 
             if clean_path == "kpis" or path.endswith("/kpis"):
-                data = loop.run_until_complete(analytics_service.get_kpis(tenant, sector))
+                data = loop.run_until_complete(analytics_service.get_kpis(tenant))
             elif clean_path == "satisfaction" or path.endswith("/satisfaction"):
                 data = loop.run_until_complete(analytics_service.get_satisfaction(tenant, days))
             elif clean_path in ("quick-stats", "quickstats") or path.endswith("/quick-stats"):

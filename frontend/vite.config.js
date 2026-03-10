@@ -33,9 +33,10 @@ export default defineConfig({
         target: 'es2015',
         outDir: 'dist',
         assetsDir: 'assets',
-        emptyOutDir: true, // Ensure old files are removed on build
+        emptyOutDir: true,
         sourcemap: false,
-        manifest: true, // Enable build manifest
+        minify: false,
+        manifest: true,
         rollupOptions: {
             output: {
                 // Return to standard hashing for better caching behavior, 
