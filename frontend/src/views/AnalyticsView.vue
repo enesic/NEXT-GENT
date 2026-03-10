@@ -3,8 +3,13 @@
     <div class="header">
       <h2>Performans Analizi</h2>
       <div class="date-picker">
-        <button class="picker-btn active">Son 30 Gün</button>
-        <button class="picker-btn">Bu Yıl</button>
+        <button
+          v-for="r in ranges"
+          :key="r.label"
+          class="picker-btn"
+          :class="{ active: selectedRange === r.label }"
+          @click="selectRange(r)"
+        >{{ r.label }}</button>
       </div>
     </div>
 
@@ -46,36 +51,56 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject } from 'vue'
+import { ref, onMounted } from 'vue'
 import LuxuryChart from '../components/LuxuryChart.vue'
-
-const axios = inject('axios')
+import api from '@/config/api'
 
 const conversationData = ref({ series: [], categories: [] })
-const conversionData = ref({ series: [], categories: [] })
-const statusData = ref({ series: [], labels: [] })
+const conversionData   = ref({ series: [], categories: [] })
+const statusData       = ref({ series: [], labels: [] })
 
-const fetchData = async () => {
-    try {
-        const convRes = await axios.get('/analytics/daily-conversation-duration')
-        conversationData.value = convRes.data
-        
-        const convRateRes = await axios.get('/analytics/conversion-rate', { 
-            params: { start_date: '2026-01-01', end_date: '2026-01-31' } 
-        })
-        conversionData.value = convRateRes.data
+const selectedRange = ref('Son 30 Gün')
+const ranges = [
+  { label: 'Son 30 Gün', days: 30 },
+  { label: 'Bu Yıl',     days: 365 },
+]
 
-        const statusRes = await axios.get('/analytics/appointment-status-breakdown', { 
-            params: { start_date: '2026-01-01', end_date: '2026-01-31' } 
-        })
-        statusData.value = statusRes.data
-        
-    } catch (e) {
-        console.error("Analytics fetch error:", e)
-    }
+const getDateRange = (days) => {
+  const end   = new Date()
+  const start = new Date()
+  start.setDate(start.getDate() - days)
+  const fmt = (d) => d.toISOString().split('T')[0]
+  return { start_date: fmt(start), end_date: fmt(end) }
 }
 
-onMounted(fetchData)
+const fetchData = async (days = 30) => {
+  try {
+    const convRes = await api.get('/analytics/daily-conversation-duration')
+    conversationData.value = convRes.data
+
+    const { start_date, end_date } = getDateRange(days)
+
+    const convRateRes = await api.get('/analytics/conversion-rate', {
+      params: { start_date, end_date }
+    })
+    conversionData.value = convRateRes.data
+
+    const statusRes = await api.get('/analytics/appointment-status-breakdown', {
+      params: { start_date, end_date }
+    })
+    statusData.value = statusRes.data
+
+  } catch (e) {
+    console.error('Analytics fetch error:', e)
+  }
+}
+
+const selectRange = (range) => {
+  selectedRange.value = range.label
+  fetchData(range.days)
+}
+
+onMounted(() => fetchData(30))
 </script>
 
 <style scoped>

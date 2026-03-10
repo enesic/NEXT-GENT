@@ -96,6 +96,45 @@
       <p>Akışlar yükleniyor...</p>
     </div>
   </div>
+
+  <!-- ── Edit Flow Dialog ─────────────────────────────────────────────── -->
+  <Teleport to="body">
+    <div v-if="showEditDialog" class="modal-backdrop" @click.self="showEditDialog = false">
+      <div class="modal-box" @click.stop>
+        <div class="modal-header">
+          <h2>Akışı Düzenle</h2>
+          <button class="modal-close" @click="showEditDialog = false">✕</button>
+        </div>
+        <form @submit.prevent="saveEditFlow" class="modal-form">
+          <div class="form-group">
+            <label>Akış Adı *</label>
+            <input v-model="editForm.name" type="text" placeholder="Akış adı..." required class="form-input" />
+          </div>
+          <div class="form-group">
+            <label>Açıklama</label>
+            <textarea v-model="editForm.description" rows="3" placeholder="Kısa açıklama..." class="form-input"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Kategori</label>
+            <input v-model="editForm.category" type="text" placeholder="Kategori..." class="form-input" />
+          </div>
+          <div class="form-group inline">
+            <label class="toggle-label">
+              <input v-model="editForm.is_active" type="checkbox" class="toggle-input" />
+              <span>Aktif</span>
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn-cancel" @click="showEditDialog = false">İptal</button>
+            <button type="submit" class="btn-save" :disabled="savingEdit">
+              {{ savingEdit ? 'Kaydediliyor...' : 'Kaydet' }}
+            </button>
+          </div>
+          <p v-if="editError" class="form-error">{{ editError }}</p>
+        </form>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -111,6 +150,15 @@ const loading = ref(true)
 const showCreateDialog = ref(false)
 const showEditDialog = ref(false)
 const selectedFlow = ref(null)
+const savingEdit = ref(false)
+const editError = ref(null)
+
+const editForm = ref({
+  name: '',
+  description: '',
+  category: '',
+  is_active: true
+})
 
 const loadFlows = async () => {
   try {
@@ -135,10 +183,33 @@ const executeFlow = async (flow) => {
 }
 
 const editFlow = (flow) => {
-  console.log('Edit flow:', flow)
-  // Open edit dialog with flow data
   selectedFlow.value = flow
+  editForm.value = {
+    name:        flow.name        || '',
+    description: flow.description || '',
+    category:    flow.category    || '',
+    is_active:   flow.is_active   ?? true
+  }
+  editError.value = null
   showEditDialog.value = true
+}
+
+const saveEditFlow = async () => {
+  if (!selectedFlow.value) return
+  savingEdit.value = true
+  editError.value = null
+  try {
+    const res = await api.put(`/flow/${selectedFlow.value.id}`, editForm.value)
+    const updated = res.data
+    const idx = flows.value.findIndex(f => f.id === selectedFlow.value.id)
+    if (idx !== -1) flows.value[idx] = { ...flows.value[idx], ...updated }
+    showEditDialog.value = false
+  } catch (e) {
+    console.error('Flow kaydedilemedi:', e)
+    editError.value = e?.response?.data?.detail || 'Kayıt sırasında hata oluştu.'
+  } finally {
+    savingEdit.value = false
+  }
 }
 
 const viewExecutions = (flow) => {
@@ -469,4 +540,95 @@ onMounted(() => {
     min-width: 100px;
   }
 }
+
+/* ── Modal Styles ─────────────────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal-box {
+  background: var(--surface-elevated, #1a1a2e);
+  border: 1px solid var(--border-subtle, rgba(255,255,255,0.1));
+  border-radius: 16px;
+  padding: 32px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modal-header h2 { font-size: 20px; font-weight: 700; color: var(--text-primary); margin: 0; }
+
+.modal-close {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--surface-hover, rgba(255,255,255,0.05));
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.modal-close:hover { background: rgba(239,68,68,0.1); color: #ef4444; }
+
+.modal-form { display: flex; flex-direction: column; gap: 18px; }
+
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+
+.form-group.inline { flex-direction: row; align-items: center; }
+.toggle-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px; color: var(--text-primary); }
+.toggle-input { width: 16px; height: 16px; accent-color: var(--indigo-primary, #6366f1); cursor: pointer; }
+
+.form-input {
+  background: var(--surface-hover, rgba(255,255,255,0.05));
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: border-color 0.2s;
+  resize: vertical;
+}
+.form-input:focus { outline: none; border-color: var(--indigo-primary, #6366f1); }
+
+.modal-actions { display: flex; gap: 12px; padding-top: 4px; }
+
+.btn-cancel {
+  flex: 1; padding: 10px 20px;
+  background: var(--surface-hover); border: 1px solid var(--border-subtle);
+  border-radius: 8px; color: var(--text-primary); font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;
+}
+.btn-cancel:hover { background: var(--surface-elevated); }
+
+.btn-save {
+  flex: 1; padding: 10px 20px;
+  background: var(--indigo-primary, #6366f1); border: none;
+  border-radius: 8px; color: white; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;
+}
+.btn-save:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+.btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.form-error { color: #ef4444; font-size: 13px; margin: 0; }
 </style>

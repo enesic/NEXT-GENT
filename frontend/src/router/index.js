@@ -129,6 +129,12 @@ const routes = [
                 name: 'ShellAnalytics',
                 component: () => import('../views/AnalyticsView.vue'),
                 meta: { requiresAuth: true }
+            },
+            {
+                path: 'flows/:flowId/executions',
+                name: 'FlowExecutions',
+                component: () => import('../views/admin/FlowExecutions.vue'),
+                meta: { requiresAuth: true }
             }
         ]
     },

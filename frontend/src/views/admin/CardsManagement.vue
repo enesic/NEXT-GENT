@@ -68,6 +68,69 @@
       <p>Kartlar yükleniyor...</p>
     </div>
   </div>
+
+    <!-- ── Add / Edit Card Dialog ──────────────────────────────────────── -->
+    <Teleport to="body">
+      <div v-if="showAddDialog" class="modal-backdrop" @click.self="closeDialog">
+        <div class="modal-box" @click.stop>
+          <div class="modal-header">
+            <h2>{{ selectedCard ? 'Kartı Düzenle' : 'Yeni Kart Ekle' }}</h2>
+            <button class="modal-close" @click="closeDialog">✕</button>
+          </div>
+          <form @submit.prevent="saveCard" class="modal-form">
+            <div class="form-group">
+              <label>Görünüm Adı *</label>
+              <input v-model="cardForm.display_name" type="text" placeholder="Örn: Profesyonel" required class="form-input" />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Aylık Fiyat (₺) *</label>
+                <input v-model.number="cardForm.monthly_price" type="number" min="0" step="0.01" placeholder="0.00" required class="form-input" />
+              </div>
+              <div class="form-group">
+                <label>Seviye</label>
+                <input v-model.number="cardForm.tier_level" type="number" min="1" max="10" placeholder="1" class="form-input" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Maks. Kullanıcı</label>
+                <input v-model.number="cardForm.max_users" type="number" min="1" placeholder="5" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label>Maks. Çağrı/Ay</label>
+                <input v-model.number="cardForm.max_calls_per_month" type="number" min="0" placeholder="1000" class="form-input" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Renk (hex)</label>
+              <div style="display:flex;gap:10px;align-items:center">
+                <input v-model="cardForm.color_primary" type="color" class="color-picker" />
+                <input v-model="cardForm.color_primary" type="text" placeholder="#6366f1" class="form-input" />
+              </div>
+            </div>
+            <div class="form-group inline-row">
+              <label class="toggle-label">
+                <input v-model="cardForm.is_active" type="checkbox" class="toggle-input" />
+                <span>Aktif</span>
+              </label>
+              <label class="toggle-label">
+                <input v-model="cardForm.is_popular" type="checkbox" class="toggle-input" />
+                <span>Popüler</span>
+              </label>
+            </div>
+            <div class="modal-actions">
+              <button type="button" class="btn-cancel" @click="closeDialog">İptal</button>
+              <button type="submit" class="btn-save" :disabled="savingCard">
+                {{ savingCard ? 'Kaydediliyor...' : (selectedCard ? 'Güncelle' : 'Oluştur') }}
+              </button>
+            </div>
+            <p v-if="cardError" class="form-error">{{ cardError }}</p>
+          </form>
+        </div>
+      </div>
+    </Teleport>
+  </div>
 </template>
 
 <script setup>
@@ -79,6 +142,39 @@ const cards = ref([])
 const loading = ref(true)
 const showAddDialog = ref(false)
 const selectedCard = ref(null)
+const savingCard = ref(false)
+const cardError = ref(null)
+
+const cardForm = ref({
+  display_name: '',
+  monthly_price: 0,
+  tier_level: 1,
+  max_users: 5,
+  max_calls_per_month: 1000,
+  color_primary: '#6366f1',
+  is_active: true,
+  is_popular: false
+})
+
+const resetForm = () => {
+  cardForm.value = {
+    display_name: '',
+    monthly_price: 0,
+    tier_level: 1,
+    max_users: 5,
+    max_calls_per_month: 1000,
+    color_primary: '#6366f1',
+    is_active: true,
+    is_popular: false
+  }
+  cardError.value = null
+  selectedCard.value = null
+}
+
+const closeDialog = () => {
+  showAddDialog.value = false
+  resetForm()
+}
 
 const loadCards = async () => {
   try {
@@ -109,10 +205,42 @@ const formatFeature = (key, value) => {
 }
 
 const editCard = (card) => {
-  console.log('Edit card:', card)
-  // Open edit dialog with card data
-  showAddDialog.value = true
   selectedCard.value = card
+  cardForm.value = {
+    display_name:        card.display_name        || '',
+    monthly_price:       card.monthly_price        ?? 0,
+    tier_level:          card.tier_level           ?? 1,
+    max_users:           card.max_users            ?? 5,
+    max_calls_per_month: card.max_calls_per_month  ?? 1000,
+    color_primary:       card.color_primary        || '#6366f1',
+    is_active:           card.is_active            ?? true,
+    is_popular:          card.is_popular           ?? false,
+  }
+  cardError.value = null
+  showAddDialog.value = true
+}
+
+const saveCard = async () => {
+  savingCard.value = true
+  cardError.value = null
+  try {
+    if (selectedCard.value) {
+      // Update existing card
+      const res = await api.put(`/admin/cards/${selectedCard.value.id}`, cardForm.value)
+      const idx = cards.value.findIndex(c => c.id === selectedCard.value.id)
+      if (idx !== -1) cards.value[idx] = { ...cards.value[idx], ...res.data }
+    } else {
+      // Create new card
+      const res = await api.post('/admin/cards', cardForm.value)
+      cards.value.push(res.data)
+    }
+    closeDialog()
+  } catch (e) {
+    console.error('Kart kaydedilemedi:', e)
+    cardError.value = e?.response?.data?.detail || 'Kayıt sırasında hata oluştu.'
+  } finally {
+    savingCard.value = false
+  }
 }
 
 const toggleCard = async (card) => {
@@ -382,4 +510,78 @@ onMounted(() => {
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Modal Styles ──────────────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; padding: 16px;
+}
+
+.modal-box {
+  background: var(--surface-elevated, #1a1a2e);
+  border: 1px solid var(--border-subtle, rgba(255,255,255,0.1));
+  border-radius: 16px; padding: 32px;
+  width: 100%; max-width: 520px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+  animation: slideUp 0.25s cubic-bezier(0.16,1,0.3,1);
+  max-height: 90vh; overflow-y: auto;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 24px;
+}
+.modal-header h2 { font-size: 20px; font-weight: 700; color: var(--text-primary); margin: 0; }
+
+.modal-close {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--surface-hover, rgba(255,255,255,0.05));
+  border: 1px solid var(--border-subtle); color: var(--text-secondary);
+  font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.modal-close:hover { background: rgba(239,68,68,0.1); color: #ef4444; }
+
+.modal-form { display: flex; flex-direction: column; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.form-group.inline-row { flex-direction: row; gap: 24px; }
+.toggle-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; color: var(--text-primary); }
+.toggle-input { width: 16px; height: 16px; accent-color: var(--indigo-primary, #6366f1); cursor: pointer; }
+
+.color-picker { width: 44px; height: 38px; border-radius: 8px; border: 1px solid var(--border-subtle); cursor: pointer; padding: 2px; background: transparent; }
+
+.form-input {
+  background: var(--surface-hover, rgba(255,255,255,0.05));
+  border: 1px solid var(--border-subtle); border-radius: 8px;
+  padding: 10px 14px; color: var(--text-primary); font-size: 14px;
+  transition: border-color 0.2s; width: 100%; box-sizing: border-box;
+}
+.form-input:focus { outline: none; border-color: var(--indigo-primary, #6366f1); }
+
+.modal-actions { display: flex; gap: 12px; padding-top: 4px; }
+.btn-cancel {
+  flex: 1; padding: 10px 20px;
+  background: var(--surface-hover); border: 1px solid var(--border-subtle);
+  border-radius: 8px; color: var(--text-primary); font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;
+}
+.btn-save {
+  flex: 1; padding: 10px 20px;
+  background: var(--indigo-primary, #6366f1); border: none;
+  border-radius: 8px; color: white; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;
+}
+.btn-save:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+.btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+.form-error { color: #ef4444; font-size: 13px; margin: 0; }
 </style>
