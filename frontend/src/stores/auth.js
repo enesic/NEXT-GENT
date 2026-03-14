@@ -69,6 +69,7 @@ export const useAuthStore = defineStore('auth', () => {
         token.value = null
         sessionStorage.removeItem('auth_token')
         sessionStorage.removeItem('user')
+        sessionStorage.removeItem('current_sector')
         delete axios.defaults.headers.common['Authorization']
 
         // Optional: Clear tenant on logout? Usually kept for convenience.

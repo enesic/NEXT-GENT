@@ -159,7 +159,10 @@ const handleLogin = async () => {
       HOS: 'hospitality',
       AUT: 'automotive',
       RTL: 'retail',
-      TEC: 'technology'
+      TEC: 'technology',
+      EML: 'real_estate',
+      EST: 'real_estate',
+      REA: 'real_estate'
     }
 
     let sector = null
@@ -185,7 +188,7 @@ const handleLogin = async () => {
     if (sector && sectorThemes[sector]) {
       sectorStore.setSector(sector)
     }
-    proceedToDashboard()
+    proceedToDashboard(sector)
     
   } catch (error) {
     isLoading.value = false
