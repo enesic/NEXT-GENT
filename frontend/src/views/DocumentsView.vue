@@ -18,7 +18,7 @@
         </div>
         <button class="upload-btn" @click="triggerFileUpload" :disabled="uploading">
           <Upload :size="16" />
-          {{ uploading ? 'Yükleniyor...' : 'Yeni Belge' }}
+          {{ uploading ? sectorStore.t('documents_loading_upload') : sectorStore.t('documents_new_belge') }}
         </button>
       </div>
     </div>
@@ -27,7 +27,7 @@
     <div class="filter-strip">
       <div class="categories-bar">
         <button 
-          v-for="cat in categories" 
+          v-for="cat in translatedCategories" 
           :key="cat.id"
           :class="['cat-btn', { active: activeCategory === cat.id }]"
           @click="activeCategory = cat.id"
@@ -38,7 +38,7 @@
       <div class="folder-crumbs">
           <span class="crumb active">Root</span>
           <ChevronRight :size="14" />
-          <span class="crumb">Projeler</span>
+          <span class="crumb">{{ sectorStore.currentLocale === 'tr' ? 'Projeler' : (sectorStore.currentLocale === 'en' ? 'Projects' : 'Projekte') }}</span>
       </div>
     </div>
 
@@ -101,7 +101,7 @@
               {{ file.owner }}
           </div>
         </div>
-        <button class="menu-btn" @click="deleteDocument(file.id)" title="Sil">
+        <button class="menu-btn" @click="deleteDocument(file.id)" :title="sectorStore.currentLocale === 'tr' ? 'Sil' : (sectorStore.currentLocale === 'en' ? 'Delete' : 'Löschen')">
           <Trash2 :size="16" />
         </button>
       </div>
@@ -124,13 +124,13 @@ const error = ref(null)
 const searchQuery = ref('')
 const activeCategory = ref('all')
 
-const categories = [
-  { id: 'all', label: 'Tümü' },
-  { id: 'pdf', label: 'PDF' },
-  { id: 'img', label: 'Görseller' },
-  { id: 'doc', label: 'Dokümanlar' },
-  { id: 'zip', label: 'Arşivler' }
-]
+const translatedCategories = computed(() => [
+  { id: 'all', label: sectorStore.t('documents_all') },
+  { id: 'pdf', label: sectorStore.t('documents_pdf') },
+  { id: 'img', label: sectorStore.t('documents_img') },
+  { id: 'doc', label: sectorStore.t('documents_doc') },
+  { id: 'zip', label: sectorStore.t('documents_zip') }
+])
 
 const filteredFiles = computed(() => {
   return files.value.filter(f => {
@@ -154,28 +154,28 @@ const normalizeDocumentList = (responseData) => {
   return []
 }
 
-const DEMO_FILES = [
-  { id: 1,  name: '2023_Yillik_Vergi_Beyannamesi.pdf',     type: 'pdf', date: '15.01.2024', size: '2.4 MB',  tag: { id: 'urgent', label: 'Acil' },       owner: 'Mali Müşavir' },
-  { id: 2,  name: 'Klinik_Analiz_Raporu_Ocak.img',          type: 'img', date: '02.02.2024', size: '4.1 MB',  tag: { id: 'new',    label: 'Yeni' },        owner: 'Dr. Ahmet' },
-  { id: 3,  name: 'Hizmet_Kullanim_Kilavuzu_v2.doc',        type: 'doc', date: '20.12.2023', size: '1.2 MB',                                               owner: 'Sistem' },
-  { id: 4,  name: 'Sektor_Analiz_Sunumu.pdf',               type: 'pdf', date: '10.02.2024', size: '8.5 MB',  tag: { id: 'shared', label: 'Paylaşıldı' },  owner: 'Analiz Ekibi' },
-  { id: 5,  name: 'Sistem_Yedekleme_Loglari.zip',           type: 'zip', date: '09.02.2024', size: '124 MB',                                               owner: 'Admin' },
-  { id: 6,  name: 'Musteri_Memnuniyet_Anketi_Sonuclari.pdf',type: 'pdf', date: '05.02.2024', size: '1.8 MB',                                               owner: 'Destek' },
-  { id: 7,  name: 'Yeni_Donem_Butce_Plani.doc',             type: 'doc', date: '01.02.2024', size: '3.2 MB',  tag: { id: 'urgent', label: 'Kritik' },      owner: 'Finans' },
-  { id: 8,  name: 'Ofis_Yerlesim_Plani_Mimari.img',         type: 'img', date: '25.01.2024', size: '12.4 MB',                                              owner: 'Projeler' },
-  { id: 9,  name: 'Hukuki_Danismanlik_Sozlesmesi.pdf',      type: 'pdf', date: '12.01.2024', size: '4.5 MB',  tag: { id: 'signed', label: 'İmzalandı' },  owner: 'Hukuk' },
-  { id: 10, name: 'Proje_Gelistirme_Yol_Haritasi.doc',      type: 'doc', date: '08.02.2024', size: '2.1 MB',                                               owner: 'PMO' },
-  { id: 11, name: 'Eski_Arsiv_Kayitlari_2022.zip',          type: 'zip', date: '15.12.2022', size: '450 MB',                                               owner: 'Arşiv' },
-  { id: 12, name: 'Sektor_Trend_Raporu_Q4.pdf',             type: 'pdf', date: '30.12.2023', size: '5.2 MB',                                               owner: 'Strateji' },
-  { id: 13, name: 'Kullanici_Deneyimi_Feedback.img',        type: 'img', date: '12.02.2024', size: '2.8 MB',  tag: { id: 'new',    label: 'Yeni' },        owner: 'UX Design' },
-  { id: 14, name: 'API_Dokumantasyonu_v3.pdf',              type: 'pdf', date: '11.02.2024', size: '6.2 MB',                                               owner: 'Dev Team' },
-  { id: 15, name: 'Girisim_Sermayesi_Sunumu.pdf',           type: 'pdf', date: '10.02.2024', size: '14.1 MB', tag: { id: 'shared', label: 'Yatırımcı' },  owner: 'CEO' },
-  { id: 16, name: 'Marketing_Asset_Library.zip',            type: 'zip', date: '09.02.2024', size: '89 MB',                                               owner: 'Pazarlama' },
-  { id: 17, name: 'Personel_Egitim_Portali_Syllabus.doc',  type: 'doc', date: '08.02.2024', size: '1.5 MB',                                               owner: 'HR' },
-  { id: 18, name: 'Sunucu_Performans_Grafikleri.img',       type: 'img', date: '07.02.2024', size: '5.5 MB',                                               owner: 'SRE' },
-  { id: 19, name: 'Musteri_Sikayetleri_Raporu.pdf',         type: 'pdf', date: '06.02.2024', size: '3.1 MB',  tag: { id: 'urgent', label: 'Acil' },        owner: 'QM' },
-  { id: 20, name: 'Yeni_Urun_Tanitim_Videosu_Script.doc',  type: 'doc', date: '05.02.2024', size: '0.8 MB',                                               owner: 'İçerik' }
-]
+const DEMO_FILES = computed(() => [
+  { id: 1,  name: '2023_Yillik_Vergi_Beyannamesi.pdf',     type: 'pdf', date: '15.01.2024', size: '2.4 MB',  tag: { id: 'urgent', label: sectorStore.t('tag_urgent') },       owner: sectorStore.currentLocale === 'tr' ? 'Mali Müşavir' : (sectorStore.currentLocale === 'en' ? 'Financial Advisor' : 'Finanzberater') },
+  { id: 2,  name: 'Klinik_Analiz_Raporu_Ocak.img',          type: 'img', date: '02.02.2024', size: '4.1 MB',  tag: { id: 'new',    label: sectorStore.t('tag_new') },           owner: 'Dr. Ahmet' },
+  { id: 3,  name: 'Hizmet_Kullanim_Kilavuzu_v2.doc',        type: 'doc', date: '20.12.2023', size: '1.2 MB',                                                                owner: sectorStore.currentLocale === 'tr' ? 'Sistem' : (sectorStore.currentLocale === 'en' ? 'System' : 'System') },
+  { id: 4,  name: 'Sektor_Analiz_Sunumu.pdf',               type: 'pdf', date: '10.02.2024', size: '8.5 MB',  tag: { id: 'shared', label: sectorStore.t('tag_shared') },       owner: sectorStore.currentLocale === 'tr' ? 'Analiz Ekibi' : (sectorStore.currentLocale === 'en' ? 'Analysis Team' : 'Analyseteam') },
+  { id: 5,  name: 'Sistem_Yedekleme_Loglari.zip',           type: 'zip', date: '09.02.2024', size: '124 MB',                                                               owner: 'Admin' },
+  { id: 6,  name: 'Musteri_Memnuniyet_Anketi_Sonuclari.pdf',type: 'pdf', date: '05.02.2024', size: '1.8 MB',                                                               owner: sectorStore.currentLocale === 'tr' ? 'Destek' : (sectorStore.currentLocale === 'en' ? 'Support' : 'Unterstützung') },
+  { id: 7,  name: 'Yeni_Donem_Butce_Plani.doc',             type: 'doc', date: '01.02.2024', size: '3.2 MB',  tag: { id: 'urgent', label: sectorStore.t('tag_critical') },     owner: sectorStore.currentLocale === 'tr' ? 'Finans' : (sectorStore.currentLocale === 'en' ? 'Finance' : 'Finanzen') },
+  { id: 8,  name: 'Ofis_Yerlesim_Plani_Mimari.img',         type: 'img', date: '25.01.2024', size: '12.4 MB',                                                              owner: sectorStore.currentLocale === 'tr' ? 'Projeler' : (sectorStore.currentLocale === 'en' ? 'Projects' : 'Projekte') },
+  { id: 9,  name: 'Hukuki_Danismanlik_Sozlesmesi.pdf',      type: 'pdf', date: '12.01.2024', size: '4.5 MB',  tag: { id: 'signed', label: sectorStore.t('tag_signed') },       owner: sectorStore.currentLocale === 'tr' ? 'Hukuk' : (sectorStore.currentLocale === 'en' ? 'Legal' : 'Recht') },
+  { id: 10, name: 'Proje_Gelistirme_Yol_Haritasi.doc',      type: 'doc', date: '08.02.2024', size: '2.1 MB',                                                               owner: 'PMO' },
+  { id: 11, name: 'Eski_Arsiv_Kayitlari_2022.zip',          type: 'zip', date: '15.12.2022', size: '450 MB',                                                               owner: sectorStore.currentLocale === 'tr' ? 'Arşiv' : (sectorStore.currentLocale === 'en' ? 'Archive' : 'Archiv') },
+  { id: 12, name: 'Sektor_Trend_Raporu_Q4.pdf',             type: 'pdf', date: '30.12.2023', size: '5.2 MB',                                                               owner: sectorStore.currentLocale === 'tr' ? 'Strateji' : (sectorStore.currentLocale === 'en' ? 'Strategy' : 'Strategie') },
+  { id: 13, name: 'Kullanici_Deneyimi_Feedback.img',        type: 'img', date: '12.02.2024', size: '2.8 MB',  tag: { id: 'new',    label: sectorStore.t('tag_new') },           owner: 'UX Design' },
+  { id: 14, name: 'API_Dokumantasyonu_v3.pdf',              type: 'pdf', date: '11.02.2024', size: '6.2 MB',                                                               owner: 'Dev Team' },
+  { id: 15, name: 'Girisim_Sermayesi_Sunumu.pdf',           type: 'pdf', date: '10.02.2024', size: '14.1 MB', tag: { id: 'shared', label: sectorStore.currentLocale === 'tr' ? 'Yatırımcı' : (sectorStore.currentLocale === 'en' ? 'Investor' : 'Investor') },  owner: 'CEO' },
+  { id: 16, name: 'Marketing_Asset_Library.zip',            type: 'zip', date: '09.02.2024', size: '89 MB',                                                               owner: sectorStore.currentLocale === 'tr' ? 'Pazarlama' : (sectorStore.currentLocale === 'en' ? 'Marketing' : 'Marketing') },
+  { id: 17, name: 'Personel_Egitim_Portali_Syllabus.doc',  type: 'doc', date: '08.02.2024', size: '1.5 MB',                                                               owner: 'HR' },
+  { id: 18, name: 'Sunucu_Performans_Grafikleri.img',       type: 'img', date: '07.02.2024', size: '5.5 MB',                                                               owner: 'SRE' },
+  { id: 19, name: 'Musteri_Sikayetleri_Raporu.pdf',         type: 'pdf', date: '06.02.2024', size: '3.1 MB',  tag: { id: 'urgent', label: sectorStore.t('tag_urgent') },       owner: 'QM' },
+  { id: 20, name: 'Yeni_Urun_Tanitim_Videosu_Script.doc',  type: 'doc', date: '05.02.2024', size: '0.8 MB',                                                               owner: sectorStore.currentLocale === 'tr' ? 'İçerik' : (sectorStore.currentLocale === 'en' ? 'Content' : 'Inhalt') }
+])
 
 // Fetch documents from API
 const fetchDocuments = async () => {
@@ -187,7 +187,7 @@ const fetchDocuments = async () => {
 
     if (list.length === 0) {
       // Nothing from backend — show demo content
-      files.value = DEMO_FILES
+      files.value = DEMO_FILES.value
     } else {
       files.value = (list || []).map(doc => ({
         id: doc?.id || Math.random(),
@@ -201,7 +201,7 @@ const fetchDocuments = async () => {
     }
   } catch {
     // Silently fall back to demo data — do NOT show error message to user
-    files.value = DEMO_FILES
+    files.value = DEMO_FILES.value
   } finally {
     loading.value = false
   }
@@ -232,7 +232,7 @@ const handleFileUpload = async (event) => {
     event.target.value = ''
   } catch (err) {
     console.error('Error uploading file:', err)
-    error.value = err.response?.data?.detail || 'Dosya yüklenirken bir hata oluştu'
+    error.value = err.response?.data?.detail || sectorStore.t('documents_upload_error')
   } finally {
     uploading.value = false
   }
@@ -240,7 +240,7 @@ const handleFileUpload = async (event) => {
 
 // Handle file deletion
 const deleteDocument = async (documentId) => {
-  if (!confirm('Bu belgeyi silmek istediğinizden emin misiniz?')) {
+  if (!confirm(sectorStore.t('documents_delete_confirm'))) {
     return
   }
 
@@ -249,7 +249,7 @@ const deleteDocument = async (documentId) => {
     await fetchDocuments()
   } catch (err) {
     console.error('Error deleting document:', err)
-    error.value = 'Belge silinirken bir hata oluştu'
+    error.value = sectorStore.t('documents_delete_error')
   }
 }
 
@@ -278,11 +278,13 @@ const formatDate = (dateString) => {
   const diffTime = Math.abs(now - date)
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
-  if (diffDays === 0) return 'Bugün'
-  if (diffDays === 1) return 'Dün'
-  if (diffDays < 7) return `${diffDays} gün önce`
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} hafta önce`
-  return date.toLocaleDateString('tr-TR')
+  if (diffDays === 0) return sectorStore.t('date_today')
+  if (diffDays === 1) return sectorStore.t('date_yesterday')
+  if (diffDays < 7) return `${diffDays} ${sectorStore.t('date_days_ago')}`
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} ${sectorStore.t('date_weeks_ago')}`
+  
+  const localeMap = { tr: 'tr-TR', en: 'en-US', de: 'de-DE' }
+  return date.toLocaleDateString(localeMap[sectorStore.currentLocale] || 'tr-TR')
 }
 
 // Trigger file input click

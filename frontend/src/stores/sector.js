@@ -156,6 +156,29 @@ export const useSectorStore = defineStore('sector', () => {
             documents_search_placeholder: 'Belge ara...',
             documents_size: 'Boyut',
             documents_type: 'Tür',
+            documents_all: 'Tümü',
+            documents_pdf: 'PDF',
+            documents_img: 'Görseller',
+            documents_doc: 'Dokümanlar',
+            documents_zip: 'Arşivler',
+            documents_new_belge: 'Yeni Belge',
+            documents_loading_upload: 'Yükleniyor...',
+            documents_delete_confirm: 'Bu belgeyi silmek istediğinizden emin misiniz?',
+            documents_upload_error: 'Dosya yüklenirken bir hata oluştu',
+            documents_delete_error: 'Belge silinirken bir hata oluştu',
+
+            // Date labels
+            date_today: 'Bugün',
+            date_yesterday: 'Dün',
+            date_days_ago: 'gün önce',
+            date_weeks_ago: 'hafta önce',
+
+            // Tags
+            tag_urgent: 'Acil',
+            tag_new: 'Yeni',
+            tag_shared: 'Paylaşıldı',
+            tag_signed: 'İmzalandı',
+            tag_critical: 'Kritik',
 
             // Calendar & Appointments
             calendar_title: 'Takvim',
@@ -323,6 +346,29 @@ export const useSectorStore = defineStore('sector', () => {
             documents_search_placeholder: 'Search documents...',
             documents_size: 'Size',
             documents_type: 'Type',
+            documents_all: 'All',
+            documents_pdf: 'PDF',
+            documents_img: 'Images',
+            documents_doc: 'Documents',
+            documents_zip: 'Archives',
+            documents_new_belge: 'New Document',
+            documents_loading_upload: 'Uploading...',
+            documents_delete_confirm: 'Are you sure you want to delete this document?',
+            documents_upload_error: 'An error occurred during file upload',
+            documents_delete_error: 'An error occurred during file deletion',
+
+            // Date labels
+            date_today: 'Today',
+            date_yesterday: 'Yesterday',
+            date_days_ago: 'days ago',
+            date_weeks_ago: 'weeks ago',
+
+            // Tags
+            tag_urgent: 'Urgent',
+            tag_new: 'New',
+            tag_shared: 'Shared',
+            tag_signed: 'Signed',
+            tag_critical: 'Critical',
 
             // Calendar & Appointments
             calendar_title: 'Calendar',
@@ -490,6 +536,29 @@ export const useSectorStore = defineStore('sector', () => {
             documents_search_placeholder: 'Dokumente suchen...',
             documents_size: 'Größe',
             documents_type: 'Typ',
+            documents_all: 'Alle',
+            documents_pdf: 'PDF',
+            documents_img: 'Bilder',
+            documents_doc: 'Dokumente',
+            documents_zip: 'Archive',
+            documents_new_belge: 'Neues Dokument',
+            documents_loading_upload: 'Wird hochgeladen...',
+            documents_delete_confirm: 'Sind Sie sicher, dass Sie dieses Dokument löschen möchten?',
+            documents_upload_error: 'Beim Hochladen der Datei ist ein Fehler aufgetreten',
+            documents_delete_error: 'Beim Löschen des Dokuments ist ein Fehler aufgetreten',
+
+            // Date labels
+            date_today: 'Heute',
+            date_yesterday: 'Gestern',
+            date_days_ago: 'Tage zuvor',
+            date_weeks_ago: 'Wochen zuvor',
+
+            // Tags
+            tag_urgent: 'Dringend',
+            tag_new: 'Neu',
+            tag_shared: 'Geteilt',
+            tag_signed: 'Signiert',
+            tag_critical: 'Kritisch',
 
             // Calendar & Appointments
             calendar_title: 'Kalender',
