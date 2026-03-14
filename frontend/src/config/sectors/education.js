@@ -2,11 +2,11 @@ export const education = {
     id: 'education',
     label: { tr: 'Eğitim', en: 'Education', de: 'Ausbildung' },
     colors: {
-        primary: '#8b5cf6', secondary: '#4c1d95', accent: '#a78bfa',
-        background: '#06040a', surface: 'rgba(255, 255, 255, 0.03)', text: '#f5f3ff',
-        gradient: 'linear-gradient(135deg, #8b5cf6 0%, #4c1d95 100%)',
-        sidebar: 'linear-gradient(180deg, #06040a 0%, #0c0817 100%)',
-        cardShadow: '0 4px 6px -1px rgba(139, 92, 246, 0.1), 0 2px 4px -1px rgba(139, 92, 246, 0.06)'
+        primary: '#0ea5e9', secondary: '#0369a1', accent: '#7dd3fc',
+        background: '#04070b', surface: 'rgba(255, 255, 255, 0.03)', text: '#f0f9ff',
+        gradient: 'linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%)',
+        sidebar: 'linear-gradient(180deg, #04070b 0%, #0c1a2b 100%)',
+        cardShadow: '0 4px 6px -1px rgba(14, 165, 233, 0.1), 0 2px 4px -1px rgba(14, 165, 233, 0.06)'
     },
     stats: [
         { label: { tr: 'Öğrenciler', en: 'Students', de: 'Studenten' }, value: '1,245', change: 12.3, icon: 'Users', color: 'primary' },

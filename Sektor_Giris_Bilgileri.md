@@ -47,6 +47,7 @@ Sistemde seed edilen tüm sektörler:
 | 💰 Finance | FIN-000001 | 1234 | /dashboard | Seeded |
 | 🚗 Automotive | AUT-000001 | 1234 | /dashboard | Seeded |
 | 🏪 Retail | RTL-000001 | 1234 | /dashboard | Seeded |
+| 💻 Technology | TEC-000001 | 1234 | /dashboard | ✅ Test OK |
 
 ---
 
