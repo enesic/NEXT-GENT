@@ -1,20 +1,15 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import legacy from '@vitejs/plugin-legacy'
-import path from 'path'
+import { fileURLToPath, URL } from 'node:url'
 
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [
-        vue(),
-        legacy({
-            targets: ['defaults', 'not IE 11'],
-            additionalLegacyPolyfills: ['regenerator-runtime/runtime']
-        })
+        vue()
     ],
     resolve: {
         alias: {
-            '@': path.resolve(__dirname, './src')
+            '@': fileURLToPath(new URL('./src', import.meta.url))
         }
     },
     server: {
@@ -35,7 +30,6 @@ export default defineConfig({
         assetsDir: 'assets',
         emptyOutDir: true,
         sourcemap: false,
-        minify: false,
         manifest: true,
         rollupOptions: {
             output: {

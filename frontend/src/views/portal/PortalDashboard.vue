@@ -196,12 +196,7 @@ const t = (key) => {
     return key
 }
 
-const tLoc = (obj) => {
-    if (!obj) return ''
-    if (typeof obj === 'string') return obj
-    const locale = sectorStore.currentLocale || 'tr'
-    return obj[locale] || obj['tr'] || ''
-}
+const tLoc = sectorStore.tLoc
 
 // Helpers
 const getColor = (colorName) => {
@@ -218,17 +213,17 @@ const safeStr = (v) => (v != null && typeof v.then === 'function' ? '' : String(
 
 // DEFAULT STATS (Generic Fallback)
 const defaultStats = [
-    { label: 'Günlük Randevular', value: '0', change: 0, icon: 'Calendar', color: 'primary' },
-    { label: 'Aktif Müşteriler', value: '0', change: 0, icon: 'Users', color: 'accent' },
-    { label: 'Bekleyen Talepler', value: '0', change: 0, icon: 'AlertCircle', color: 'red' },
-    { label: 'Memnuniyet', value: '100%', change: 0, icon: 'Heart', color: 'secondary' }
+    { label: { tr: 'Günlük Randevular', en: 'Daily Appointments', de: 'Tägliche Termine' }, value: '0', change: 0, icon: 'Calendar', color: 'primary' },
+    { label: { tr: 'Aktif Müşteriler', en: 'Active Customers', de: 'Aktive Kunden' }, value: '0', change: 0, icon: 'Users', color: 'accent' },
+    { label: { tr: 'Bekleyen Talepler', en: 'Pending Requests', de: 'Ausstehende Anfragen' }, value: '0', change: 0, icon: 'AlertCircle', color: 'red' },
+    { label: { tr: 'Memnuniyet', en: 'Satisfaction', de: 'Zufriedenheit' }, value: '100%', change: 0, icon: 'Heart', color: 'secondary' }
 ]
 
 const defaultActions = [
-    { label: 'Randevu Ekle', icon: 'CalendarPlus' },
-    { label: 'Kayıt Ekle', icon: 'UserPlus' },
-    { label: 'Belge Hazırla', icon: 'FileText' },
-    { label: 'Durum Kontrolü', icon: 'Activity' }
+    { label: { tr: 'Randevu Ekle', en: 'Add Appointment', de: 'Termin hinzufügen' }, icon: 'CalendarPlus' },
+    { label: { tr: 'Kayıt Ekle', icon: 'UserPlus', en: 'Add Record', de: 'Eintrag hinzufügen' }, icon: 'UserPlus' },
+    { label: { tr: 'Belge Hazırla', en: 'Prepare Document', de: 'Dokument vorbereiten' }, icon: 'FileText' },
+    { label: { tr: 'Durum Kontrolü', en: 'Status Check', de: 'Statusprüfung' }, icon: 'Activity' }
 ]
 
 // Fetch dashboard data from API
@@ -284,7 +279,7 @@ const fetchDashboardData = async () => {
             }
             
             const updatedStats = baseStats.map((stat, idx) => {
-                const label = stat.label.toLowerCase().trim()
+                const label = tLoc(stat.label).toLowerCase().trim()
                 let newValue = undefined
                 
                 // 1. Exact matching

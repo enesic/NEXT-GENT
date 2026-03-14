@@ -79,12 +79,7 @@ import api from '@/config/api'
 
 const sectorStore = useSectorStore()
 
-const tLoc = (obj) => {
-    if (!obj) return ''
-    if (typeof obj === 'string') return obj
-    const locale = sectorStore.currentLocale || 'tr'
-    return obj[locale] || obj['tr'] || ''
-}
+const tLoc = sectorStore.tLoc
 
 const colors = computed(() => sectorStore.theme || {
   primary: '#0ea5e9',

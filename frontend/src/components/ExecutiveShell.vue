@@ -96,7 +96,7 @@
           <h1 class="page-title">{{ currentPageTitle }}</h1>
           <div class="sector-badge" ref="sectorBadge" v-if="isCustomer">
             <component :is="currentSectorIcon" :size="14" :stroke-width="2.5" />
-            <span>{{ sectorStore.currentSector?.label || 'Genel Bakış' }}</span>
+            <span>{{ sectorStore.tLoc(sectorStore.currentSector?.label) || 'Genel Bakış' }}</span>
           </div>
         </div>
 
@@ -175,7 +175,7 @@ const userInitials = computed(() => {
 const userRole = computed(() => {
     const u = authStore.user
     if (!u) return 'Müşteri'
-    return u.role === 'admin' ? 'Yönetici' : sectorStore.currentSector?.label || 'Müşteri'
+    return u.role === 'admin' ? 'Yönetici' : sectorStore.tLoc(sectorStore.currentSector?.label) || 'Müşteri'
 })
 
 const showUserMenu = ref(false)

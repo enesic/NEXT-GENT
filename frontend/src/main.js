@@ -4,7 +4,7 @@ import { createPinia } from 'pinia'
 import './style.css'
 import App from './App.vue'
 import router from './router'
-import VueApexCharts from 'vue3-apexcharts'
+// import VueApexCharts from 'vue3-apexcharts'
 
 import axios from 'axios'
 
@@ -48,7 +48,7 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
-app.use(VueApexCharts)
+// app.use(VueApexCharts)
 app.provide('axios', axios)
 app.config.errorHandler = (err, instance, info) => {
     console.error('Global Vue Error:', err)

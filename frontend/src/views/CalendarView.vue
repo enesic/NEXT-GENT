@@ -2,8 +2,8 @@
   <div class="calendar-layout">
     <div class="header-controls">
       <div class="title-group">
-        <h2>{{ currentMonthName }} {{ currentYear }}</h2>
-        <p class="subtitle">{{ events.length }} randevu/etkinlik</p>
+        <h2>{{ route.name === 'Appointments' ? sectorStore.t('appointments_title') : sectorStore.t('calendar_title') }}</h2>
+        <p class="subtitle">{{ events.length }} {{ sectorStore.t('events_count') }}</p>
       </div>
       <div class="controls-right">
         <div class="month-selector">
@@ -15,13 +15,31 @@
           </button>
         </div>
         <div class="filters">
-          <button class="view-btn" :class="{ active: currentView === 'month' }" @click="currentView = 'month'">Ay</button>
-          <button class="view-btn" :class="{ active: currentView === 'week' }" @click="currentView = 'week'">Hafta</button>
-          <button class="view-btn" :class="{ active: currentView === 'list' }" @click="currentView = 'list'">Liste</button>
+          <button 
+            class="view-btn" 
+            :class="{ active: currentView === 'month' }"
+            @click="currentView = 'month'"
+          >
+            {{ sectorStore.t('month_view') }}
+          </button>
+          <button 
+            class="view-btn" 
+            :class="{ active: currentView === 'week' }"
+            @click="currentView = 'week'"
+          >
+            {{ sectorStore.t('week_view') }}
+          </button>
+          <button 
+            class="view-btn" 
+            :class="{ active: currentView === 'list' }"
+            @click="currentView = 'list'"
+          >
+            {{ sectorStore.t('list_view') }}
+          </button>
         </div>
         <button class="add-btn" @click="showAppointmentModal = true">
           <Plus :size="18" />
-          Yeni Randevu
+          {{ sectorStore.t('new_appointment') }}
         </button>
       </div>
     </div>
@@ -96,7 +114,7 @@
         <!-- List View -->
         <div v-else-if="currentView === 'list'" class="list-view">
           <div v-if="listEvents.length === 0" class="empty-list">
-            Yakın zamanda planlanmış bir randevu bulunmuyor.
+            {{ sectorStore.t('no_scheduled_events') }}
           </div>
           <div v-for="event in listEvents" :key="event.id" class="list-item" :class="event.color">
             <div class="item-date">
@@ -116,8 +134,8 @@
       </div>
 
       <!-- Upcoming Sidebar -->
-      <div class="upcoming-sidebar">
-          <h3>Yaklaşan Etkinlikler</h3>
+      <div class="upcoming-sidebar" v-if="route.name !== 'Appointments'">
+          <h3>{{ sectorStore.t('upcoming_events') }}</h3>
           <div class="upcoming-list">
               <div v-for="event in upcomingEvents" :key="event.id" class="upcoming-item">
                   <div class="item-date">
@@ -151,17 +169,20 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-vue-next'
 import { useSectorStore } from '../stores/sector'
+import { useRoute } from 'vue-router'
 import AppointmentModal from '../components/common/AppointmentModal.vue'
 import api from '@/config/api'
 
 const sectorStore = useSectorStore()
+const route = useRoute()
 
+// State
 const currentDate = ref(new Date())
+const currentView = ref(route.name === 'Appointments' ? 'list' : 'month') // 'month', 'week', 'list'
 const events = ref([])
-const currentView = ref('month') // 'month', 'week', 'list'
 const showAppointmentModal = ref(false)
 
 const upcomingEvents = computed(() => {
@@ -186,8 +207,20 @@ const currentWeekDays = computed(() => {
 })
 
 const listEvents = computed(() => {
-  return [...events.value].sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
+  return [...events.value].sort((a, b) => new Date(a.date) - new Date(b.date))
 })
+
+// Force list view if we are on appointments route
+watch(
+  () => route.name,
+  (newName) => {
+    if (newName === 'Appointments') {
+      currentView.value = 'list'
+    } else {
+      currentView.value = 'month'
+    }
+  }
+)
 
 const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
 const weekDays = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz']

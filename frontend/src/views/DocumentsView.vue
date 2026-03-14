@@ -3,13 +3,18 @@
   <div class="documents-layout">
     <div class="header">
       <div class="title-group">
-        <h2>{{ sectorStore.t('documents') }}</h2>
-        <p class="subtitle">{{ files.length }} belge bulundu</p>
+        <h2>{{ sectorStore.t('documents_title') }}</h2>
+        <p class="subtitle">{{ files.length }} {{ sectorStore.t('documents_found') }}</p>
       </div>
       <div class="header-actions">
         <div class="search-bar">
           <Search :size="18" />
-          <input v-model="searchQuery" placeholder="Belge ara..." />
+          <input
+            type="text"
+            v-model="searchQuery"
+            :placeholder="sectorStore.t('documents_search_placeholder')"
+            class="search-input"
+          />
         </div>
         <button class="upload-btn" @click="triggerFileUpload" :disabled="uploading">
           <Upload :size="16" />
@@ -52,7 +57,7 @@
 
     <!-- Loading state -->
     <div v-if="loading" class="loading-message">
-      Belgeler yükleniyor...
+      {{ sectorStore.t('documents_loading') }}
     </div>
 
     <!-- Empty state -->
@@ -60,9 +65,9 @@
       <div class="empty-icon-wrap">
         <FileText :size="48" />
       </div>
-      <p>Belge bulunamadı</p>
+      <p>{{ sectorStore.t('documents_empty') }}</p>
       <button v-if="searchQuery || activeCategory !== 'all'" class="clear-btn" @click="clearFilters">
-        Filtreleri Temizle
+        {{ sectorStore.t('documents_clear_filters') }}
       </button>
     </div>
 
