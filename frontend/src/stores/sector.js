@@ -2,7 +2,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { sectorThemes } from '../config/sectorThemes'
-// import * as LucideIcons from 'lucide-vue-next'
+import * as LucideIcons from 'lucide-vue-next'
 
 /**
  * Sector Store
@@ -39,8 +39,7 @@ export const useSectorStore = defineStore('sector', () => {
 
     // Helper to resolve string icon names to components
     const getIcon = (iconName) => {
-        // Temporarily returning null or a placeholder to test build
-        return iconName
+        return LucideIcons[iconName] || LucideIcons.Activity
     }
 
     // Reactive translations

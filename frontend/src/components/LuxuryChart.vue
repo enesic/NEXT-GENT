@@ -6,15 +6,12 @@
     </div>
     
     <div class="chart-container">
-      <!-- <apexchart
+      <apexchart
         :type="type"
         :height="height"
         :options="chartOptions"
         :series="series"
-      /> -->
-      <div style="height: 300px; display: flex; align-items: center; justify-content: center; color: #64748b;">
-        Chart Disabled during build test
-      </div>
+      />
     </div>
   </div>
 </template>
