@@ -60,6 +60,13 @@ export const useSectorStore = defineStore('sector', () => {
             recent_activity_title: 'Son İşlemler',
             client_label: 'Müşteri',
             type_label: 'İşlem',
+            customer_id: 'Müşteri ID',
+            sector_label: 'Sektör',
+            segment_label: 'Segment',
+            email_label: 'E-posta',
+            logout: 'Çıkış Yap',
+            main_menu: 'Ana Menü',
+            workspace: 'Çalışma Alanı',
 
             // Customer Sidebar
             appointments: 'Randevularım',
@@ -219,6 +226,13 @@ export const useSectorStore = defineStore('sector', () => {
             recent_activity_title: 'Recent Transactions',
             client_label: 'Client',
             type_label: 'Action',
+            customer_id: 'Customer ID',
+            sector_label: 'Sector',
+            segment_label: 'Segment',
+            email_label: 'Email',
+            logout: 'Logout',
+            main_menu: 'Main Menu',
+            workspace: 'Workspace',
 
             // Customer Sidebar
             appointments: 'Appointments',
@@ -379,6 +393,13 @@ export const useSectorStore = defineStore('sector', () => {
             recent_activity_title: 'Letzte Transaktionen',
             client_label: 'Kunde',
             type_label: 'Aktion',
+            customer_id: 'Kunden-ID',
+            sector_label: 'Sektor',
+            segment_label: 'Segment',
+            email_label: 'E-Mail',
+            logout: 'Abmelden',
+            main_menu: 'Hauptmenü',
+            workspace: 'Arbeitsbereich',
 
             // Customer Sidebar
             appointments: 'Termine',

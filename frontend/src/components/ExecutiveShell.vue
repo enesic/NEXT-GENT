@@ -13,7 +13,7 @@
 
       <nav class="sidebar-nav">
         <div class="nav-section">
-          <div class="nav-section-title">Ana Menü</div>
+          <div class="nav-section-title">{{ sectorStore.t('main_menu') }}</div>
           <div 
             v-for="item in mainNavigation" 
             :key="item.id"
@@ -26,7 +26,7 @@
         </div>
 
         <div class="nav-section">
-          <div class="nav-section-title">Çalışma Alanı</div>
+          <div class="nav-section-title">{{ sectorStore.t('workspace') }}</div>
           <div 
             v-for="item in workspaceNavigation" 
             :key="item.id"
@@ -58,30 +58,30 @@
           </div>
           <div class="profile-details">
             <div class="detail-row">
-              <span class="detail-label">Müşteri ID</span>
+              <span class="detail-label">{{ sectorStore.t('customer_id') }}</span>
               <span class="detail-value">{{ authStore.user?.customer_id || '-' }}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-label">Sektör</span>
-              <span class="detail-value">{{ sectorStore.currentSector?.label || 'Genel' }}</span>
+              <span class="detail-label">{{ sectorStore.t('sector_label') }}</span>
+              <span class="detail-value">{{ sectorStore.tLoc(sectorStore.currentSector?.label) || 'Genel' }}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-label">Segment</span>
+              <span class="detail-label">{{ sectorStore.t('segment_label') }}</span>
               <span class="detail-value">{{ authStore.user?.segment || 'Standart' }}</span>
             </div>
             <div class="detail-row">
-              <span class="detail-label">E-posta</span>
+              <span class="detail-label">{{ sectorStore.t('email_label') }}</span>
               <span class="detail-value">{{ authStore.user?.email || '-' }}</span>
             </div>
           </div>
           <div class="profile-actions">
             <button class="profile-action-btn" @click="handleNavigate('settings'); showUserMenu = false">
               <Settings :size="16" :stroke-width="2" />
-              <span>Ayarlar</span>
+              <span>{{ sectorStore.t('settings') }}</span>
             </button>
             <button class="profile-action-btn logout" @click="handleLogout">
               <LogOut :size="16" :stroke-width="2" />
-              <span>Çıkış Yap</span>
+              <span>{{ sectorStore.t('logout') }}</span>
             </button>
           </div>
         </div>
